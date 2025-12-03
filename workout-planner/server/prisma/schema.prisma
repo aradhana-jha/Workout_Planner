@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String?  // Optional since we might do passwordless or just email
+  createdAt    DateTime @default(now())
+  
+  profile      Profile?
+  plans        Plan[]
+}
+
+model Profile {
+  id            String @id @default(uuid())
+  userId        String @unique
+  user          User   @relation(fields: [userId], references: [id])
+  
+  age           Int
+  gender        String
+  weight        Float
+  targetWeight  Float
+  goal          String // lose_fat, build_muscle, stay_active
+  activityLevel String // sedentary, moderate, active
+}
+
+model Exercise {
+  id          String @id @default(uuid())
+  name        String
+  description String
+  videoUrl    String?
+  difficulty  String // beginner, intermediate, advanced
+  muscleGroup String // chest, legs, core, full_body
+  
+  workoutExercises WorkoutExercise[]
+}
+
+model Plan {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  startDate DateTime @default(now())
+  status    String   @default("active") // active, completed
+  
+  days      WorkoutDay[]
+}
+
+model WorkoutDay {
+  id          String    @id @default(uuid())
+  planId      String
+  plan        Plan      @relation(fields: [planId], references: [id])
+  
+  dayNumber   Int
+  title       String
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  
+  exercises   WorkoutExercise[]
+}
+
+model WorkoutExercise {
+  id           String   @id @default(uuid())
+  workoutDayId String
+  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id])
+  
+  exerciseId   String
+  exercise     Exercise   @relation(fields: [exerciseId], references: [id])
+  
+  targetSets   Int
+  targetReps   Int
+  
+  logs         ExerciseLog[]
+}
+
+model ExerciseLog {
+  id                String @id @default(uuid())
+  workoutExerciseId String
+  workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id])
+  
+  setNumber         Int
+  reps              Int
+  weight            Float?
+  isDone            Boolean @default(false)
+}
