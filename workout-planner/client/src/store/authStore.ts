@@ -19,22 +19,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     token: localStorage.getItem('token'),
 
     login: async (email: string) => {
-        try {
-            const res = await api.post('/auth/login', { email });
-            const { token, user } = res.data;
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user));
-            set({ token, user });
-        } catch (error) {
-            console.warn("Backend unreachable, switching to Demo Mode");
-            // Mock Login
-            const demoUser = { id: 'demo-user-id', email: email };
-            const demoToken = 'demo-token-mock';
-
-            localStorage.setItem('token', demoToken);
-            localStorage.setItem('user', JSON.stringify(demoUser));
-            set({ token: demoToken, user: demoUser });
-        }
+        const res = await api.post('/auth/login', { email });
+        const { token, user } = res.data;
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        set({ token, user });
     },
 
     logout: () => {
