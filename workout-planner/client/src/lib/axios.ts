@@ -71,7 +71,7 @@ api.interceptors.response.use(
             const dayId = url.split('/').pop();
             return {
                 data: {
-                    workout: {
+                    workoutDay: {
                         id: dayId,
                         title: 'Full Body Mock Workout',
                         exercises: mockExercises.map(ex => ({

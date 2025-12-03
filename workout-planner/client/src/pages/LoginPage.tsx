@@ -40,6 +40,18 @@ export function LoginPage() {
                     >
                         Sign In
                     </button>
+                    <div className="text-center mt-4">
+                        <p className="text-sm text-gray-600">
+                            Don't have an account?{' '}
+                            <button
+                                type="button"
+                                onClick={() => navigate('/onboarding')}
+                                className="text-blue-600 hover:underline"
+                            >
+                                Create Account
+                            </button>
+                        </p>
+                    </div>
                 </form>
             </div>
         </div>
