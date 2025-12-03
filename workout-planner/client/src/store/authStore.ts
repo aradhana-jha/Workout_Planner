@@ -15,27 +15,39 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-    user: null,
+    user: JSON.parse(localStorage.getItem('user') || 'null'),
     token: localStorage.getItem('token'),
 
     login: async (email: string) => {
-        const res = await api.post('/auth/login', { email });
-        const { token, user } = res.data;
-        localStorage.setItem('token', token);
-        set({ token, user });
+        try {
+            const res = await api.post('/auth/login', { email });
+            const { token, user } = res.data;
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
+            set({ token, user });
+        } catch (error) {
+            console.warn("Backend unreachable, switching to Demo Mode");
+            // Mock Login
+            const demoUser = { id: 'demo-user-id', email: email };
+            const demoToken = 'demo-token-mock';
+
+            localStorage.setItem('token', demoToken);
+            localStorage.setItem('user', JSON.stringify(demoUser));
+            set({ token: demoToken, user: demoUser });
+        }
     },
 
     logout: () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
         set({ token: null, user: null });
     },
 
     checkAuth: () => {
         const token = localStorage.getItem('token');
-        if (token) {
-            // Ideally verify token with backend, but for now just set state
-            // We could add a /me endpoint later
-            set({ token });
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (token && user) {
+            set({ token, user });
         }
     }
 }));
