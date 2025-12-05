@@ -12,8 +12,11 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// Mock Data Generator
-const generateMockPlan = () => {
+// Mock Data Helpers
+const getMockPlan = () => {
+    const stored = localStorage.getItem('demo_plan');
+    if (stored) return JSON.parse(stored);
+
     const days = [];
     for (let i = 1; i <= 30; i++) {
         days.push({
@@ -24,7 +27,19 @@ const generateMockPlan = () => {
             completedAt: null
         });
     }
-    return { id: 'mock-plan-id', days };
+    const plan = { id: 'mock-plan-id', days };
+    localStorage.setItem('demo_plan', JSON.stringify(plan));
+    return plan;
+};
+
+const updateMockDayComplete = (dayId: string) => {
+    const plan = getMockPlan();
+    const dayIndex = plan.days.findIndex((d: any) => d.id === dayId);
+    if (dayIndex !== -1) {
+        plan.days[dayIndex].isCompleted = true;
+        plan.days[dayIndex].completedAt = new Date().toISOString();
+        localStorage.setItem('demo_plan', JSON.stringify(plan));
+    }
 };
 
 const mockExercises = [
@@ -33,8 +48,8 @@ const mockExercises = [
     { id: 'ex-1', name: 'Push Ups', sets: 3, reps: 10, type: 'strength' },
     { id: 'ex-2', name: 'Squats', sets: 3, reps: 15, type: 'strength' },
     { id: 'ex-3', name: 'Plank', sets: 3, reps: 60, type: 'core' },
-    { id: 'ex-stretch-1', name: 'Cobra Stretch', sets: 2, reps: 30, type: 'stretching' }, // seconds
-    { id: 'ex-stretch-2', name: 'Child\'s Pose', sets: 2, reps: 30, type: 'stretching' }, // seconds
+    { id: 'ex-stretch-1', name: 'Cobra Stretch', sets: 2, reps: 30, type: 'stretching' },
+    { id: 'ex-stretch-2', name: 'Child\'s Pose', sets: 2, reps: 30, type: 'stretching' },
 ];
 
 // Global Response Interceptor for Demo Mode
@@ -67,7 +82,7 @@ api.interceptors.response.use(
 
         // 3. Mock Fetch Plan
         if (url.includes('/workout/plan/current') && method === 'get') {
-            return { data: { plan: generateMockPlan() } };
+            return { data: { plan: getMockPlan() } };
         }
 
         // 4. Mock Log Set (Mark as Done)
@@ -116,6 +131,8 @@ api.interceptors.response.use(
 
         // 6. Mock Complete Workout
         if (url.includes('/complete') && method === 'post') {
+            const dayId = url.split('/')[3]; // /workout/day/day-1/complete -> day-1 is index 3
+            updateMockDayComplete(dayId);
             return { data: { success: true } };
         }
 

@@ -95,7 +95,7 @@ export function WorkoutPage() {
     };
 
     const handleCompleteWorkout = async () => {
-        if (!confirm('Are you sure you want to complete this workout?')) return;
+        // if (!confirm('Are you sure you want to complete this workout?')) return;
         setCompleting(true);
         try {
             await api.post(`/workout/day/${dayId}/complete`);
