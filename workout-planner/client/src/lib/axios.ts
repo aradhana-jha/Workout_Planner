@@ -28,9 +28,13 @@ const generateMockPlan = () => {
 };
 
 const mockExercises = [
-    { id: 'ex-1', name: 'Push Ups', sets: 3, reps: 10 },
-    { id: 'ex-2', name: 'Squats', sets: 3, reps: 15 },
-    { id: 'ex-3', name: 'Plank', sets: 3, reps: 60 }, // seconds
+    { id: 'ex-warmup-1', name: 'Jumping Jacks', sets: 2, reps: 30, type: 'warmup' },
+    { id: 'ex-warmup-2', name: 'Arm Circles', sets: 2, reps: 20, type: 'warmup' },
+    { id: 'ex-1', name: 'Push Ups', sets: 3, reps: 10, type: 'strength' },
+    { id: 'ex-2', name: 'Squats', sets: 3, reps: 15, type: 'strength' },
+    { id: 'ex-3', name: 'Plank', sets: 3, reps: 60, type: 'core' },
+    { id: 'ex-stretch-1', name: 'Cobra Stretch', sets: 2, reps: 30, type: 'stretching' }, // seconds
+    { id: 'ex-stretch-2', name: 'Child\'s Pose', sets: 2, reps: 30, type: 'stretching' }, // seconds
 ];
 
 // Global Response Interceptor for Demo Mode
@@ -40,7 +44,7 @@ api.interceptors.response.use(
         console.warn("API Error (Demo Mode Active):", error.config?.url);
 
         // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 300));
 
         const url = error.config?.url || '';
         const method = error.config?.method || '';
@@ -66,7 +70,23 @@ api.interceptors.response.use(
             return { data: { plan: generateMockPlan() } };
         }
 
-        // 4. Mock Fetch Workout Details
+        // 4. Mock Log Set (Mark as Done)
+        if (url.includes('/log') && method === 'post') {
+            const data = JSON.parse(error.config.data);
+            return {
+                data: {
+                    log: {
+                        id: `mock-log-${Date.now()}`,
+                        setNumber: data.setNumber,
+                        reps: data.reps,
+                        weight: data.weight,
+                        isDone: true
+                    }
+                }
+            };
+        }
+
+        // 5. Mock Fetch Workout Details
         if (url.includes('/workout/') && !url.includes('/complete') && method === 'get') {
             const dayId = url.split('/').pop();
             return {
@@ -76,16 +96,25 @@ api.interceptors.response.use(
                         title: 'Full Body Mock Workout',
                         exercises: mockExercises.map(ex => ({
                             id: ex.id,
-                            exercise: { name: ex.name, description: 'Mock description', videoUrl: null },
+                            exerciseId: ex.id,
+                            exercise: {
+                                id: ex.id,
+                                name: ex.name,
+                                description: 'Mock description for demo.',
+                                videoUrl: null,
+                                difficulty: 'beginner',
+                                muscleGroup: 'full_body'
+                            },
                             targetSets: ex.sets,
-                            targetReps: ex.reps
+                            targetReps: ex.reps,
+                            logs: []
                         }))
                     }
                 }
             };
         }
 
-        // 5. Mock Complete Workout
+        // 6. Mock Complete Workout
         if (url.includes('/complete') && method === 'post') {
             return { data: { success: true } };
         }
