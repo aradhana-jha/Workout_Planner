@@ -30,19 +30,28 @@ export class PlanGenerator {
         // 3. Generate 30 Days
         for (let day = 1; day <= 30; day++) {
             const isRestDay = day % 4 === 0;
+            const focus = isRestDay ? 'Rest & Recovery' : this.getDayFocus(day, profile.goal);
 
             const workoutDay = await prisma.workoutDay.create({
                 data: {
                     planId: plan.id,
                     dayNumber: day,
-                    title: isRestDay ? 'Rest & Recovery' : `Day ${day}: ${this.getDayTitle(profile.goal)}`,
+                    title: `Day ${day}: ${focus}`,
                     isCompleted: false,
                 },
             });
 
             if (!isRestDay) {
-                // Select 5 random exercises
-                const dailyExercises = this.shuffle(targetExercises).slice(0, 5);
+                // Get target muscle groups for this day
+                const targetMuscles = this.getMusclesForDay(day);
+
+                // Filter exercises that match the target muscles
+                // Fallback to all targetExercises if no specific match found (rare)
+                const dailyPool = targetExercises.filter(e => targetMuscles.includes(e.muscleGroup));
+                const finalPool = dailyPool.length > 0 ? dailyPool : targetExercises;
+
+                // Select up to 6 random exercises from the focused pool
+                const dailyExercises = this.shuffle(finalPool).slice(0, 6);
 
                 for (const exercise of dailyExercises) {
                     await prisma.workoutExercise.create({
@@ -58,6 +67,22 @@ export class PlanGenerator {
         }
 
         return plan;
+    }
+
+    private getDayFocus(day: number, goal: string): string {
+        const cycle = day % 4;
+        if (cycle === 1) return 'Push (Chest/Tri/Shoulders)';
+        if (cycle === 2) return 'Pull (Back/Biceps)';
+        if (cycle === 3) return 'Legs & Core';
+        return 'Rest';
+    }
+
+    private getMusclesForDay(day: number): string[] {
+        const cycle = day % 4;
+        if (cycle === 1) return ['chest', 'triceps', 'shoulders', 'push'];
+        if (cycle === 2) return ['back', 'biceps', 'pull'];
+        if (cycle === 3) return ['legs', 'quads', 'hamstrings', 'calves', 'glutes', 'core'];
+        return [];
     }
 
     private getDayTitle(goal: string): string {
