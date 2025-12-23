@@ -14,11 +14,33 @@ router.get('/plan/current', authMiddleware, async (req: Request, res: Response):
         include: {
             days: {
                 orderBy: { dayNumber: 'asc' },
-                select: { id: true, dayNumber: true, title: true, isCompleted: true, completedAt: true }
+                select: {
+                    id: true,
+                    dayNumber: true,
+                    weekNumber: true,
+                    dayType: true,
+                    estimatedMinutes: true,
+                    isOptional: true,
+                    isCompleted: true,
+                    completedAt: true
+                }
             }
         }
     });
-    res.json({ plan });
+
+    // Transform to include a title for backwards compatibility
+    if (plan) {
+        const transformedPlan = {
+            ...plan,
+            days: plan.days.map(day => ({
+                ...day,
+                title: day.dayType === "Rest" ? "Rest Day" : `${day.dayType} (${day.estimatedMinutes} min)`
+            }))
+        };
+        res.json({ plan: transformedPlan });
+    } else {
+        res.json({ plan: null });
+    }
 });
 
 // Get Workout Day Details
@@ -28,6 +50,7 @@ router.get('/day/:dayId', authMiddleware, async (req: Request, res: Response): P
         where: { id: dayId },
         include: {
             exercises: {
+                orderBy: { sortOrder: 'asc' },
                 include: {
                     exercise: true,
                     logs: { orderBy: { setNumber: 'asc' } }
@@ -35,7 +58,17 @@ router.get('/day/:dayId', authMiddleware, async (req: Request, res: Response): P
             }
         }
     });
-    res.json({ workoutDay });
+
+    if (workoutDay) {
+        // Add title for backwards compatibility
+        const transformedDay = {
+            ...workoutDay,
+            title: workoutDay.dayType === "Rest" ? "Rest Day" : `Day ${workoutDay.dayNumber}: ${workoutDay.dayType}`
+        };
+        res.json({ workoutDay: transformedDay });
+    } else {
+        res.json({ workoutDay: null });
+    }
 });
 
 // Log Set

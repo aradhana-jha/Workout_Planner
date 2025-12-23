@@ -10,7 +10,7 @@ datasource db {
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
-  passwordHash String?  // Optional since we might do passwordless or just email
+  passwordHash String?
   createdAt    DateTime @default(now())
   
   profile      Profile?
@@ -18,27 +18,95 @@ model User {
 }
 
 model Profile {
-  id            String @id @default(uuid())
-  userId        String @unique
-  user          User   @relation(fields: [userId], references: [id])
+  id                      String   @id @default(uuid())
+  userId                  String   @unique
+  user                    User     @relation(fields: [userId], references: [id])
   
-  age           Int
-  gender        String
-  weight        Float
-  targetWeight  Float
-  goal          String // lose_fat, build_muscle, stay_active
-  activityLevel String // sedentary, moderate, active
+  // Q1: Goal
+  goal                    String   // "Lose body fat", "Build muscle", "Get stronger", "Improve stamina", "Improve mobility", "General fitness"
+  
+  // Q2: Equipment (JSON array)
+  equipment               String   // JSON: ["No equipment", "Dumbbells", ...]
+  
+  // Q3: Time per workout
+  timePerWorkout          Int      // 15, 25, 40, 60
+  
+  // Q4: Experience level
+  experienceLevel         String   // "beginner", "some experience", "intermediate", "advanced"
+  
+  // Q5: Recent consistency
+  recentConsistency       String   // "0 days per week", "1-2 days per week", "3-4 days per week", "5+ days per week"
+  
+  // Q6: Pain areas (JSON array)
+  painAreas               String   // JSON: ["None", "Knees", "Lower back", ...]
+  
+  // Q7: Movement restrictions (JSON array)
+  movementRestrictions    String   // JSON: ["Squatting down is difficult", ...]
+  
+  // Q8: Workout style preference
+  workoutStylePreference  String   // "Mostly strength training", "Mostly cardio", "Mix of both", "Decide for me"
+  
+  // Q9: Focus areas (JSON array, max 2)
+  focusAreas              String   // JSON: ["Core", "Glutes and legs", ...]
+  
+  // Q10: Intensity preference
+  intensityPreference     String   // "Easy", "Moderate", "Hard"
+  
+  // Q11: Starting abilities (optional)
+  startingAbilityPushups  String?  // "0", "1-5", "6-15", "16+"
+  startingAbilitySquats   String?  // "0-10", "11-25", "26-50", "50+"
+  startingAbilityPlank    String?  // "under 20 seconds", "20-45", "45-90", "90+"
+  
+  // Q12: Sleep
+  sleepBucket             String   // "Under 6 hours", "6-7 hours", "7-8 hours", "8+ hours"
+  
+  // Q13: Preference exclusions (JSON array)
+  preferenceExclusions    String   // JSON: ["Running", "Jumping", "Burpees", ...]
 }
 
 model Exercise {
-  id          String @id @default(uuid())
-  name        String
-  description String
-  videoUrl    String?
-  difficulty  String // beginner, intermediate, advanced
-  muscleGroup String // chest, legs, core, full_body
+  id                       String   @id @default(uuid())
+  externalId               String?  @unique
+  name                     String
+  description              String?
+  videoUrl                 String?
   
-  workoutExercises WorkoutExercise[]
+  // Difficulty range
+  difficultyMin            String   // "beginner", "some experience", "intermediate", "advanced"
+  difficultyMax            String
+  
+  // Equipment (JSON array)
+  equipmentTags            String   // JSON: ["No equipment", "Dumbbells"]
+  
+  // Type
+  workoutType              String   // "Strength training", "Conditioning", "Mobility and recovery"
+  
+  // Movement pattern
+  movementPattern          String   // "Squat", "Hinge", "Lunge", "Push", "Pull", "Core", "Cardio", etc.
+  
+  // Focus areas (JSON array)
+  focusAreaTags            String   // JSON: ["Core", "Glutes and legs"]
+  
+  // Impact level
+  impactLevel              String   // "low", "medium", "high"
+  
+  // Avoid/Modify flags (JSON array) - pain areas that should avoid this exercise
+  avoidModifyFlags         String   // JSON: ["Knees", "Lower back", "Shoulders"]
+  
+  // Preference exclusion flags (JSON array)
+  preferenceExclusionFlags String   // JSON: ["Running", "Jumping", "Burpees"]
+  
+  // Phase tags (JSON array)
+  phaseTags                String   // JSON: ["Stretching", "Main exercise", "Cool off"]
+  
+  // Variation links
+  easierVariationId        String?
+  harderVariationId        String?
+  
+  // Notes for coaching cues
+  notes                    String?
+  
+  workoutExercises         WorkoutExercise[]
 }
 
 model Plan {
@@ -53,30 +121,42 @@ model Plan {
 }
 
 model WorkoutDay {
-  id          String    @id @default(uuid())
-  planId      String
-  plan        Plan      @relation(fields: [planId], references: [id])
+  id               String    @id @default(uuid())
+  planId           String
+  plan             Plan      @relation(fields: [planId], references: [id])
   
-  dayNumber   Int
-  title       String
-  isCompleted Boolean   @default(false)
-  completedAt DateTime?
+  dayNumber        Int       // 1-30
+  weekNumber       Int       // 1-4
+  dayType          String    // "Strength Lower Focus", "Strength Upper Focus", "Conditioning Core Mobility", "Strength Balanced Posture", "Rest"
   
-  exercises   WorkoutExercise[]
+  isOptional       Boolean   @default(false)  // For the 2 recovery days
+  estimatedMinutes Int
+  
+  isCompleted      Boolean   @default(false)
+  completedAt      DateTime?
+  
+  exercises        WorkoutExercise[]
 }
 
 model WorkoutExercise {
-  id           String   @id @default(uuid())
-  workoutDayId String
-  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id])
+  id                String       @id @default(uuid())
+  workoutDayId      String
+  workoutDay        WorkoutDay   @relation(fields: [workoutDayId], references: [id])
   
-  exerciseId   String
-  exercise     Exercise   @relation(fields: [exerciseId], references: [id])
+  exerciseId        String
+  exercise          Exercise     @relation(fields: [exerciseId], references: [id])
   
-  targetSets   Int
-  targetReps   Int
+  role              String       // "warm-up", "main", "accessory", "conditioning", "mobility", "cool-off"
   
-  logs         ExerciseLog[]
+  targetSets        Int?
+  targetReps        Int?
+  targetSeconds     Int?         // For holds and timed exercises
+  targetRestSeconds Int?
+  
+  sortOrder         Int          // Order within the day
+  notes             String?
+  
+  logs              ExerciseLog[]
 }
 
 model ExerciseLog {
