@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -23,45 +23,45 @@ model Profile {
   user                    User     @relation(fields: [userId], references: [id])
   
   // Q1: Goal
-  goal                    String   // "Lose body fat", "Build muscle", "Get stronger", "Improve stamina", "Improve mobility", "General fitness"
+  goal                    String
   
   // Q2: Equipment (JSON array)
-  equipment               String   // JSON: ["No equipment", "Dumbbells", ...]
+  equipment               String
   
   // Q3: Time per workout
-  timePerWorkout          Int      // 15, 25, 40, 60
+  timePerWorkout          Int
   
   // Q4: Experience level
-  experienceLevel         String   // "beginner", "some experience", "intermediate", "advanced"
+  experienceLevel         String
   
   // Q5: Recent consistency
-  recentConsistency       String   // "0 days per week", "1-2 days per week", "3-4 days per week", "5+ days per week"
+  recentConsistency       String
   
   // Q6: Pain areas (JSON array)
-  painAreas               String   // JSON: ["None", "Knees", "Lower back", ...]
+  painAreas               String
   
   // Q7: Movement restrictions (JSON array)
-  movementRestrictions    String   // JSON: ["Squatting down is difficult", ...]
+  movementRestrictions    String
   
   // Q8: Workout style preference
-  workoutStylePreference  String   // "Mostly strength training", "Mostly cardio", "Mix of both", "Decide for me"
+  workoutStylePreference  String
   
-  // Q9: Focus areas (JSON array, max 2)
-  focusAreas              String   // JSON: ["Core", "Glutes and legs", ...]
+  // Q9: Focus areas (JSON array)
+  focusAreas              String
   
   // Q10: Intensity preference
-  intensityPreference     String   // "Easy", "Moderate", "Hard"
+  intensityPreference     String
   
   // Q11: Starting abilities (optional)
-  startingAbilityPushups  String?  // "0", "1-5", "6-15", "16+"
-  startingAbilitySquats   String?  // "0-10", "11-25", "26-50", "50+"
-  startingAbilityPlank    String?  // "under 20 seconds", "20-45", "45-90", "90+"
+  startingAbilityPushups  String?
+  startingAbilitySquats   String?
+  startingAbilityPlank    String?
   
   // Q12: Sleep
-  sleepBucket             String   // "Under 6 hours", "6-7 hours", "7-8 hours", "8+ hours"
+  sleepBucket             String
   
   // Q13: Preference exclusions (JSON array)
-  preferenceExclusions    String   // JSON: ["Running", "Jumping", "Burpees", ...]
+  preferenceExclusions    String
 }
 
 model Exercise {
@@ -71,39 +71,19 @@ model Exercise {
   description              String?
   videoUrl                 String?
   
-  // Difficulty range
-  difficultyMin            String   // "beginner", "some experience", "intermediate", "advanced"
+  difficultyMin            String
   difficultyMax            String
+  equipmentTags            String
+  workoutType              String
+  movementPattern          String
+  focusAreaTags            String
+  impactLevel              String
+  avoidModifyFlags         String
+  preferenceExclusionFlags String
+  phaseTags                String
   
-  // Equipment (JSON array)
-  equipmentTags            String   // JSON: ["No equipment", "Dumbbells"]
-  
-  // Type
-  workoutType              String   // "Strength training", "Conditioning", "Mobility and recovery"
-  
-  // Movement pattern
-  movementPattern          String   // "Squat", "Hinge", "Lunge", "Push", "Pull", "Core", "Cardio", etc.
-  
-  // Focus areas (JSON array)
-  focusAreaTags            String   // JSON: ["Core", "Glutes and legs"]
-  
-  // Impact level
-  impactLevel              String   // "low", "medium", "high"
-  
-  // Avoid/Modify flags (JSON array) - pain areas that should avoid this exercise
-  avoidModifyFlags         String   // JSON: ["Knees", "Lower back", "Shoulders"]
-  
-  // Preference exclusion flags (JSON array)
-  preferenceExclusionFlags String   // JSON: ["Running", "Jumping", "Burpees"]
-  
-  // Phase tags (JSON array)
-  phaseTags                String   // JSON: ["Stretching", "Main exercise", "Cool off"]
-  
-  // Variation links
   easierVariationId        String?
   harderVariationId        String?
-  
-  // Notes for coaching cues
   notes                    String?
   
   workoutExercises         WorkoutExercise[]
@@ -115,7 +95,7 @@ model Plan {
   user      User     @relation(fields: [userId], references: [id])
   
   startDate DateTime @default(now())
-  status    String   @default("active") // active, completed
+  status    String   @default("active")
   
   days      WorkoutDay[]
 }
@@ -125,11 +105,11 @@ model WorkoutDay {
   planId           String
   plan             Plan      @relation(fields: [planId], references: [id])
   
-  dayNumber        Int       // 1-30
-  weekNumber       Int       // 1-4
-  dayType          String    // "Strength Lower Focus", "Strength Upper Focus", "Conditioning Core Mobility", "Strength Balanced Posture", "Rest"
+  dayNumber        Int
+  weekNumber       Int
+  dayType          String
   
-  isOptional       Boolean   @default(false)  // For the 2 recovery days
+  isOptional       Boolean   @default(false)
   estimatedMinutes Int
   
   isCompleted      Boolean   @default(false)
@@ -146,14 +126,14 @@ model WorkoutExercise {
   exerciseId        String
   exercise          Exercise     @relation(fields: [exerciseId], references: [id])
   
-  role              String       // "warm-up", "main", "accessory", "conditioning", "mobility", "cool-off"
+  role              String
   
   targetSets        Int?
   targetReps        Int?
-  targetSeconds     Int?         // For holds and timed exercises
+  targetSeconds     Int?
   targetRestSeconds Int?
   
-  sortOrder         Int          // Order within the day
+  sortOrder         Int
   notes             String?
   
   logs              ExerciseLog[]

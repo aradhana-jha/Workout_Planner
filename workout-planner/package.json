@@ -1,16 +1,23 @@
 {
   "name": "workout-planner",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix client\" \"npm run dev --prefix server\"",
-    "install:all": "npm install && npm install --prefix client && npm install --prefix server"
+    "build": "cd client && npm run build",
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
+    "prisma:generate": "cd server && npx prisma generate",
+    "postinstall": "cd server && npx prisma generate"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "@vercel/node": "^3.0.0",
+    "jsonwebtoken": "^9.0.2"
+  },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.0.0",
+    "concurrently": "^8.2.2",
+    "prisma": "^5.22.0",
+    "typescript": "^5.3.0"
   }
 }

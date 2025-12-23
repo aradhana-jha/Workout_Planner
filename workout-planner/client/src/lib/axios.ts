@@ -1,8 +1,17 @@
 import axios from 'axios';
 import { MUSCLE_GAIN_PLAN } from './customPlan';
 
+// Use environment variable if set, otherwise detect if on Vercel (no localhost) or local
+const getBaseUrl = () => {
+    if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+    if (typeof window !== 'undefined' && !window.location.host.includes('localhost')) {
+        return '/api'; // Vercel - use relative path
+    }
+    return 'http://localhost:3000/api'; // Local development
+};
+
 export const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+    baseURL: getBaseUrl(),
 });
 
 api.interceptors.request.use((config) => {
