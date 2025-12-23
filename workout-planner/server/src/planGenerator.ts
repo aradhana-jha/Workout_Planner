@@ -317,10 +317,11 @@ export class PlanGenerator {
         }
     }
 
-    private getPrescription(ex: Exercise, profile: Profile, week: number, dayType: DayType) {
+    private getPrescription(ex: Exercise & { role?: string }, profile: Profile, week: number, dayType: DayType) {
         const exp = profile.experienceLevel.toLowerCase();
         const isCoreHold = ex.movementPattern === "Core" && !ex.name.toLowerCase().includes("crunch");
         const isMobility = ex.workoutType === "Mobility and recovery";
+        const isConditioning = ex.workoutType === "Conditioning" || ex.role === "conditioning";
 
         let sets = 3, reps: number | null = 10, seconds: number | null = null, rest = 60;
 
@@ -336,7 +337,7 @@ export class PlanGenerator {
         }
 
         if (isMobility) { sets = 1; reps = null; seconds = 45; rest = 0; }
-        if (ex.workoutType === "Conditioning" || ex.role === "conditioning") {
+        if (isConditioning) {
             sets = 4; reps = null;
             const int = profile.intensityPreference;
             seconds = int === "Easy" ? 20 : (int === "Moderate" ? 30 : 40);
