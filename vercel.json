@@ -1,9 +1,15 @@
 {
     "version": 2,
-    "buildCommand": "npx prisma generate --schema=./workout-planner/server/prisma/schema.prisma && cd workout-planner/client && npm install && npm run build",
+    "buildCommand": "npm install && npx prisma generate --schema=./workout-planner/server/prisma/schema.prisma && cd workout-planner/client && npm install && npm run build",
     "outputDirectory": "workout-planner/client/dist",
-    "installCommand": "npm install && cd workout-planner && npm install && cd client && npm install && cd ../server && npm install",
+    "installCommand": "npm install",
     "framework": null,
+    "functions": {
+        "api/**/*.ts": {
+            "runtime": "@vercel/node@3",
+            "includeFiles": "workout-planner/server/prisma/**/*,lib/**/*"
+        }
+    },
     "rewrites": [
         {
             "source": "/api/:path*",
@@ -13,10 +19,5 @@
             "source": "/((?!api).*)",
             "destination": "/index.html"
         }
-    ],
-    "functions": {
-        "api/**/*.ts": {
-            "runtime": "@vercel/node@3"
-        }
-    }
+    ]
 }
