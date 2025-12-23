@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../lib/axios';
 
 export function LoginPage() {
     const [email, setEmail] = useState('');
@@ -12,7 +13,18 @@ export function LoginPage() {
         e.preventDefault();
         try {
             await login(email);
-            navigate('/dashboard');
+            // Check if user has an active plan
+            try {
+                const res = await api.get('/workout/plan/current');
+                if (res.data.plan) {
+                    navigate('/dashboard');
+                } else {
+                    navigate('/onboarding');
+                }
+            } catch {
+                // No plan exists, redirect to onboarding
+                navigate('/onboarding');
+            }
         } catch (err) {
             setError('Login failed. Please try again.');
         }
