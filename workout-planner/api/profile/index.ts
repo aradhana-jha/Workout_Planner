@@ -63,7 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
 
             // Import plan generator and generate plan
-            const { PlanGenerator } = await import('../../server/src/planGenerator');
+            const { PlanGenerator } = await import('../../lib/planGenerator');
             const generator = new PlanGenerator();
             const plan = await generator.generate(user.userId, profile);
 
