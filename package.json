@@ -3,8 +3,9 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "build": "cd workout-planner/client && npm run build",
-        "prisma:generate": "npx prisma generate --schema=./workout-planner/server/prisma/schema.prisma"
+        "build": "npx prisma generate --schema=./workout-planner/server/prisma/schema.prisma && cd workout-planner/client && npm run build",
+        "prisma:generate": "npx prisma generate --schema=./workout-planner/server/prisma/schema.prisma",
+        "postinstall": "npx prisma generate --schema=./workout-planner/server/prisma/schema.prisma"
     },
     "dependencies": {
         "@prisma/client": "^5.22.0",
