@@ -1,0 +1,20 @@
+{
+    "name": "workout-planner-root",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "cd workout-planner/client && npm run build",
+        "prisma:generate": "npx prisma generate --schema=./workout-planner/server/prisma/schema.prisma"
+    },
+    "dependencies": {
+        "@prisma/client": "^5.22.0",
+        "@vercel/node": "^3.0.0",
+        "jsonwebtoken": "^9.0.2"
+    },
+    "devDependencies": {
+        "@types/jsonwebtoken": "^9.0.5",
+        "@types/node": "^20.0.0",
+        "prisma": "^5.22.0",
+        "typescript": "^5.3.0"
+    }
+}
