@@ -32,53 +32,100 @@ async function main() {
 
     for (const row of rows) {
         try {
+            // Build equipment tags from individual columns
+            const equipmentTags = [];
+            if (row['No equipment'] === 'Yes') equipmentTags.push('No equipment');
+            if (row['Resistance bands'] === 'Yes') equipmentTags.push('Resistance bands');
+            if (row['Dumbbells'] === 'Yes') equipmentTags.push('Dumbbells');
+            if (row['Kettlebell'] === 'Yes') equipmentTags.push('Kettlebell');
+            if (row['Barbell and weight plates'] === 'Yes') equipmentTags.push('Barbell and weight plates');
+            if (row['Pull-up bar'] === 'Yes') equipmentTags.push('Pull-up bar');
+            if (row['Bench'] === 'Yes') equipmentTags.push('Bench');
+            if (row['Cardio machine'] === 'Yes') equipmentTags.push('Cardio machine');
+
+            // If no equipment specified, default to "No equipment"
+            if (equipmentTags.length === 0) {
+                equipmentTags.push('No equipment');
+            }
+
+            // Build preference exclusion flags
+            const preferenceExclusionFlags = [];
+            if (row['Avoid running'] === 'Yes') preferenceExclusionFlags.push('Running');
+            if (row['Avoid jumping'] === 'Yes') preferenceExclusionFlags.push('Jumping');
+            if (row['Avoid burpees'] === 'Yes') preferenceExclusionFlags.push('Burpees');
+            if (row['Avoid long workouts'] === 'Yes') preferenceExclusionFlags.push('Long workouts');
+            if (row['Avoid heavy lifting'] === 'Yes') preferenceExclusionFlags.push('Heavy lifting');
+
+            // Build phase tags
+            const phaseTags = [];
+            if (row['Stretching tag'] === 'Yes') phaseTags.push('Stretching');
+            if (row['Main exercise tag'] === 'Yes') phaseTags.push('Main exercise');
+            if (row['Cool off tag'] === 'Yes') phaseTags.push('Cool off');
+
+            // Parse avoid/modify notes for pain areas
+            const avoidModifyFlags = [];
+            const avoidNotes = (row['Avoid or modify notes'] || '').toLowerCase();
+            if (avoidNotes.includes('lower back') || avoidNotes.includes('back')) avoidModifyFlags.push('Lower back');
+            if (avoidNotes.includes('knee')) avoidModifyFlags.push('Knees');
+            if (avoidNotes.includes('shoulder')) avoidModifyFlags.push('Shoulders');
+            if (avoidNotes.includes('neck')) avoidModifyFlags.push('Neck');
+            if (avoidNotes.includes('wrist')) avoidModifyFlags.push('Wrists');
+            if (avoidNotes.includes('ankle')) avoidModifyFlags.push('Ankles');
+
+            // Parse focus areas
+            const focusAreas = (row['Focus areas'] || '')
+                .split(',')
+                .map(f => f.trim())
+                .filter(f => f.length > 0);
+
             // Map Excel columns to database fields
             const exercise = {
                 externalId: row['Exercise ID'] || null,
-                name: row['Exercise Name'] || 'Unknown Exercise',
-                description: row['Notes'] || row['Description'] || null,
+                name: row['Exercise name'] || 'Unknown Exercise',
+                description: row['Coaching notes'] || null,
                 videoUrl: null,
 
                 // Difficulty range
-                difficultyMin: (row['Difficulty Min'] || 'beginner').toLowerCase(),
-                difficultyMax: (row['Difficulty Max'] || 'advanced').toLowerCase(),
+                difficultyMin: (row['Minimum experience level'] || 'beginner').toLowerCase(),
+                difficultyMax: (row['Maximum experience level'] || 'advanced').toLowerCase(),
 
-                // Equipment - parse semicolon-separated values into JSON array
-                equipmentTags: JSON.stringify(parseMultiValue(row['Equipment Tags'])),
+                // Equipment
+                equipmentTags: JSON.stringify(equipmentTags),
 
                 // Type
-                workoutType: row['Workout Type'] || 'Strength training',
+                workoutType: row['Workout type'] || 'Strength training',
 
                 // Movement pattern
-                movementPattern: row['Movement Pattern'] || 'General',
+                movementPattern: row['Movement pattern'] || 'General',
 
                 // Focus areas
-                focusAreaTags: JSON.stringify(parseMultiValue(row['Focus Area Tags'])),
+                focusAreaTags: JSON.stringify(focusAreas),
 
                 // Impact level
-                impactLevel: (row['Impact Level'] || 'low').toLowerCase(),
+                impactLevel: (row['Impact level'] || 'low').toLowerCase(),
 
-                // Avoid/Modify flags - pain areas that should avoid this exercise
-                avoidModifyFlags: JSON.stringify(parseMultiValue(row['Avoid/Modify Flags'])),
+                // Avoid/Modify flags
+                avoidModifyFlags: JSON.stringify(avoidModifyFlags),
 
                 // Preference exclusion flags
-                preferenceExclusionFlags: JSON.stringify(parseMultiValue(row['Preference Exclusion Flags'])),
+                preferenceExclusionFlags: JSON.stringify(preferenceExclusionFlags),
 
                 // Phase tags
-                phaseTags: JSON.stringify(parseMultiValue(row['Phase Tags'])),
+                phaseTags: JSON.stringify(phaseTags),
 
                 // Variation links
-                easierVariationId: row['Easier Variation ID'] || null,
-                harderVariationId: row['Harder Variation ID'] || null,
+                easierVariationId: row['Easier variation exercise ID'] || null,
+                harderVariationId: row['Harder variation exercise ID'] || null,
 
                 // Notes
-                notes: row['Notes'] || null,
+                notes: row['Coaching notes'] || null,
             };
 
             await prisma.exercise.create({ data: exercise });
             successCount++;
+            console.log(`  ✓ Imported: ${exercise.name}`);
         } catch (error) {
-            console.error(`Error importing exercise "${row['Exercise Name']}":`, error.message);
+            console.error(`  ✗ Error importing exercise "${row['Exercise name']}":`, error.message);
             errorCount++;
         }
     }
@@ -86,15 +133,6 @@ async function main() {
     console.log(`\nIngestion complete!`);
     console.log(`Successfully imported: ${successCount} exercises`);
     console.log(`Errors: ${errorCount}`);
-}
-
-/**
- * Parse multi-value fields (semicolon-separated) into an array
- */
-function parseMultiValue(value) {
-    if (!value) return [];
-    if (typeof value !== 'string') return [String(value)];
-    return value.split(';').map(v => v.trim()).filter(v => v.length > 0);
 }
 
 main()
