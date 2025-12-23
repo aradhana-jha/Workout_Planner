@@ -1,6 +1,6 @@
 {
     "version": 2,
-    "buildCommand": "cd client && npm install && npm run build",
+    "buildCommand": "npx prisma generate --schema=./server/prisma/schema.prisma && cd client && npm install && npm run build",
     "outputDirectory": "client/dist",
     "installCommand": "npm install && cd client && npm install && cd ../server && npm install",
     "framework": null,
@@ -8,15 +8,15 @@
         {
             "source": "/api/:path*",
             "destination": "/api/:path*"
+        },
+        {
+            "source": "/((?!api).*)",
+            "destination": "/index.html"
         }
     ],
     "functions": {
         "api/**/*.ts": {
             "runtime": "@vercel/node@3"
         }
-    },
-    "env": {
-        "DATABASE_URL": "@database_url",
-        "JWT_SECRET": "@jwt_secret"
     }
 }
