@@ -18,65 +18,96 @@ model User {
 }
 
 model Profile {
-  id            String @id @default(uuid())
-  userId        String @unique
-  user          User   @relation(fields: [userId], references: [id])
+  id                        String   @id @default(uuid())
+  userId                    String   @unique
+  user                      User     @relation(fields: [userId], references: [id])
   
-  age           Int
-  gender        String
-  weight        Float
-  targetWeight  Float
-  goal          String // lose_fat, build_muscle, stay_active
-  activityLevel String // sedentary, moderate, active
+  goal                      String
+  equipment                 String   // JSON array stringified
+  timePerWorkout            Int
+  experienceLevel           String
+  recentConsistency         String
+  painAreas                 String   // JSON array stringified
+  movementRestrictions      String   // JSON array stringified
+  workoutStylePreference    String
+  focusAreas                String   // JSON array stringified
+  intensityPreference       String
+  startingAbilityPushups    String?
+  startingAbilitySquats     String?
+  startingAbilityPlank      String?
+  sleepBucket               String
+  preferenceExclusions      String   // JSON array stringified
 }
 
 model Exercise {
-  id          String @id @default(uuid())
-  name        String
-  description String
-  videoUrl    String?
-  difficulty  String // beginner, intermediate, advanced
-  muscleGroup String // chest, legs, core, full_body
+  id                       String   @id @default(uuid())
+  externalId               String?  // The EX001 ID from Excel
+  name                     String
+  description             String?
+  videoUrl                 String?
+  difficultyMin           String   // beginner, some, intermediate, advanced
+  difficultyMax           String
   
-  workoutExercises WorkoutExercise[]
+  equipmentTags           String   // JSON array stringified
+  workoutType             String   // strength, cardio, mobility, recovery
+  movementPattern         String   // squat, hinge, lunge, push, pull, core, posture, conditioning, mobility
+  focusAreaTags           String   // JSON array stringified
+  impactLevel             String   // low, high
+  avoidModifyFlags        String   // JSON array stringified (e.g., ["knees", "back"])
+  preferenceExclusionFlags String   // JSON array stringified (e.g., ["running", "jumping"])
+  phaseTags               String   // JSON array stringified (e.g., ["Stretching", "Main exercise", "Cool off"])
+  
+  easierVariationId       String?
+  harderVariationId       String?
+  notes                   String?
+  
+  workoutExercises        WorkoutExercise[]
 }
 
 model Plan {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  createdAt         DateTime @default(now())
+  startDate         DateTime @default(now())
+  status            String   @default("active") // active, completed
   
-  startDate DateTime @default(now())
-  status    String   @default("active") // active, completed
-  
-  days      WorkoutDay[]
+  days              WorkoutDay[]
 }
 
 model WorkoutDay {
-  id          String    @id @default(uuid())
-  planId      String
-  plan        Plan      @relation(fields: [planId], references: [id])
+  id                String    @id @default(uuid())
+  planId            String
+  plan              Plan      @relation(fields: [planId], references: [id])
   
-  dayNumber   Int
-  title       String
-  isCompleted Boolean   @default(false)
-  completedAt DateTime?
+  dayNumber         Int       // 1-30
+  weekNumber        Int       // 1-4
+  dayType           String    // e.g., "Strength Lower Focus"
+  isOptional        Boolean   @default(false)
   
-  exercises   WorkoutExercise[]
+  estimatedMinutes  Int
+  isCompleted       Boolean   @default(false)
+  completedAt       DateTime?
+  
+  exercises         WorkoutExercise[]
 }
 
 model WorkoutExercise {
-  id           String   @id @default(uuid())
-  workoutDayId String
-  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id])
+  id                String   @id @default(uuid())
+  workoutDayId      String
+  workoutDay        WorkoutDay @relation(fields: [workoutDayId], references: [id])
   
-  exerciseId   String
-  exercise     Exercise   @relation(fields: [exerciseId], references: [id])
+  exerciseId        String
+  exercise          Exercise   @relation(fields: [exerciseId], references: [id])
   
-  targetSets   Int
-  targetReps   Int
+  role              String   // warm-up, main, accessory, conditioning, mobility, cool off
+  targetSets        Int?
+  targetReps        Int?
+  targetSeconds     Int?
+  targetRestSeconds Int?
+  sortOrder         Int      // Position in the workout
   
-  logs         ExerciseLog[]
+  logs              ExerciseLog[]
 }
 
 model ExerciseLog {
@@ -85,7 +116,8 @@ model ExerciseLog {
   workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id])
   
   setNumber         Int
-  reps              Int
+  reps              Int?
+  seconds           Int?
   weight            Float?
   isDone            Boolean @default(false)
 }

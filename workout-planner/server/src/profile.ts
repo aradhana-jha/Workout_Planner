@@ -9,12 +9,21 @@ const router = Router();
 const generator = new PlanGenerator();
 
 const profileSchema = z.object({
-    age: z.number().min(10).max(100),
-    gender: z.string(),
-    weight: z.number().positive(),
-    targetWeight: z.number().positive(),
-    goal: z.enum(['lose_fat', 'build_muscle', 'stay_active']),
-    activityLevel: z.enum(['sedentary', 'moderate', 'active']),
+    goal: z.string(),
+    equipment: z.array(z.string()),
+    timePerWorkout: z.number(),
+    experienceLevel: z.string(),
+    recentConsistency: z.string(),
+    painAreas: z.array(z.string()),
+    movementRestrictions: z.array(z.string()),
+    workoutStylePreference: z.string(),
+    focusAreas: z.array(z.string()),
+    intensityPreference: z.string(),
+    startingAbilityPushups: z.string().optional(),
+    startingAbilitySquats: z.string().optional(),
+    startingAbilityPlank: z.string().optional(),
+    sleepBucket: z.string(),
+    preferenceExclusions: z.array(z.string()),
 });
 
 // Get Profile
@@ -28,7 +37,25 @@ router.get('/', authMiddleware, async (req: Request, res: Response): Promise<voi
 router.post('/', authMiddleware, async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = (req as any).user.userId;
-        const data = profileSchema.parse(req.body);
+        const body = profileSchema.parse(req.body);
+
+        const data = {
+            goal: body.goal,
+            equipment: JSON.stringify(body.equipment),
+            timePerWorkout: body.timePerWorkout,
+            experienceLevel: body.experienceLevel,
+            recentConsistency: body.recentConsistency,
+            painAreas: JSON.stringify(body.painAreas),
+            movementRestrictions: JSON.stringify(body.movementRestrictions),
+            workoutStylePreference: body.workoutStylePreference,
+            focusAreas: JSON.stringify(body.focusAreas),
+            intensityPreference: body.intensityPreference,
+            startingAbilityPushups: body.startingAbilityPushups,
+            startingAbilitySquats: body.startingAbilitySquats,
+            startingAbilityPlank: body.startingAbilityPlank,
+            sleepBucket: body.sleepBucket,
+            preferenceExclusions: JSON.stringify(body.preferenceExclusions),
+        };
 
         // Upsert Profile
         const profile = await prisma.profile.upsert({
