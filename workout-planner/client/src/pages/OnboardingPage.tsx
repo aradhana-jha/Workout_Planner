@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/axios';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
@@ -319,12 +319,12 @@ export function OnboardingPage() {
     const renderQuestion = () => {
         const q = currentQuestion;
 
-        if (q.type === 'single') {
+        if (q.type === 'single' && q.options) {
             return (
                 <div className="space-y-3">
                     {q.options.map((option, idx) => {
                         const value = typeof option === 'object' ? option.value : option;
-                        const label = typeof option === 'object' ? option.label : option;
+                        const label = typeof option === 'object' ? option.label : String(option);
                         const isSelected = formData[q.id as keyof FormData] === value;
 
                         return (
@@ -333,8 +333,8 @@ export function OnboardingPage() {
                                 type="button"
                                 onClick={() => handleSingleSelect(q.id, value)}
                                 className={`w-full p-4 text-left rounded-lg border-2 transition-all ${isSelected
-                                        ? 'border-blue-500 bg-blue-50 text-blue-900'
-                                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                                    ? 'border-blue-500 bg-blue-50 text-blue-900'
+                                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">
@@ -348,25 +348,26 @@ export function OnboardingPage() {
             );
         }
 
-        if (q.type === 'multi') {
+        if (q.type === 'multi' && q.options) {
             const selected = formData[q.id as keyof FormData] as string[];
             return (
                 <div className="space-y-3">
                     {q.options.map((option, idx) => {
-                        const isSelected = selected.includes(option as string);
+                        const optionStr = String(option);
+                        const isSelected = selected.includes(optionStr);
 
                         return (
                             <button
                                 key={idx}
                                 type="button"
-                                onClick={() => handleMultiSelect(q.id, option as string, q.maxSelect)}
+                                onClick={() => handleMultiSelect(q.id, optionStr, q.maxSelect)}
                                 className={`w-full p-4 text-left rounded-lg border-2 transition-all ${isSelected
-                                        ? 'border-blue-500 bg-blue-50 text-blue-900'
-                                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                                    ? 'border-blue-500 bg-blue-50 text-blue-900'
+                                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">
-                                    <span className="font-medium">{option}</span>
+                                    <span className="font-medium">{optionStr}</span>
                                     {isSelected && <Check className="w-5 h-5 text-blue-500" />}
                                 </div>
                             </button>
@@ -393,8 +394,8 @@ export function OnboardingPage() {
                                             type="button"
                                             onClick={() => handleAbilitySelect(ability.id, option)}
                                             className={`p-3 text-sm rounded-lg border-2 transition-all ${isSelected
-                                                    ? 'border-blue-500 bg-blue-50 text-blue-900'
-                                                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                                                ? 'border-blue-500 bg-blue-50 text-blue-900'
+                                                : 'border-gray-200 hover:border-gray-300 text-gray-700'
                                                 }`}
                                         >
                                             {option}
@@ -458,8 +459,8 @@ export function OnboardingPage() {
                                 onClick={handleBack}
                                 disabled={currentStep === 0}
                                 className={`flex items-center px-4 py-2 rounded-lg transition-all ${currentStep === 0
-                                        ? 'text-gray-300 cursor-not-allowed'
-                                        : 'text-gray-600 hover:bg-gray-100'
+                                    ? 'text-gray-300 cursor-not-allowed'
+                                    : 'text-gray-600 hover:bg-gray-100'
                                     }`}
                             >
                                 <ChevronLeft className="w-5 h-5 mr-1" />
@@ -471,8 +472,8 @@ export function OnboardingPage() {
                                 onClick={handleNext}
                                 disabled={!canProceed() || loading}
                                 className={`flex items-center px-6 py-2 rounded-lg font-medium transition-all ${canProceed() && !loading
-                                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                     }`}
                             >
                                 {loading ? (
