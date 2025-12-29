@@ -105,7 +105,10 @@ api.interceptors.response.use(
 
         // 5. Mock Fetch Workout Details
         if (url.includes('/workout/') && !url.includes('/complete') && method === 'get') {
-            const dayId = url.split('/').pop();
+            const dayIdFromQuery = url.includes('?')
+                ? new URL(url, 'http://local').searchParams.get('dayId')
+                : null;
+            const dayId = dayIdFromQuery || url.split('/').pop();
             const dayIndex = parseInt(dayId?.replace('day-', '') || '1');
 
             // 7-Day Cycle Logic
@@ -153,8 +156,9 @@ api.interceptors.response.use(
 
         // 6. Mock Complete Workout
         if (url.includes('/complete') && method === 'post') {
-            const dayId = url.split('/')[3]; // /workout/day/day-1/complete -> day-1 is index 3
-            updateMockDayComplete(dayId);
+            const data = error.config.data ? JSON.parse(error.config.data) : {};
+            const dayId = data.dayId || url.split('/')[3]; // Fallback for older URL format
+            if (dayId) updateMockDayComplete(dayId);
             return { data: { success: true } };
         }
 

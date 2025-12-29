@@ -48,7 +48,7 @@ export function WorkoutPage() {
     useEffect(() => {
         const fetchWorkout = async () => {
             try {
-                const res = await api.get(`/workout/day/${dayId}`);
+                const res = await api.get('/workout/day', { params: { dayId } });
                 setWorkout(res.data.workoutDay);
             } catch (error) {
                 console.error('Failed to fetch workout', error);
@@ -61,7 +61,8 @@ export function WorkoutPage() {
 
     const handleLogSet = async (exerciseId: string, setNumber: number, reps: number, weight: number) => {
         try {
-            const res = await api.post(`/workout/day/${dayId}/log`, {
+            const res = await api.post('/workout/day/log', {
+                dayId,
                 exerciseId,
                 setNumber,
                 reps,
@@ -98,7 +99,7 @@ export function WorkoutPage() {
         // if (!confirm('Are you sure you want to complete this workout?')) return;
         setCompleting(true);
         try {
-            await api.post(`/workout/day/${dayId}/complete`);
+            await api.post('/workout/day/complete', { dayId });
             navigate('/dashboard');
         } catch (error) {
             console.error('Failed to complete workout', error);
