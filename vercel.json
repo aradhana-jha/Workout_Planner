@@ -1,5 +1,6 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
+    "installCommand": "npm install && npm install --prefix workout-planner/client",
     "buildCommand": "npm run build",
     "outputDirectory": "workout-planner/client/dist",
     "functions": {
