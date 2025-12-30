@@ -24,20 +24,20 @@ interface RankedExercise extends Exercise {
     role?: string;
 }
 
+interface DayExerciseCounts {
+    warmUp: number;
+    main: number;
+    stretch: number;
+    core: number;
+    mobility: number;
+}
+
 // Time budgets by workout duration
 const TIME_BUDGETS: Record<number, { warmUp: number; main: number; coolOff: number; finisher: number }> = {
     15: { warmUp: 2, main: 11, coolOff: 2, finisher: 0 },
     25: { warmUp: 4, main: 17, coolOff: 4, finisher: 0 },
     40: { warmUp: 5, main: 28, coolOff: 5, finisher: 5 },
     60: { warmUp: 7, main: 43, coolOff: 7, finisher: 8 }
-};
-
-// Exercise limits by time
-const EXERCISE_LIMITS: Record<number, { min: number; max: number }> = {
-    15: { min: 2, max: 3 },
-    25: { min: 4, max: 5 },
-    40: { min: 6, max: 8 },
-    60: { min: 7, max: 10 }
 };
 
 export class PlanGenerator {
@@ -290,17 +290,17 @@ export class PlanGenerator {
 
         const scoredPool = this.scoreExercises(pool, profile, dayType);
         const time = profile.timePerWorkout;
-        const limits = EXERCISE_LIMITS[time] || EXERCISE_LIMITS[25];
+        const counts = this.getDayExerciseCounts(time);
 
         let selectedExercises: RankedExercise[] = [];
         let mainLowerPattern = "";
 
         if (dayType === "Conditioning Core Mobility") {
             // Day 3: Conditioning + Core + Mobility
-            selectedExercises = this.buildConditioningDay(scoredPool, profile, limits);
+            selectedExercises = this.buildConditioningDay(scoredPool, counts);
         } else {
             // Strength days (1, 2, 4)
-            const result = this.buildStrengthDay(scoredPool, profile, dayType, usedMainLowerPattern, limits);
+            const result = this.buildStrengthDay(scoredPool, profile, dayType, usedMainLowerPattern, counts);
             selectedExercises = result.exercises;
             mainLowerPattern = result.mainLowerPattern;
         }
@@ -338,6 +338,40 @@ export class PlanGenerator {
         return { mainLowerPattern };
     }
 
+    private getDayExerciseCounts(time: number): DayExerciseCounts {
+        if (time >= 60) return { warmUp: 5, main: 6, stretch: 3, core: 2, mobility: 2 };
+        if (time >= 40) return { warmUp: 5, main: 5, stretch: 3, core: 2, mobility: 2 };
+        if (time >= 25) return { warmUp: 4, main: 5, stretch: 3, core: 2, mobility: 1 };
+        return { warmUp: 3, main: 4, stretch: 2, core: 1, mobility: 1 };
+    }
+
+    private isWarmUpCandidate(ex: RankedExercise): boolean {
+        const phases = this.parseJson(ex.phaseTags);
+        return phases.includes("Stretching") || ex.workoutType === "Mobility and recovery";
+    }
+
+    private isCoolOffCandidate(ex: RankedExercise): boolean {
+        const phases = this.parseJson(ex.phaseTags);
+        return phases.includes("Cool off") || phases.includes("Stretching");
+    }
+
+    private takeUnique(
+        pool: RankedExercise[],
+        count: number,
+        used: Set<string>,
+        predicate?: (ex: RankedExercise) => boolean
+    ): RankedExercise[] {
+        const result: RankedExercise[] = [];
+        for (const ex of pool) {
+            if (result.length >= count) break;
+            if (used.has(ex.id)) continue;
+            if (predicate && !predicate(ex)) continue;
+            used.add(ex.id);
+            result.push(ex);
+        }
+        return result;
+    }
+
     /**
      * Build a strength day (Days 1, 2, 4)
      */
@@ -346,18 +380,17 @@ export class PlanGenerator {
         profile: Profile,
         dayType: DayType,
         usedMainLowerPattern: string,
-        limits: { min: number; max: number }
+        counts: DayExerciseCounts
     ): { exercises: RankedExercise[]; mainLowerPattern: string } {
         const result: RankedExercise[] = [];
+        const used = new Set<string>();
         let mainLowerPattern = "";
 
-        // Warm-up (2-3 exercises from Stretching/Mobility)
-        const warmUps = pool.filter(ex =>
-            this.parseJson(ex.phaseTags).includes("Stretching") ||
-            ex.workoutType === "Mobility and recovery"
-        ).slice(0, profile.timePerWorkout >= 40 ? 3 : 2);
-
+        // Warm-up exercises
+        const warmUps = this.takeUnique(pool, counts.warmUp, used, (ex) => this.isWarmUpCandidate(ex));
         warmUps.forEach(ex => result.push({ ...ex, role: "warm-up" }));
+
+        const mainExercises: RankedExercise[] = [];
 
         // Main lower body movement
         const lowerPool = pool.filter(ex =>
@@ -375,9 +408,15 @@ export class PlanGenerator {
             if (mappedLower) lowerMain = mappedLower;
         }
 
-        if (lowerMain) {
+        if (lowerMain && used.has(lowerMain.id)) {
+            lowerMain = lowerPool.find(ex => ex.movementPattern !== usedMainLowerPattern && !used.has(ex.id)) ||
+                lowerPool.find(ex => !used.has(ex.id));
+        }
+
+        if (lowerMain && !used.has(lowerMain.id)) {
             mainLowerPattern = lowerMain.movementPattern;
-            result.push({ ...lowerMain, role: "main" });
+            used.add(lowerMain.id);
+            mainExercises.push({ ...lowerMain, role: "main" });
         }
 
         // Push movement
@@ -390,11 +429,22 @@ export class PlanGenerator {
             if (mappedPush) pushMain = mappedPush;
         }
 
-        if (pushMain) result.push({ ...pushMain, role: "main" });
+        if (pushMain && used.has(pushMain.id)) {
+            pushMain = pushPool.find(ex => !used.has(ex.id));
+        }
+
+        if (pushMain && !used.has(pushMain.id)) {
+            used.add(pushMain.id);
+            mainExercises.push({ ...pushMain, role: "main" });
+        }
 
         // Pull movement
         const pullPool = pool.filter(ex => ex.movementPattern === "Pull");
-        if (pullPool[0]) result.push({ ...pullPool[0], role: "main" });
+        const pullMain = pullPool.find(ex => !used.has(ex.id));
+        if (pullMain) {
+            used.add(pullMain.id);
+            mainExercises.push({ ...pullMain, role: "main" });
+        }
 
         // Core movement
         const corePool = pool.filter(ex => ex.movementPattern === "Core");
@@ -406,27 +456,45 @@ export class PlanGenerator {
             if (mappedCore) coreMain = mappedCore;
         }
 
-        if (coreMain) result.push({ ...coreMain, role: "main" });
+        if (coreMain && used.has(coreMain.id)) {
+            coreMain = corePool.find(ex => !used.has(ex.id));
+        }
+
+        if (coreMain && !used.has(coreMain.id)) {
+            used.add(coreMain.id);
+            mainExercises.push({ ...coreMain, role: "main" });
+        }
 
         // Posture exercise for Day 4
         if (dayType === "Strength Balanced Posture") {
             const posturePool = pool.filter(ex =>
                 this.parseJson(ex.focusAreaTags).includes("Back and posture")
             );
-            if (posturePool[0] && !result.find(e => e.id === posturePool[0].id)) {
-                result.push({ ...posturePool[0], role: "accessory" });
+            const postureMain = posturePool.find(ex => !used.has(ex.id));
+            if (postureMain) {
+                used.add(postureMain.id);
+                mainExercises.push({ ...postureMain, role: "accessory" });
             }
         }
 
-        // Cool off (2-3 exercises)
-        const coolOffs = pool.filter(ex =>
-            this.parseJson(ex.phaseTags).includes("Cool off") ||
-            this.parseJson(ex.phaseTags).includes("Stretching")
-        ).filter(ex => !result.find(e => e.id === ex.id)).slice(0, profile.timePerWorkout >= 40 ? 3 : 2);
+        const mainFillPool = pool.filter(ex =>
+            !this.isWarmUpCandidate(ex) &&
+            !this.isCoolOffCandidate(ex) &&
+            ex.workoutType !== "Mobility and recovery"
+        );
+        const remainingMain = counts.main - mainExercises.length;
+        if (remainingMain > 0) {
+            const extras = this.takeUnique(mainFillPool, remainingMain, used);
+            extras.forEach(ex => mainExercises.push({ ...ex, role: "main" }));
+        }
 
+        mainExercises.forEach(ex => result.push(ex));
+
+        // Cool off exercises
+        const coolOffs = this.takeUnique(pool, counts.stretch, used, (ex) => this.isCoolOffCandidate(ex));
         coolOffs.forEach(ex => result.push({ ...ex, role: "cool-off" }));
 
-        return { exercises: result.slice(0, limits.max), mainLowerPattern };
+        return { exercises: result, mainLowerPattern };
     }
 
     /**
@@ -434,45 +502,55 @@ export class PlanGenerator {
      */
     private buildConditioningDay(
         pool: RankedExercise[],
-        profile: Profile,
-        limits: { min: number; max: number }
+        counts: DayExerciseCounts
     ): RankedExercise[] {
         const result: RankedExercise[] = [];
-        const time = profile.timePerWorkout;
+        const used = new Set<string>();
 
-        // Warm-up
-        const warmUps = pool.filter(ex =>
-            this.parseJson(ex.phaseTags).includes("Stretching") ||
-            ex.workoutType === "Mobility and recovery"
-        ).slice(0, 2);
+        // Warm-up exercises
+        const warmUps = this.takeUnique(pool, counts.warmUp, used, (ex) => this.isWarmUpCandidate(ex));
         warmUps.forEach(ex => result.push({ ...ex, role: "warm-up" }));
 
         // Conditioning exercises
         const condPool = pool.filter(ex => ex.workoutType === "Conditioning");
-        const condCount = time === 15 ? 1 : (time === 25 ? 2 : (time === 40 ? 3 : 4));
-        condPool.slice(0, condCount).forEach(ex => result.push({ ...ex, role: "conditioning" }));
 
         // Core block
         const corePool = pool.filter(ex => ex.movementPattern === "Core");
-        corePool.slice(0, 2).forEach(ex => {
-            if (!result.find(e => e.id === ex.id)) {
-                result.push({ ...ex, role: "main" });
-            }
-        });
+        const mainExercises: RankedExercise[] = [];
+        const coreCount = Math.min(counts.core, counts.main);
+        const coreExercises = this.takeUnique(corePool, coreCount, used);
+        coreExercises.forEach(ex => mainExercises.push({ ...ex, role: "main" }));
+
+        const condCount = Math.max(0, counts.main - mainExercises.length);
+        const condExercises = this.takeUnique(condPool, condCount, used);
+        condExercises.forEach(ex => mainExercises.push({ ...ex, role: "conditioning" }));
+
+        const remainingMain = counts.main - mainExercises.length;
+        if (remainingMain > 0) {
+            const mainFillPool = pool.filter(ex =>
+                !this.isWarmUpCandidate(ex) &&
+                !this.isCoolOffCandidate(ex) &&
+                ex.workoutType !== "Mobility and recovery"
+            );
+            const extras = this.takeUnique(mainFillPool, remainingMain, used);
+            extras.forEach(ex => mainExercises.push({ ...ex, role: "main" }));
+        }
+
+        mainExercises.forEach(ex => result.push(ex));
 
         // Mobility block
         const mobilityPool = pool.filter(ex =>
             ex.workoutType === "Mobility and recovery"
-        ).filter(ex => !result.find(e => e.id === ex.id));
-        mobilityPool.slice(0, 3).forEach(ex => result.push({ ...ex, role: "mobility" }));
+        );
+        const mobilityExercises = this.takeUnique(mobilityPool, counts.mobility, used);
+        mobilityExercises.forEach(ex => result.push({ ...ex, role: "mobility" }));
 
         // Cool off
-        const coolOffs = pool.filter(ex =>
-            this.parseJson(ex.phaseTags).includes("Cool off")
-        ).filter(ex => !result.find(e => e.id === ex.id)).slice(0, 2);
+        const coolOffCount = Math.max(0, counts.stretch - mobilityExercises.length);
+        const coolOffs = this.takeUnique(pool, coolOffCount, used, (ex) => this.isCoolOffCandidate(ex));
         coolOffs.forEach(ex => result.push({ ...ex, role: "cool-off" }));
 
-        return result.slice(0, limits.max);
+        return result;
     }
 
     /**
