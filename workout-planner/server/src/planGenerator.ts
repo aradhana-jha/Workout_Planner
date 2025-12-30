@@ -24,20 +24,21 @@ interface RankedExercise extends Exercise {
     role?: string;
 }
 
-// Time budgets by workout duration
+// Time budgets by workout duration (minutes allocated to each phase)
 const TIME_BUDGETS: Record<number, { warmUp: number; main: number; coolOff: number; finisher: number }> = {
-    15: { warmUp: 2, main: 11, coolOff: 2, finisher: 0 },
-    25: { warmUp: 4, main: 17, coolOff: 4, finisher: 0 },
-    40: { warmUp: 5, main: 28, coolOff: 5, finisher: 5 },
-    60: { warmUp: 7, main: 43, coolOff: 7, finisher: 8 }
+    15: { warmUp: 3, main: 8, coolOff: 4, finisher: 0 },
+    25: { warmUp: 5, main: 14, coolOff: 6, finisher: 0 },
+    40: { warmUp: 7, main: 22, coolOff: 8, finisher: 3 },
+    60: { warmUp: 8, main: 35, coolOff: 10, finisher: 7 }
 };
 
-// Exercise limits by time
-const EXERCISE_LIMITS: Record<number, { min: number; max: number }> = {
-    15: { min: 2, max: 3 },
-    25: { min: 4, max: 5 },
-    40: { min: 6, max: 8 },
-    60: { min: 7, max: 10 }
+// Per-phase exercise limits by workout duration
+// Target: 5 warm-up, 6 main/core, 3-4 stretching per the requirements
+const PHASE_LIMITS: Record<number, { warmUp: number; main: number; coolOff: number }> = {
+    15: { warmUp: 3, main: 4, coolOff: 2 },     // 9 total for short workouts
+    25: { warmUp: 4, main: 5, coolOff: 3 },     // 12 total
+    40: { warmUp: 5, main: 6, coolOff: 4 },     // 15 total (matches requirements)
+    60: { warmUp: 5, main: 8, coolOff: 4 }      // 17 total for long workouts
 };
 
 export class PlanGenerator {
@@ -290,17 +291,17 @@ export class PlanGenerator {
 
         const scoredPool = this.scoreExercises(pool, profile, dayType);
         const time = profile.timePerWorkout;
-        const limits = EXERCISE_LIMITS[time] || EXERCISE_LIMITS[25];
+        const phaseLimits = PHASE_LIMITS[time] || PHASE_LIMITS[25];
 
         let selectedExercises: RankedExercise[] = [];
         let mainLowerPattern = "";
 
         if (dayType === "Conditioning Core Mobility") {
             // Day 3: Conditioning + Core + Mobility
-            selectedExercises = this.buildConditioningDay(scoredPool, profile, limits);
+            selectedExercises = this.buildConditioningDay(scoredPool, profile, phaseLimits);
         } else {
             // Strength days (1, 2, 4)
-            const result = this.buildStrengthDay(scoredPool, profile, dayType, usedMainLowerPattern, limits);
+            const result = this.buildStrengthDay(scoredPool, profile, dayType, usedMainLowerPattern, phaseLimits);
             selectedExercises = result.exercises;
             mainLowerPattern = result.mainLowerPattern;
         }
@@ -340,30 +341,54 @@ export class PlanGenerator {
 
     /**
      * Build a strength day (Days 1, 2, 4)
+     * Uses phase-based limits to ensure proper exercise counts:
+     * - Warm-up: stretching/mobility exercises
+     * - Main: compound movements (push, pull, squat, hinge, core)
+     * - Cool-off: stretching exercises
      */
     private buildStrengthDay(
         pool: RankedExercise[],
         profile: Profile,
         dayType: DayType,
         usedMainLowerPattern: string,
-        limits: { min: number; max: number }
+        phaseLimits: { warmUp: number; main: number; coolOff: number }
     ): { exercises: RankedExercise[]; mainLowerPattern: string } {
         const result: RankedExercise[] = [];
+        const usedIds = new Set<string>();
         let mainLowerPattern = "";
 
-        // Warm-up (2-3 exercises from Stretching/Mobility)
-        const warmUps = pool.filter(ex =>
+        // Helper to add exercise and track used IDs
+        const addExercise = (ex: RankedExercise, role: string): boolean => {
+            if (!usedIds.has(ex.id)) {
+                result.push({ ...ex, role });
+                usedIds.add(ex.id);
+                return true;
+            }
+            return false;
+        };
+
+        // ========== WARM-UP PHASE ==========
+        // Get stretching/mobility exercises, sorted by score
+        const warmUpPool = pool.filter(ex =>
             this.parseJson(ex.phaseTags).includes("Stretching") ||
             ex.workoutType === "Mobility and recovery"
-        ).slice(0, profile.timePerWorkout >= 40 ? 3 : 2);
+        );
 
-        warmUps.forEach(ex => result.push({ ...ex, role: "warm-up" }));
+        // Select specified number of warm-up exercises
+        let warmUpCount = 0;
+        for (const ex of warmUpPool) {
+            if (warmUpCount >= phaseLimits.warmUp) break;
+            if (addExercise(ex, "warm-up")) warmUpCount++;
+        }
 
-        // Main lower body movement
+        // ========== MAIN EXERCISE PHASE ==========
+        let mainCount = 0;
+        const targetMain = phaseLimits.main;
+
+        // 1. Lower body movement (Squat/Hinge/Lunge) - ensure variety
         const lowerPool = pool.filter(ex =>
-            ex.movementPattern === "Squat" ||
-            ex.movementPattern === "Hinge" ||
-            ex.movementPattern === "Lunge"
+            (ex.movementPattern === "Squat" || ex.movementPattern === "Hinge" || ex.movementPattern === "Lunge") &&
+            !usedIds.has(ex.id)
         );
 
         // Avoid repeating same pattern as previous strength day
@@ -375,104 +400,168 @@ export class PlanGenerator {
             if (mappedLower) lowerMain = mappedLower;
         }
 
-        if (lowerMain) {
+        if (lowerMain && addExercise(lowerMain, "main")) {
             mainLowerPattern = lowerMain.movementPattern;
-            result.push({ ...lowerMain, role: "main" });
+            mainCount++;
         }
 
-        // Push movement
-        const pushPool = pool.filter(ex => ex.movementPattern === "Push");
+        // 2. Add additional lower body exercises if main count target not reached
+        for (const ex of lowerPool) {
+            if (mainCount >= Math.min(2, targetMain)) break;
+            if (addExercise(ex, "main")) mainCount++;
+        }
+
+        // 3. Push movement(s)
+        const pushPool = pool.filter(ex => ex.movementPattern === "Push" && !usedIds.has(ex.id));
         let pushMain = pushPool[0];
 
-        // Use starting ability mapping for push-ups
         if (profile.startingAbilityPushups) {
             const mappedPush = this.getPushVariant(pushPool, profile);
             if (mappedPush) pushMain = mappedPush;
         }
 
-        if (pushMain) result.push({ ...pushMain, role: "main" });
+        if (pushMain && addExercise(pushMain, "main")) mainCount++;
 
-        // Pull movement
-        const pullPool = pool.filter(ex => ex.movementPattern === "Pull");
-        if (pullPool[0]) result.push({ ...pullPool[0], role: "main" });
+        // 4. Pull movement(s)
+        const pullPool = pool.filter(ex => ex.movementPattern === "Pull" && !usedIds.has(ex.id));
+        if (pullPool[0] && addExercise(pullPool[0], "main")) mainCount++;
 
-        // Core movement
-        const corePool = pool.filter(ex => ex.movementPattern === "Core");
+        // 5. Core movements - add multiple to reach target
+        const corePool = pool.filter(ex => ex.movementPattern === "Core" && !usedIds.has(ex.id));
         let coreMain = corePool[0];
 
-        // Use starting ability mapping for plank
         if (profile.startingAbilityPlank) {
             const mappedCore = this.getCoreVariant(corePool, profile.startingAbilityPlank);
             if (mappedCore) coreMain = mappedCore;
         }
 
-        if (coreMain) result.push({ ...coreMain, role: "main" });
+        if (coreMain && addExercise(coreMain, "main")) mainCount++;
 
-        // Posture exercise for Day 4
+        // Add more core exercises to reach target
+        for (const ex of corePool) {
+            if (mainCount >= targetMain) break;
+            if (addExercise(ex, "main")) mainCount++;
+        }
+
+        // 6. Posture exercise for Day 4 (Strength Balanced Posture)
         if (dayType === "Strength Balanced Posture") {
             const posturePool = pool.filter(ex =>
-                this.parseJson(ex.focusAreaTags).includes("Back and posture")
+                this.parseJson(ex.focusAreaTags).includes("Back and posture") &&
+                !usedIds.has(ex.id)
             );
-            if (posturePool[0] && !result.find(e => e.id === posturePool[0].id)) {
-                result.push({ ...posturePool[0], role: "accessory" });
+            if (posturePool[0] && mainCount < targetMain && addExercise(posturePool[0], "accessory")) {
+                mainCount++;
             }
         }
 
-        // Cool off (2-3 exercises)
-        const coolOffs = pool.filter(ex =>
-            this.parseJson(ex.phaseTags).includes("Cool off") ||
-            this.parseJson(ex.phaseTags).includes("Stretching")
-        ).filter(ex => !result.find(e => e.id === ex.id)).slice(0, profile.timePerWorkout >= 40 ? 3 : 2);
+        // 7. Fill remaining main slots with high-scoring exercises
+        const remainingPool = pool.filter(ex =>
+            !usedIds.has(ex.id) &&
+            this.parseJson(ex.phaseTags).includes("Main exercise")
+        );
+        for (const ex of remainingPool) {
+            if (mainCount >= targetMain) break;
+            if (addExercise(ex, "main")) mainCount++;
+        }
 
-        coolOffs.forEach(ex => result.push({ ...ex, role: "cool-off" }));
+        // ========== COOL-OFF PHASE ==========
+        const coolOffPool = pool.filter(ex =>
+            (this.parseJson(ex.phaseTags).includes("Cool off") ||
+                this.parseJson(ex.phaseTags).includes("Stretching")) &&
+            !usedIds.has(ex.id)
+        );
 
-        return { exercises: result.slice(0, limits.max), mainLowerPattern };
+        let coolOffCount = 0;
+        for (const ex of coolOffPool) {
+            if (coolOffCount >= phaseLimits.coolOff) break;
+            if (addExercise(ex, "cool-off")) coolOffCount++;
+        }
+
+        return { exercises: result, mainLowerPattern };
     }
 
     /**
      * Build a conditioning day (Day 3)
+     * Uses phase-based limits for proper exercise counts
      */
     private buildConditioningDay(
         pool: RankedExercise[],
         profile: Profile,
-        limits: { min: number; max: number }
+        phaseLimits: { warmUp: number; main: number; coolOff: number }
     ): RankedExercise[] {
         const result: RankedExercise[] = [];
+        const usedIds = new Set<string>();
         const time = profile.timePerWorkout;
 
-        // Warm-up
-        const warmUps = pool.filter(ex =>
+        // Helper to add exercise and track used IDs
+        const addExercise = (ex: RankedExercise, role: string): boolean => {
+            if (!usedIds.has(ex.id)) {
+                result.push({ ...ex, role });
+                usedIds.add(ex.id);
+                return true;
+            }
+            return false;
+        };
+
+        // ========== WARM-UP PHASE ==========
+        const warmUpPool = pool.filter(ex =>
             this.parseJson(ex.phaseTags).includes("Stretching") ||
             ex.workoutType === "Mobility and recovery"
-        ).slice(0, 2);
-        warmUps.forEach(ex => result.push({ ...ex, role: "warm-up" }));
+        );
+
+        let warmUpCount = 0;
+        for (const ex of warmUpPool) {
+            if (warmUpCount >= phaseLimits.warmUp) break;
+            if (addExercise(ex, "warm-up")) warmUpCount++;
+        }
+
+        // ========== MAIN PHASE (Conditioning + Core + Mobility) ==========
+        let mainCount = 0;
+        const targetMain = phaseLimits.main;
 
         // Conditioning exercises
-        const condPool = pool.filter(ex => ex.workoutType === "Conditioning");
-        const condCount = time === 15 ? 1 : (time === 25 ? 2 : (time === 40 ? 3 : 4));
-        condPool.slice(0, condCount).forEach(ex => result.push({ ...ex, role: "conditioning" }));
+        const condPool = pool.filter(ex =>
+            ex.workoutType === "Conditioning" && !usedIds.has(ex.id)
+        );
+        const condTarget = Math.min(time === 15 ? 2 : (time === 25 ? 3 : 4), Math.ceil(targetMain / 2));
+        for (const ex of condPool) {
+            if (mainCount >= condTarget) break;
+            if (addExercise(ex, "conditioning")) mainCount++;
+        }
 
-        // Core block
-        const corePool = pool.filter(ex => ex.movementPattern === "Core");
-        corePool.slice(0, 2).forEach(ex => {
-            if (!result.find(e => e.id === ex.id)) {
-                result.push({ ...ex, role: "main" });
-            }
-        });
+        // Core block - multiple core exercises
+        const corePool = pool.filter(ex =>
+            ex.movementPattern === "Core" && !usedIds.has(ex.id)
+        );
+        const coreTarget = Math.min(3, targetMain - mainCount);
+        for (const ex of corePool) {
+            if (mainCount >= targetMain || mainCount - condTarget >= coreTarget) break;
+            if (addExercise(ex, "main")) mainCount++;
+        }
 
-        // Mobility block
+        // Mobility block - fill remaining main slots
         const mobilityPool = pool.filter(ex =>
-            ex.workoutType === "Mobility and recovery"
-        ).filter(ex => !result.find(e => e.id === ex.id));
-        mobilityPool.slice(0, 3).forEach(ex => result.push({ ...ex, role: "mobility" }));
+            ex.workoutType === "Mobility and recovery" && !usedIds.has(ex.id)
+        );
+        for (const ex of mobilityPool) {
+            if (mainCount >= targetMain) break;
+            if (addExercise(ex, "mobility")) mainCount++;
+        }
 
-        // Cool off
-        const coolOffs = pool.filter(ex =>
-            this.parseJson(ex.phaseTags).includes("Cool off")
-        ).filter(ex => !result.find(e => e.id === ex.id)).slice(0, 2);
-        coolOffs.forEach(ex => result.push({ ...ex, role: "cool-off" }));
+        // ========== COOL-OFF PHASE ==========
+        const coolOffPool = pool.filter(ex =>
+            (this.parseJson(ex.phaseTags).includes("Cool off") ||
+                this.parseJson(ex.phaseTags).includes("Stretching")) &&
+            !usedIds.has(ex.id)
+        );
 
-        return result.slice(0, limits.max);
+        let coolOffCount = 0;
+        for (const ex of coolOffPool) {
+            if (coolOffCount >= phaseLimits.coolOff) break;
+            if (addExercise(ex, "cool-off")) coolOffCount++;
+        }
+
+        return result;
     }
 
     /**
