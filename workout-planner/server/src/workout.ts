@@ -1,15 +1,17 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../generated/client';
 import { z } from 'zod';
 import { authMiddleware } from './auth';
 
 const prisma = new PrismaClient();
 const router = Router();
 
-// Get Current Plan
-router.get('/plan/current', authMiddleware, async (req: Request, res: Response): Promise<void> => {
-    const userId = (req as any).user.userId;
-    const plan = await prisma.plan.findFirst({
+function getUserId(req: Request) {
+    return (req as any).user.userId as string;
+}
+
+async function getPlanForUser(userId: string) {
+    return prisma.plan.findFirst({
         where: { userId, status: 'active' },
         include: {
             days: {
@@ -27,27 +29,28 @@ router.get('/plan/current', authMiddleware, async (req: Request, res: Response):
             }
         }
     });
+}
 
-    // Transform to include a title for backwards compatibility
-    if (plan) {
-        const transformedPlan = {
-            ...plan,
-            days: plan.days.map(day => ({
-                ...day,
-                title: day.dayType === "Rest" ? "Rest Day" : `${day.dayType} (${day.estimatedMinutes} min)`
-            }))
-        };
-        res.json({ plan: transformedPlan });
-    } else {
-        res.json({ plan: null });
+function transformPlan(plan: Awaited<ReturnType<typeof getPlanForUser>>) {
+    if (!plan) {
+        return null;
     }
-});
 
-// Get Workout Day Details
-router.get('/day/:dayId', authMiddleware, async (req: Request, res: Response): Promise<void> => {
-    const { dayId } = req.params;
-    const workoutDay = await prisma.workoutDay.findUnique({
-        where: { id: dayId },
+    return {
+        ...plan,
+        days: plan.days.map(day => ({
+            ...day,
+            title: day.dayType === 'Rest' ? 'Rest Day' : `${day.dayType} (${day.estimatedMinutes} min)`
+        }))
+    };
+}
+
+async function getWorkoutDayForUser(userId: string, dayId: string) {
+    return prisma.workoutDay.findFirst({
+        where: {
+            id: dayId,
+            plan: { userId }
+        },
         include: {
             exercises: {
                 orderBy: { sortOrder: 'asc' },
@@ -58,17 +61,43 @@ router.get('/day/:dayId', authMiddleware, async (req: Request, res: Response): P
             }
         }
     });
+}
 
-    if (workoutDay) {
-        // Add title for backwards compatibility
-        const transformedDay = {
-            ...workoutDay,
-            title: workoutDay.dayType === "Rest" ? "Rest Day" : `Day ${workoutDay.dayNumber}: ${workoutDay.dayType}`
-        };
-        res.json({ workoutDay: transformedDay });
-    } else {
-        res.json({ workoutDay: null });
+function transformWorkoutDay(workoutDay: Awaited<ReturnType<typeof getWorkoutDayForUser>>) {
+    if (!workoutDay) {
+        return null;
     }
+
+    return {
+        ...workoutDay,
+        title: workoutDay.dayType === 'Rest' ? 'Rest Day' : `Day ${workoutDay.dayNumber}: ${workoutDay.dayType}`
+    };
+}
+
+// Get Current Plan
+router.get('/plan/current', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+    const plan = await getPlanForUser(getUserId(req));
+    res.json({ plan: transformPlan(plan) });
+});
+
+async function handleGetWorkoutDay(req: Request, res: Response, dayId: string): Promise<void> {
+    const workoutDay = await getWorkoutDayForUser(getUserId(req), dayId);
+    res.json({ workoutDay: transformWorkoutDay(workoutDay) });
+}
+
+router.get('/day', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+    const dayId = typeof req.query.dayId === 'string' ? req.query.dayId : undefined;
+    if (!dayId) {
+        res.status(400).json({ error: 'dayId is required' });
+        return;
+    }
+
+    await handleGetWorkoutDay(req, res, dayId);
+});
+
+// Get Workout Day Details
+router.get('/day/:dayId', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+    await handleGetWorkoutDay(req, res, req.params.dayId);
 });
 
 // Log Set
@@ -76,17 +105,21 @@ const logSchema = z.object({
     exerciseId: z.string(),
     setNumber: z.number(),
     reps: z.number(),
-    weight: z.number().optional(),
+    weight: z.number().nullable().optional(),
 });
 
-router.post('/day/:dayId/log', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+async function handleLogSet(req: Request, res: Response, dayId: string): Promise<void> {
     try {
-        const { dayId } = req.params;
         const { exerciseId, setNumber, reps, weight } = logSchema.parse(req.body);
 
-        // Find WorkoutExercise
         const workoutExercise = await prisma.workoutExercise.findFirst({
-            where: { workoutDayId: dayId, exerciseId }
+            where: {
+                workoutDayId: dayId,
+                exerciseId,
+                workoutDay: {
+                    plan: { userId: getUserId(req) }
+                }
+            }
         });
 
         if (!workoutExercise) {
@@ -126,18 +159,57 @@ router.post('/day/:dayId/log', authMiddleware, async (req: Request, res: Respons
             res.status(500).json({ error: 'Internal Server Error' });
         }
     }
+}
+
+router.post('/day/log', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+    const dayId = typeof req.body.dayId === 'string' ? req.body.dayId : undefined;
+    if (!dayId) {
+        res.status(400).json({ error: 'dayId is required' });
+        return;
+    }
+
+    await handleLogSet(req, res, dayId);
+});
+
+router.post('/day/:dayId/log', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+    await handleLogSet(req, res, req.params.dayId);
 });
 
 // Complete Day
-router.post('/day/:dayId/complete', authMiddleware, async (req: Request, res: Response): Promise<void> => {
-    const { dayId } = req.params;
+async function handleCompleteDay(req: Request, res: Response, dayId: string): Promise<void> {
+    const workoutDay = await prisma.workoutDay.findFirst({
+        where: {
+            id: dayId,
+            plan: { userId: getUserId(req) }
+        },
+        select: { id: true }
+    });
+
+    if (!workoutDay) {
+        res.status(404).json({ error: 'Workout day not found' });
+        return;
+    }
 
     await prisma.workoutDay.update({
-        where: { id: dayId },
+        where: { id: workoutDay.id },
         data: { isCompleted: true, completedAt: new Date() }
     });
 
     res.json({ message: 'Day completed' });
+}
+
+router.post('/day/complete', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+    const dayId = typeof req.body.dayId === 'string' ? req.body.dayId : undefined;
+    if (!dayId) {
+        res.status(400).json({ error: 'dayId is required' });
+        return;
+    }
+
+    await handleCompleteDay(req, res, dayId);
+});
+
+router.post('/day/:dayId/complete', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+    await handleCompleteDay(req, res, req.params.dayId);
 });
 
 export default router;

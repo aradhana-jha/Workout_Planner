@@ -5,8 +5,8 @@
   "scripts": {
     "build": "cd client && npm run build",
     "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
-    "prisma:generate": "cd server && npx prisma generate",
-    "postinstall": "cd server && npx prisma generate"
+    "prisma:generate": "cd server && npm run prisma:generate",
+    "postinstall": "cd server && npm run prisma:generate"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

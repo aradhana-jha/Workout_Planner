@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String?
+  createdAt    DateTime @default(now())
+
+  profile      Profile?
+  plans        Plan[]
+}
+
+model Profile {
+  id                      String   @id @default(uuid())
+  userId                  String   @unique
+  user                    User     @relation(fields: [userId], references: [id])
+  goal                    String
+  equipment               String
+  timePerWorkout          Int
+  experienceLevel         String
+  recentConsistency       String
+  painAreas               String
+  movementRestrictions    String
+  workoutStylePreference  String
+  focusAreas              String
+  intensityPreference     String
+  startingAbilityPushups  String?
+  startingAbilitySquats   String?
+  startingAbilityPlank    String?
+  sleepBucket             String
+  preferenceExclusions    String
+}
+
+model Exercise {
+  id                       String   @id @default(uuid())
+  externalId               String?  @unique
+  name                     String
+  description              String?
+  videoUrl                 String?
+  difficultyMin            String
+  difficultyMax            String
+  equipmentTags            String
+  workoutType              String
+  movementPattern          String
+  focusAreaTags            String
+  impactLevel              String
+  avoidModifyFlags         String
+  preferenceExclusionFlags String
+  phaseTags                String
+  easierVariationId        String?
+  harderVariationId        String?
+  notes                    String?
+
+  workoutExercises         WorkoutExercise[]
+}
+
+model Plan {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  startDate DateTime @default(now())
+  status    String   @default("active")
+
+  days      WorkoutDay[]
+}
+
+model WorkoutDay {
+  id               String    @id @default(uuid())
+  planId           String
+  plan             Plan      @relation(fields: [planId], references: [id])
+  dayNumber        Int
+  weekNumber       Int
+  dayType          String
+  isOptional       Boolean   @default(false)
+  estimatedMinutes Int
+  isCompleted      Boolean   @default(false)
+  completedAt      DateTime?
+
+  exercises        WorkoutExercise[]
+}
+
+model WorkoutExercise {
+  id                String       @id @default(uuid())
+  workoutDayId      String
+  workoutDay        WorkoutDay   @relation(fields: [workoutDayId], references: [id])
+  exerciseId        String
+  exercise          Exercise     @relation(fields: [exerciseId], references: [id])
+  role              String
+  targetSets        Int?
+  targetReps        Int?
+  targetSeconds     Int?
+  targetRestSeconds Int?
+  sortOrder         Int
+  notes             String?
+
+  logs              ExerciseLog[]
+}
+
+model ExerciseLog {
+  id                String       @id @default(uuid())
+  workoutExerciseId String
+  workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id])
+  setNumber         Int
+  reps              Int
+  weight            Float?
+  isDone            Boolean      @default(false)
+}

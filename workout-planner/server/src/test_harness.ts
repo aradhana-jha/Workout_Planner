@@ -5,7 +5,7 @@
  * Run with: npx tsx src/test_harness.ts
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../generated/client';
 import { PlanGenerator } from './planGenerator';
 
 const prisma = new PrismaClient();

@@ -6,7 +6,7 @@
  * and week-over-week progression.
  */
 
-import { PrismaClient, Exercise, Profile } from '@prisma/client';
+import { PrismaClient, type Exercise, type Profile } from '../generated/client';
 
 const prisma = new PrismaClient();
 

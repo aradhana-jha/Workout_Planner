@@ -1,14 +1,9 @@
 import axios from 'axios';
 import { MUSCLE_GAIN_PLAN } from './customPlan';
 
-// Use environment variable if set, otherwise detect if on Vercel (no localhost) or local
-const getBaseUrl = () => {
-    if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
-    if (typeof window !== 'undefined' && !window.location.host.includes('localhost')) {
-        return '/api'; // Vercel - use relative path
-    }
-    return 'http://localhost:3000/api'; // Local development
-};
+const DEMO_MODE_ENABLED = import.meta.env.VITE_ENABLE_DEMO_MODE === 'true';
+
+const getBaseUrl = () => import.meta.env.VITE_API_URL || '/api';
 
 export const api = axios.create({
     baseURL: getBaseUrl(),
@@ -54,114 +49,99 @@ const updateMockDayComplete = (dayId: string) => {
 
 // Old mockExercises removed in favor of customPlan.ts logic
 
-// Global Response Interceptor for Demo Mode
-api.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        console.warn("API Error (Demo Mode Active):", error.config?.url);
+if (DEMO_MODE_ENABLED) {
+    api.interceptors.response.use(
+        (response) => response,
+        async (error) => {
+            console.warn('API Error (Demo Mode Active):', error.config?.url);
 
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 300));
+            await new Promise(resolve => setTimeout(resolve, 300));
 
-        const url = error.config?.url || '';
-        const method = error.config?.method || '';
+            const url = error.config?.url || '';
+            const method = error.config?.method || '';
 
-        // 1. Mock Login
-        if (url.includes('/auth/login') && method === 'post') {
-            const email = JSON.parse(error.config.data).email;
-            return {
-                data: {
-                    token: 'mock-demo-token',
-                    user: { id: 'demo-user', email }
-                }
-            };
-        }
-
-        // 2. Mock Profile Creation (Onboarding)
-        if (url.includes('/profile') && method === 'post') {
-            return { data: { success: true } };
-        }
-
-        // 3. Mock Fetch Plan
-        if (url.includes('/workout/plan/current') && method === 'get') {
-            return { data: { plan: getMockPlan() } };
-        }
-
-        // 4. Mock Log Set (Mark as Done)
-        if (url.includes('/log') && method === 'post') {
-            const data = JSON.parse(error.config.data);
-            return {
-                data: {
-                    log: {
-                        id: `mock-log-${Date.now()}`,
-                        setNumber: data.setNumber,
-                        reps: data.reps,
-                        weight: data.weight,
-                        isDone: true
+            if (url.includes('/auth/login') && method === 'post') {
+                const email = JSON.parse(error.config.data).email;
+                return {
+                    data: {
+                        token: 'mock-demo-token',
+                        user: { id: 'demo-user', email }
                     }
-                }
-            };
-        }
-
-        // 5. Mock Fetch Workout Details
-        if (url.includes('/workout/') && !url.includes('/complete') && method === 'get') {
-            const dayIdFromQuery = url.includes('?')
-                ? new URL(url, 'http://local').searchParams.get('dayId')
-                : null;
-            const dayId = dayIdFromQuery || url.split('/').pop();
-            const dayIndex = parseInt(dayId?.replace('day-', '') || '1');
-
-            // 7-Day Cycle Logic
-            // Day 1 -> 1, Day 7 -> 7, Day 8 -> 1...
-            let cycleDay = dayIndex % 7;
-            if (cycleDay === 0) cycleDay = 7;
-
-            // Import plan (Dynamically or top-level, simplifying here by assuming import)
-            // Note: Since we are inside the interceptor, we need access to the data. 
-            // We will import it at the top of the file in the full file context, 
-            // but here we just use the variable name assuming it's available.
-
-            const dayPlan = (MUSCLE_GAIN_PLAN as any)[cycleDay];
-
-            if (!dayPlan) {
-                return { data: { workoutDay: null } };
+                };
             }
 
-            return {
-                data: {
-                    workoutDay: {
-                        id: dayId,
-                        title: `Day ${dayIndex}: ${dayPlan.title}`,
-                        exercises: dayPlan.exercises.map((ex: any) => ({
-                            id: ex.id,
-                            exerciseId: ex.id,
-                            exercise: {
-                                id: ex.id,
-                                name: ex.name,
-                                description: 'Guided exercise from Muscle Gain Plan.',
-                                videoUrl: null,
-                                difficulty: 'beginner',
-                                muscleGroup: ex.muscleGroup
-                            },
-                            targetSets: typeof ex.sets === 'string' ? 1 : ex.sets, // Handle simple sets
-                            targetReps: ex.reps, // Pass the string directly (e.g. "30 seconds")
-                            // Note: We might need to adjust the UI to handle string reps if it expects number
-                            // But usually UI just displays it.
-                            logs: []
-                        }))
+            if (url.includes('/profile') && method === 'post') {
+                return { data: { success: true } };
+            }
+
+            if (url.includes('/workout/plan/current') && method === 'get') {
+                return { data: { plan: getMockPlan() } };
+            }
+
+            if (url.includes('/log') && method === 'post') {
+                const data = JSON.parse(error.config.data);
+                return {
+                    data: {
+                        log: {
+                            id: `mock-log-${Date.now()}`,
+                            setNumber: data.setNumber,
+                            reps: data.reps,
+                            weight: data.weight,
+                            isDone: true
+                        }
                     }
+                };
+            }
+
+            if (url.includes('/workout/') && !url.includes('/complete') && method === 'get') {
+                const dayIdFromQuery = url.includes('?')
+                    ? new URL(url, 'http://local').searchParams.get('dayId')
+                    : null;
+                const dayId = dayIdFromQuery || url.split('/').pop();
+                const dayIndex = parseInt(dayId?.replace('day-', '') || '1', 10);
+
+                let cycleDay = dayIndex % 7;
+                if (cycleDay === 0) cycleDay = 7;
+
+                const dayPlan = (MUSCLE_GAIN_PLAN as any)[cycleDay];
+
+                if (!dayPlan) {
+                    return { data: { workoutDay: null } };
                 }
-            };
-        }
 
-        // 6. Mock Complete Workout
-        if (url.includes('/complete') && method === 'post') {
-            const data = error.config.data ? JSON.parse(error.config.data) : {};
-            const dayId = data.dayId || url.split('/')[3]; // Fallback for older URL format
-            if (dayId) updateMockDayComplete(dayId);
-            return { data: { success: true } };
-        }
+                return {
+                    data: {
+                        workoutDay: {
+                            id: dayId,
+                            title: `Day ${dayIndex}: ${dayPlan.title}`,
+                            exercises: dayPlan.exercises.map((ex: any) => ({
+                                id: ex.id,
+                                exerciseId: ex.id,
+                                exercise: {
+                                    id: ex.id,
+                                    name: ex.name,
+                                    description: 'Guided exercise from Muscle Gain Plan.',
+                                    videoUrl: null,
+                                    difficulty: 'beginner',
+                                    muscleGroup: ex.muscleGroup
+                                },
+                                targetSets: typeof ex.sets === 'string' ? 1 : ex.sets,
+                                targetReps: ex.reps,
+                                logs: []
+                            }))
+                        }
+                    }
+                };
+            }
 
-        return Promise.reject(error);
-    }
-);
+            if (url.includes('/complete') && method === 'post') {
+                const data = error.config.data ? JSON.parse(error.config.data) : {};
+                const dayId = data.dayId || url.split('/')[3];
+                if (dayId) updateMockDayComplete(dayId);
+                return { data: { success: true } };
+            }
+
+            return Promise.reject(error);
+        }
+    );
+}
