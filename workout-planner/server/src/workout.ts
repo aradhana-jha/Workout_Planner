@@ -6,6 +6,27 @@ import { authMiddleware } from './auth';
 const prisma = new PrismaClient();
 const router = Router();
 
+function titleCase(value: string) {
+    return value
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function parseStringArray(value: string | null | undefined) {
+    if (!value) {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
+    } catch {
+        return [];
+    }
+}
+
 function getUserId(req: Request) {
     return (req as any).user.userId as string;
 }
@@ -70,7 +91,24 @@ function transformWorkoutDay(workoutDay: Awaited<ReturnType<typeof getWorkoutDay
 
     return {
         ...workoutDay,
-        title: workoutDay.dayType === 'Rest' ? 'Rest Day' : `Day ${workoutDay.dayNumber}: ${workoutDay.dayType}`
+        title: workoutDay.dayType === 'Rest' ? 'Rest Day' : `Day ${workoutDay.dayNumber}: ${workoutDay.dayType}`,
+        exercises: workoutDay.exercises.map((workoutExercise) => {
+            const focusAreas = parseStringArray(workoutExercise.exercise.focusAreaTags);
+            const difficultyMin = titleCase(workoutExercise.exercise.difficultyMin);
+            const difficultyMax = titleCase(workoutExercise.exercise.difficultyMax);
+
+            return {
+                ...workoutExercise,
+                exercise: {
+                    id: workoutExercise.exercise.id,
+                    name: workoutExercise.exercise.name,
+                    description: workoutExercise.exercise.description ?? workoutExercise.exercise.notes ?? '',
+                    videoUrl: workoutExercise.exercise.videoUrl,
+                    difficulty: difficultyMin === difficultyMax ? difficultyMin : `${difficultyMin} - ${difficultyMax}`,
+                    muscleGroup: titleCase(focusAreas[0] ?? workoutExercise.exercise.movementPattern ?? 'Full body'),
+                },
+            };
+        }),
     };
 }
 

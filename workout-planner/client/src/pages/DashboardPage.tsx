@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/axios';
-import { CalendarDays, CheckCircle, ChevronRight, Circle, Dumbbell, Flame, Lock, Target, TimerReset } from 'lucide-react';
+import { CalendarDays, CheckCircle, ChevronRight, Circle, Lock } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuthStore } from '../store/authStore';
 
@@ -34,32 +34,6 @@ function formatCompletionDate(date: string | null) {
         return null;
     }
     return new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
-
-function DashboardMetric({
-    icon: Icon,
-    label,
-    value,
-    tone,
-}: {
-    icon: typeof Flame;
-    label: string;
-    value: string;
-    tone: string;
-}) {
-    return (
-        <div className="surface-panel p-5">
-            <div className="flex items-start justify-between">
-                <div>
-                    <p className="section-label">{label}</p>
-                    <p className="mt-3 text-3xl font-black tracking-tight text-slate-900">{value}</p>
-                </div>
-                <div className={clsx('rounded-2xl p-3', tone)}>
-                    <Icon className="h-5 w-5" />
-                </div>
-            </div>
-        </div>
-    );
 }
 
 export function DashboardPage() {
@@ -167,16 +141,14 @@ export function DashboardPage() {
     const weekDays = plan.days.slice(weekStartIndex, weekStartIndex + 7);
     const streak = getStreak(plan.days);
     const remainingDays = plan.days.length - completedDays;
-    const restDays = plan.days.filter(day => day.title.toLowerCase().includes('rest')).length;
-
     return (
         <div className="app-shell px-4 py-6 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-6xl space-y-6">
+            <div className="mx-auto max-w-5xl space-y-6">
                 <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <p className="section-label">Workout Planner</p>
                         <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-900">
-                            Your training home base
+                            Ready for today&apos;s training
                         </h1>
                     </div>
                     <div className="flex items-center gap-3">
@@ -192,62 +164,54 @@ export function DashboardPage() {
                     </div>
                 </header>
 
-                <section className="grid gap-5 lg:grid-cols-[1.3fr,0.9fr]">
-                    <div className="surface-panel overflow-hidden p-6 sm:p-8">
-                        <div className="flex flex-col gap-8">
-                            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                                <div className="max-w-2xl">
-                                    <p className="section-label text-amber-700">Today</p>
-                                    <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-                                        {currentDay ? currentDay.title : 'You cleared the full plan'}
-                                    </h2>
-                                    <p className="mt-4 text-base leading-7 text-slate-600">
-                                        {currentDay
-                                            ? 'Your next session is ready. Open it, expand the movement demos, and work through each set with a clearer guided flow.'
-                                            : 'All current sessions are done. You can revisit earlier days or start a new onboarding flow to generate another block.'}
-                                    </p>
-                                </div>
-                                <div className="rounded-[24px] bg-amber-50 px-5 py-4 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.2)]">
-                                    <p className="section-label text-amber-700">Progress</p>
-                                    <p className="mt-3 text-4xl font-black text-slate-900">{progressPercent}%</p>
-                                </div>
+                <section className="surface-panel overflow-hidden p-6 sm:p-8">
+                    <div className="flex flex-col gap-6">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                            <div className="max-w-2xl">
+                                <p className="section-label text-amber-700">Today</p>
+                                <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+                                    {currentDay ? currentDay.title : 'You cleared the full plan'}
+                                </h2>
+                                <p className="mt-4 text-base leading-7 text-slate-600">
+                                    {currentDay
+                                        ? 'Open the next day and the workout screen will walk you through one exercise at a time.'
+                                        : 'You finished the active block. Rebuild the plan if you want a fresh cycle.'}
+                                </p>
                             </div>
-
-                            <div className="space-y-3">
-                                <div className="progress-track">
-                                    <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
-                                </div>
-                                <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-slate-500">
-                                    <span>{completedDays} of {plan.days.length} days completed</span>
-                                    <span className="text-slate-300">•</span>
-                                    <span>{remainingDays} sessions remaining</span>
-                                    <span className="text-slate-300">•</span>
-                                    <span>{restDays} built-in recovery days</span>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col gap-3 sm:flex-row">
-                                <button
-                                    onClick={() => currentDay ? navigate(`/workout/${currentDay.id}`) : navigate('/onboarding')}
-                                    className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-4 text-sm font-bold uppercase tracking-[0.2em] text-white transition hover:bg-slate-800"
-                                >
-                                    {currentDay ? 'Resume session' : 'Build next plan'}
-                                    <ChevronRight className="h-4 w-4" />
-                                </button>
-                                <button
-                                    onClick={() => navigate('/onboarding')}
-                                    className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-6 py-4 text-sm font-bold uppercase tracking-[0.2em] text-slate-600 transition hover:border-amber-300 hover:bg-amber-50"
-                                >
-                                    Rebuild from onboarding
-                                </button>
+                            <div className="rounded-[24px] bg-amber-50 px-5 py-4 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.2)]">
+                                <p className="section-label text-amber-700">Progress</p>
+                                <p className="mt-3 text-4xl font-black text-slate-900">{progressPercent}%</p>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
-                        <DashboardMetric icon={Flame} label="Current streak" value={`${streak} days`} tone="bg-amber-100 text-amber-700" />
-                        <DashboardMetric icon={Target} label="Next checkpoint" value={`Day ${currentDay?.dayNumber ?? plan.days.length}`} tone="bg-emerald-100 text-emerald-700" />
-                        <DashboardMetric icon={TimerReset} label="Recovery built in" value={`${restDays} rest days`} tone="bg-sky-100 text-sky-700" />
+                        <div className="space-y-3">
+                            <div className="progress-track">
+                                <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-slate-500">
+                                <span>{completedDays} of {plan.days.length} days completed</span>
+                                <span className="text-slate-300">•</span>
+                                <span>{remainingDays} sessions left</span>
+                                <span className="text-slate-300">•</span>
+                                <span>{streak} day streak</span>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                            <button
+                                onClick={() => currentDay ? navigate(`/workout/${currentDay.id}`) : navigate('/onboarding')}
+                                className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-4 text-sm font-bold uppercase tracking-[0.2em] text-white transition hover:bg-slate-800"
+                            >
+                                {currentDay ? 'Start today' : 'Build next plan'}
+                                <ChevronRight className="h-4 w-4" />
+                            </button>
+                            <button
+                                onClick={() => navigate('/onboarding')}
+                                className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-6 py-4 text-sm font-bold uppercase tracking-[0.2em] text-slate-600 transition hover:border-amber-300 hover:bg-amber-50"
+                            >
+                                Rebuild plan
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -256,9 +220,9 @@ export function DashboardPage() {
                         <div>
                             <p className="section-label">This week</p>
                             <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">
-                                Stay focused on the next seven days
-                            </h2>
-                        </div>
+                            Pick a day and train
+                        </h2>
+                    </div>
                         <div className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
                             <CalendarDays className="h-4 w-4" />
                             Week {currentWeek}
@@ -309,19 +273,13 @@ export function DashboardPage() {
                 </section>
 
                 <section className="surface-panel p-6 sm:p-8">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                        <div>
-                            <p className="section-label">Plan map</p>
-                            <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">
-                                Explore the full 30-day block
-                            </h2>
-                        </div>
-                        <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-500">
-                            <Dumbbell className="h-4 w-4" />
-                            Full sequence
-                        </div>
+                    <div>
+                        <p className="section-label">All days</p>
+                        <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">
+                            Full plan at a glance
+                        </h2>
                     </div>
-                    <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {plan.days.map((day, index) => {
                         const isLocked = index > (currentDayIndex === -1 ? 30 : currentDayIndex);
                         const isCurrent = index === currentDayIndex;
@@ -333,10 +291,10 @@ export function DashboardPage() {
                                 onClick={() => !isLocked && navigate(`/workout/${day.id}`)}
                                 disabled={isLocked}
                                 className={clsx(
-                                    'rounded-[26px] border p-5 text-left transition',
+                                    'rounded-[22px] border p-4 text-left transition',
                                     isCurrent
                                         ? 'border-amber-300 bg-white shadow-[0_18px_40px_rgba(245,158,11,0.12)]'
-                                        : 'border-slate-200 bg-white/70 hover:border-slate-300 hover:bg-white',
+                                    : 'border-slate-200 bg-white/70 hover:border-slate-300 hover:bg-white',
                                     isLocked && 'cursor-not-allowed opacity-45'
                                 )}
                             >
@@ -355,7 +313,7 @@ export function DashboardPage() {
                                         <Circle className="h-5 w-5 text-slate-300" />
                                     )}
                                 </div>
-                                <h3 className="mt-4 text-lg font-black tracking-tight text-slate-900">
+                                <h3 className="mt-4 text-base font-black tracking-tight text-slate-900">
                                     {day.title}
                                 </h3>
                                 {formatCompletionDate(day.completedAt) && (
