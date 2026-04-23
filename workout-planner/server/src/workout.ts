@@ -519,8 +519,7 @@ router.get('/plan/current', authMiddleware, async (req: Request, res: Response):
     res.json({ plan: transformPlan(plan) });
 });
 
-router.get('/focus/:focusKey', authMiddleware, async (req: Request, res: Response): Promise<void> => {
-    const focusKey = req.params.focusKey as FocusKey;
+async function handleGetFocusWorkout(req: Request, res: Response, focusKey: FocusKey): Promise<void> {
     if (!FOCUS_KEYS.includes(focusKey)) {
         res.status(400).json({ error: 'Invalid focus key' });
         return;
@@ -533,6 +532,20 @@ router.get('/focus/:focusKey', authMiddleware, async (req: Request, res: Respons
     }
 
     res.json({ focusWorkout });
+}
+
+router.get('/focus', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+    const focusKey = typeof req.query.focusKey === 'string' ? req.query.focusKey as FocusKey : undefined;
+    if (!focusKey) {
+        res.status(400).json({ error: 'focusKey is required' });
+        return;
+    }
+
+    await handleGetFocusWorkout(req, res, focusKey);
+});
+
+router.get('/focus/:focusKey', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+    await handleGetFocusWorkout(req, res, req.params.focusKey as FocusKey);
 });
 
 async function handleGetWorkoutDay(req: Request, res: Response, dayId: string): Promise<void> {

@@ -513,7 +513,9 @@ export function DashboardPage() {
             try {
                 setFocusLoadingKey(activeFocus);
                 setFocusError(null);
-                const res = await api.get(`/workout/focus/${activeFocus}`);
+                const res = await api.get('/workout/focus', {
+                    params: { focusKey: activeFocus }
+                });
                 setFocusWorkouts((current) => ({
                     ...current,
                     [activeFocus]: res.data.focusWorkout,
