@@ -5,22 +5,28 @@
 @layer base {
   :root {
     color-scheme: light;
+    --app-blue: #2563eb;
+    --app-sky: #38bdf8;
+    --app-pink: #ec4899;
+    --app-rose: #fb7185;
+    --app-cream: #fff8fb;
+    --app-ink: #172554;
   }
 
   html {
     min-height: 100%;
-    background: #f4efe6;
+    background: #f6f7ff;
   }
 
   body {
     min-height: 100vh;
     margin: 0;
-    color: #0f172a;
+    color: var(--app-ink);
     background:
-      radial-gradient(circle at top left, rgba(251, 191, 36, 0.2), transparent 22rem),
-      radial-gradient(circle at top right, rgba(14, 165, 233, 0.16), transparent 24rem),
-      linear-gradient(180deg, #f8f3ea 0%, #efe8dc 100%);
-    font-family: "Trebuchet MS", "Avenir Next", "Segoe UI", sans-serif;
+      radial-gradient(circle at top left, rgba(56, 189, 248, 0.24), transparent 20rem),
+      radial-gradient(circle at top right, rgba(236, 72, 153, 0.22), transparent 22rem),
+      linear-gradient(180deg, #f9fbff 0%, #fdf4ff 56%, #fff8fb 100%);
+    font-family: "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -35,7 +41,7 @@
   }
 
   ::selection {
-    background: rgba(245, 158, 11, 0.28);
+    background: rgba(236, 72, 153, 0.18);
   }
 }
 
@@ -45,18 +51,34 @@
   }
 
   .surface-panel {
-    @apply rounded-[28px] border border-white/70 bg-white/80 shadow-[0_24px_60px_rgba(148,163,184,0.22)] backdrop-blur-sm;
+    @apply rounded-[28px] border border-white/80 bg-white/80 shadow-[0_24px_60px_rgba(37,99,235,0.12)] backdrop-blur-sm;
   }
 
   .section-label {
-    @apply text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-slate-500;
+    @apply text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-slate-500;
   }
 
   .progress-track {
-    @apply h-2.5 overflow-hidden rounded-full bg-slate-200/80;
+    @apply h-2.5 overflow-hidden rounded-full bg-slate-200/70;
   }
 
   .progress-fill {
-    @apply h-full rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-500;
+    @apply h-full rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-pink-500;
+  }
+
+  .mobile-shell {
+    @apply mx-auto flex min-h-screen w-full max-w-[29rem] flex-col pb-24;
+  }
+
+  .mobile-tab {
+    @apply flex min-w-0 flex-1 items-center justify-center rounded-full px-3 py-3 text-sm font-bold transition;
+  }
+
+  .mobile-card {
+    @apply rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-[0_18px_36px_rgba(37,99,235,0.1)];
+  }
+
+  .gradient-chip {
+    @apply rounded-full bg-gradient-to-r from-sky-500 to-pink-500 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-white;
   }
 }
