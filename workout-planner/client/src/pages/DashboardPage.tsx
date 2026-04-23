@@ -2,12 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import {
-    Check,
     CheckCircle2,
     ChevronRight,
     Compass,
     History as HistoryIcon,
     LoaderCircle,
+    PlayCircle,
     Sparkles,
     TimerReset,
 } from 'lucide-react';
@@ -308,8 +308,13 @@ function DiscoverTab({
     onRebuild: () => void;
 }) {
     const workoutSectionRef = useRef<HTMLElement | null>(null);
+    const exerciseCardRefs = useRef<Record<string, HTMLElement | null>>({});
+    const pendingExerciseScrollId = useRef<string | null>(null);
     const [expandedPreviewId, setExpandedPreviewId] = useState<string | null>(null);
     const [pendingScroll, setPendingScroll] = useState(false);
+    const [completedSetsByFocus, setCompletedSetsByFocus] = useState<Partial<Record<FocusKey, Record<string, number[]>>>>({});
+
+    const completedSetLookup = completedSetsByFocus[activeFocus] ?? {};
 
     const focusSections = useMemo(() => {
         if (!focusWorkout) {
@@ -325,15 +330,23 @@ function DiscoverTab({
             .filter((section) => section.exercises.length > 0);
     }, [focusWorkout]);
 
+    function getCompletedDiscoverSets(exerciseId: string) {
+        return completedSetLookup[exerciseId]?.length ?? 0;
+    }
+
     useEffect(() => {
         if (!focusWorkout) {
             return;
         }
 
+        const firstOpenExercise = focusWorkout.exercises.find((exercise) => getCompletedDiscoverSets(exercise.id) < exercise.targetSets)
+            ?? focusWorkout.exercises[0]
+            ?? null;
+
         if (!expandedPreviewId || !focusWorkout.exercises.some((exercise) => exercise.id === expandedPreviewId)) {
-            setExpandedPreviewId(focusWorkout.exercises[0]?.id ?? null);
+            setExpandedPreviewId(firstOpenExercise?.id ?? null);
         }
-    }, [expandedPreviewId, focusWorkout]);
+    }, [completedSetLookup, expandedPreviewId, focusWorkout]);
 
     useEffect(() => {
         if (!pendingScroll || focusLoading || !workoutSectionRef.current) {
@@ -350,6 +363,77 @@ function DiscoverTab({
 
         return () => window.clearTimeout(timeout);
     }, [pendingScroll, focusError, focusLoading, focusWorkout]);
+
+    useEffect(() => {
+        const targetExerciseId = pendingExerciseScrollId.current ?? expandedPreviewId;
+        if (!targetExerciseId) {
+            return;
+        }
+
+        const element = exerciseCardRefs.current[targetExerciseId];
+        if (!element) {
+            return;
+        }
+
+        const timeout = window.setTimeout(() => {
+            element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
+            pendingExerciseScrollId.current = null;
+        }, 80);
+
+        return () => window.clearTimeout(timeout);
+    }, [activeFocus, completedSetLookup, expandedPreviewId, focusWorkout]);
+
+    const handleMarkDiscoverSetDone = (exerciseId: string, setNumber: number) => {
+        if (!focusWorkout) {
+            return;
+        }
+
+        const currentExercise = focusWorkout.exercises.find((exercise) => exercise.id === exerciseId);
+        if (!currentExercise) {
+            return;
+        }
+
+        const existingDoneSets = completedSetLookup[exerciseId] ?? [];
+        if (existingDoneSets.includes(setNumber)) {
+            return;
+        }
+
+        const nextDoneSets = [...existingDoneSets, setNumber].sort((left, right) => left - right);
+        const currentExerciseCompleted = nextDoneSets.length >= currentExercise.targetSets;
+
+        let nextExpandedExerciseId = exerciseId;
+
+        if (currentExerciseCompleted) {
+            const currentIndex = focusWorkout.exercises.findIndex((exercise) => exercise.id === exerciseId);
+            const nextUnfinishedExercise = focusWorkout.exercises
+                .slice(currentIndex + 1)
+                .find((exercise) => {
+                    const alreadyDone = exercise.id === exerciseId
+                        ? nextDoneSets.length
+                        : getCompletedDiscoverSets(exercise.id);
+                    return alreadyDone < exercise.targetSets;
+                });
+
+            nextExpandedExerciseId = nextUnfinishedExercise?.id ?? focusWorkout.exercises[currentIndex + 1]?.id ?? exerciseId;
+        }
+
+        setCompletedSetsByFocus((current) => ({
+            ...current,
+            [activeFocus]: {
+                ...(current[activeFocus] ?? {}),
+                [exerciseId]: nextDoneSets,
+            },
+        }));
+
+        if (nextExpandedExerciseId !== exerciseId) {
+            pendingExerciseScrollId.current = nextExpandedExerciseId;
+        }
+
+        setExpandedPreviewId(nextExpandedExerciseId);
+    };
 
     return (
         <div className="space-y-4">
@@ -443,13 +527,19 @@ function DiscoverTab({
                                 <div className="space-y-4">
                                     {section.exercises.map((exercise, index) => {
                                         const isExpanded = expandedPreviewId === exercise.id;
+                                        const completedExerciseSets = getCompletedDiscoverSets(exercise.id);
+                                        const isComplete = completedExerciseSets >= exercise.targetSets;
 
                                         return (
                                             <article
                                                 key={exercise.id}
+                                                ref={(element) => {
+                                                    exerciseCardRefs.current[exercise.id] = element;
+                                                }}
                                                 className={clsx(
                                                     'mobile-card overflow-hidden p-0 transition',
-                                                    isExpanded && 'ring-2 ring-sky-200 shadow-[0_20px_44px_rgba(37,99,235,0.16)]'
+                                                    isExpanded && 'ring-2 ring-sky-200 shadow-[0_20px_44px_rgba(37,99,235,0.16)]',
+                                                    isComplete && 'border-sky-200 bg-sky-50/70'
                                                 )}
                                             >
                                                 <button
@@ -470,8 +560,8 @@ function DiscoverTab({
                                                     </div>
 
                                                     <div className="shrink-0 rounded-[18px] bg-slate-100 px-3 py-2 text-right">
-                                                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Sets</p>
-                                                        <p className="mt-1 text-sm font-black text-slate-900">{exercise.targetSets}</p>
+                                                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Progress</p>
+                                                        <p className="mt-1 text-sm font-black text-slate-900">{completedExerciseSets}/{exercise.targetSets}</p>
                                                     </div>
                                                 </button>
 
@@ -494,11 +584,17 @@ function DiscoverTab({
                                                 <div className="space-y-2 border-t border-slate-100 bg-white/70 px-4 py-4">
                                                     {Array.from({ length: exercise.targetSets }, (_, itemIndex) => {
                                                         const setNumber = itemIndex + 1;
+                                                        const isDone = (completedSetLookup[exercise.id] ?? []).includes(setNumber);
 
                                                         return (
                                                             <div
                                                                 key={setNumber}
-                                                                className="flex items-center justify-between rounded-[18px] border border-slate-200 bg-white px-4 py-3"
+                                                                className={clsx(
+                                                                    'flex items-center justify-between rounded-[18px] border px-4 py-3 transition',
+                                                                    isDone
+                                                                        ? 'border-sky-200 bg-sky-50'
+                                                                        : 'border-slate-200 bg-white'
+                                                                )}
                                                             >
                                                                 <div>
                                                                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -509,14 +605,40 @@ function DiscoverTab({
                                                                     </p>
                                                                 </div>
 
-                                                                <div className="inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-sky-700">
-                                                                    <Check className="h-3.5 w-3.5" />
-                                                                    Planned
-                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleMarkDiscoverSetDone(exercise.id, setNumber)}
+                                                                    className={clsx(
+                                                                        'inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-[0.16em] transition',
+                                                                        isDone
+                                                                            ? 'bg-sky-600 text-white'
+                                                                            : 'bg-[linear-gradient(90deg,#0ea5e9,#2563eb,#ec4899)] text-white shadow-[0_12px_24px_rgba(37,99,235,0.16)]'
+                                                                    )}
+                                                                >
+                                                                    {isDone ? (
+                                                                        <>
+                                                                            <CheckCircle2 className="h-4 w-4" />
+                                                                            Done
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <PlayCircle className="h-4 w-4" />
+                                                                            Mark done
+                                                                        </>
+                                                                    )}
+                                                                </button>
                                                             </div>
                                                         );
                                                     })}
                                                 </div>
+
+                                                {isComplete && (
+                                                    <div className="border-t border-slate-100 px-4 py-4">
+                                                        <div className="w-fit rounded-full bg-sky-100 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-sky-700">
+                                                            Completed
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </article>
                                         );
                                     })}
