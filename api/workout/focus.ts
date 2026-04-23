@@ -30,6 +30,8 @@ const FOCUS_CONFIG: Record<FocusKey, { label: string; summary: string }> = {
     },
 };
 
+type FocusPhase = 'warm-up' | 'main' | 'cool-down';
+
 function verifyToken(req: VercelRequest): { userId: string } | null {
     const auth = req.headers.authorization;
     if (!auth || !auth.startsWith('Bearer ')) return null;
@@ -95,6 +97,22 @@ function getExerciseCount(timePerWorkout: number) {
     if (timePerWorkout <= 25) return 5;
     if (timePerWorkout <= 40) return 6;
     return 8;
+}
+
+function getFocusPhaseCounts(timePerWorkout: number) {
+    if (timePerWorkout <= 15) {
+        return { warmUp: 1, main: 3, coolDown: 1 };
+    }
+
+    if (timePerWorkout <= 25) {
+        return { warmUp: 2, main: 4, coolDown: 2 };
+    }
+
+    if (timePerWorkout <= 40) {
+        return { warmUp: 2, main: 5, coolDown: 2 };
+    }
+
+    return { warmUp: 3, main: 6, coolDown: 3 };
 }
 
 function getProfileSummary(profile: Profile) {
@@ -205,6 +223,58 @@ function matchesFocus(exercise: Exercise, focusKey: FocusKey) {
         );
 }
 
+function isMobilityExercise(exercise: Exercise) {
+    return exercise.workoutType === 'Mobility and recovery';
+}
+
+function isStaticStretch(exercise: Exercise) {
+    const lowerName = exercise.name.toLowerCase();
+    return lowerName.includes('stretch') || lowerName.includes('pose') || lowerName.includes('hang');
+}
+
+function matchesMobilityForFocus(exercise: Exercise, focusKey: FocusKey) {
+    const focusAreas = parseStringArray(exercise.focusAreaTags);
+    const lowerName = exercise.name.toLowerCase();
+    const lowerPattern = exercise.movementPattern.toLowerCase();
+
+    if (focusKey === 'full-body') {
+        return true;
+    }
+
+    if (focusKey === 'abs') {
+        return focusAreas.includes('Core')
+            || lowerPattern.includes('core')
+            || lowerName.includes('thoracic')
+            || lowerName.includes('open book')
+            || lowerName.includes('cat')
+            || lowerName.includes('child');
+    }
+
+    if (focusKey === 'legs') {
+        return focusAreas.includes('Glutes and legs')
+            || lowerName.includes('hip')
+            || lowerName.includes('hamstring')
+            || lowerName.includes('ankle')
+            || lowerName.includes('calf')
+            || lowerPattern.includes('hinge');
+    }
+
+    if (focusKey === 'butt') {
+        return focusAreas.includes('Glutes and legs')
+            || lowerName.includes('glute')
+            || lowerName.includes('hip')
+            || lowerName.includes('hamstring')
+            || lowerName.includes('figure four');
+    }
+
+    return focusAreas.includes('Chest and arms')
+        || lowerName.includes('shoulder')
+        || lowerName.includes('chest')
+        || lowerName.includes('lat')
+        || lowerName.includes('wall slide')
+        || lowerName.includes('external rotation');
+}
+
 function scoreFocusExercise(exercise: Exercise, profile: Profile, focusKey: FocusKey) {
     let score = 50;
     const focusAreas = parseStringArray(exercise.focusAreaTags);
@@ -235,7 +305,39 @@ function scoreFocusExercise(exercise: Exercise, profile: Profile, focusKey: Focu
     return score;
 }
 
-function buildExerciseTarget(exercise: Exercise, profile: Profile) {
+function scoreMobilityExercise(exercise: Exercise, focusKey: FocusKey, phase: FocusPhase) {
+    let score = 40;
+
+    if (matchesMobilityForFocus(exercise, focusKey)) {
+        score += 26;
+    }
+
+    if (phase === 'warm-up' && !isStaticStretch(exercise)) {
+        score += 18;
+    }
+
+    if (phase === 'cool-down' && isStaticStretch(exercise)) {
+        score += 18;
+    }
+
+    const lowerName = exercise.name.toLowerCase();
+
+    if (phase === 'warm-up') {
+        if (lowerName.includes('drill') || lowerName.includes('rotation') || lowerName.includes('rock') || lowerName.includes('slide') || lowerName.includes('camel')) {
+            score += 10;
+        }
+    }
+
+    if (phase === 'cool-down') {
+        if (lowerName.includes('stretch') || lowerName.includes('pose')) {
+            score += 10;
+        }
+    }
+
+    return score;
+}
+
+function buildExerciseTarget(exercise: Exercise, profile: Profile, phase: FocusPhase) {
     const lowerName = exercise.name.toLowerCase();
     const lowerPattern = exercise.movementPattern.toLowerCase();
     const sets = getSetCount(profile);
@@ -243,42 +345,67 @@ function buildExerciseTarget(exercise: Exercise, profile: Profile) {
     const experienceRank = getUserExperienceRank(profile.experienceLevel);
     const isHold = lowerName.includes('plank') || lowerName.includes('hold') || lowerName.includes('dead hang') || lowerName.includes('wall sit');
 
-    if (exercise.workoutType === 'Mobility and recovery') {
-        const seconds = profile.timePerWorkout <= 25 ? 35 : 45;
-        return { targetLabel: `2 x ${seconds}s`, restSeconds: 20 };
+    if (isMobilityExercise(exercise)) {
+        if (phase === 'warm-up' && !isStaticStretch(exercise)) {
+            const reps = experienceRank <= 1 ? 8 : 10;
+            return { targetSets: 1, targetReps: reps, targetSeconds: null, targetRestSeconds: 15, targetLabel: `1 x ${reps} reps` };
+        }
+
+        const seconds = profile.timePerWorkout <= 25 ? 30 : 40;
+        return { targetSets: 1, targetReps: null, targetSeconds: seconds, targetRestSeconds: 15, targetLabel: `1 x ${seconds}s` };
     }
 
     if (exercise.workoutType === 'Cardio conditioning') {
         const seconds = experienceRank <= 1 ? 30 : experienceRank === 2 ? 40 : 45;
-        return { targetLabel: `${Math.max(2, sets - 1)} rounds x ${seconds}s`, restSeconds: 25 };
+        return {
+            targetSets: Math.max(2, sets - 1),
+            targetReps: null,
+            targetSeconds: seconds,
+            targetRestSeconds: 25,
+            targetLabel: `${Math.max(2, sets - 1)} rounds x ${seconds}s`,
+        };
     }
 
     if (isHold || lowerPattern.includes('core')) {
         const seconds = experienceRank <= 1 ? 30 : experienceRank === 2 ? 40 : 45;
-        return { targetLabel: `${sets} x ${seconds}s`, restSeconds };
+        return {
+            targetSets: sets,
+            targetReps: null,
+            targetSeconds: seconds,
+            targetRestSeconds: restSeconds,
+            targetLabel: `${sets} x ${seconds}s`,
+        };
     }
 
     const reps = experienceRank <= 0 ? 10 : experienceRank === 1 ? 12 : experienceRank === 2 ? 10 : 8;
-    return { targetLabel: `${sets} x ${reps} reps`, restSeconds };
+    return {
+        targetSets: sets,
+        targetReps: reps,
+        targetSeconds: null,
+        targetRestSeconds: restSeconds,
+        targetLabel: `${sets} x ${reps} reps`,
+    };
 }
 
-function transformSuggestedExercise(exercise: Exercise, profile: Profile) {
+function transformSuggestedExercise(exercise: Exercise, profile: Profile, phase: FocusPhase) {
     const focusAreas = parseStringArray(exercise.focusAreaTags);
+    const target = buildExerciseTarget(exercise, profile, phase);
     const difficultyMin = titleCase(exercise.difficultyMin);
     const difficultyMax = titleCase(exercise.difficultyMax);
 
     return {
         id: exercise.id,
+        phase,
         name: exercise.name,
         muscleGroup: titleCase(focusAreas[0] ?? exercise.movementPattern ?? 'Full body'),
         difficulty: difficultyMin === difficultyMax ? difficultyMin : `${difficultyMin} - ${difficultyMax}`,
+        videoUrl: exercise.videoUrl,
         description: exercise.description ?? exercise.notes ?? '',
-        ...buildExerciseTarget(exercise, profile),
+        ...target,
     };
 }
 
-function selectFocusExercises(exercises: Exercise[], profile: Profile, focusKey: FocusKey) {
-    const limit = getExerciseCount(profile.timePerWorkout);
+function selectMainFocusExercises(exercises: Exercise[], profile: Profile, focusKey: FocusKey, limit: number) {
     const ranked = exercises
         .filter((exercise) => matchesFocus(exercise, focusKey))
         .map((exercise) => ({ exercise, score: scoreFocusExercise(exercise, profile, focusKey) }))
@@ -312,6 +439,23 @@ function selectFocusExercises(exercises: Exercise[], profile: Profile, focusKey:
     return selected;
 }
 
+function selectMobilityExercises(
+    exercises: Exercise[],
+    focusKey: FocusKey,
+    phase: FocusPhase,
+    limit: number,
+    excludedIds: Set<string>
+) {
+    return exercises
+        .filter((exercise) => isMobilityExercise(exercise))
+        .filter((exercise) => matchesMobilityForFocus(exercise, focusKey))
+        .filter((exercise) => !excludedIds.has(exercise.id))
+        .map((exercise) => ({ exercise, score: scoreMobilityExercise(exercise, focusKey, phase) }))
+        .sort((left, right) => right.score - left.score)
+        .slice(0, limit)
+        .map((entry) => entry.exercise);
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -335,7 +479,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const exercises = await prisma.exercise.findMany();
     const allowedPool = filterExercisesForProfile(exercises, profile);
-    const selected = selectFocusExercises(allowedPool, profile, focusKey);
+    const phaseCounts = getFocusPhaseCounts(profile.timePerWorkout);
+    const mainExercises = selectMainFocusExercises(allowedPool, profile, focusKey, phaseCounts.main);
+    const usedIds = new Set(mainExercises.map((exercise) => exercise.id));
+    const warmUpExercises = selectMobilityExercises(allowedPool, focusKey, 'warm-up', phaseCounts.warmUp, usedIds);
+
+    for (const exercise of warmUpExercises) {
+        usedIds.add(exercise.id);
+    }
+
+    const coolDownExercises = selectMobilityExercises(allowedPool, focusKey, 'cool-down', phaseCounts.coolDown, usedIds);
     const config = FOCUS_CONFIG[focusKey];
 
     return res.status(200).json({
@@ -346,7 +499,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             profileSummary: getProfileSummary(profile),
             estimatedMinutes: profile.timePerWorkout,
             experienceLevel: titleCase(profile.experienceLevel),
-            exercises: selected.map((exercise) => transformSuggestedExercise(exercise, profile)),
+            exercises: [
+                ...warmUpExercises.map((exercise) => transformSuggestedExercise(exercise, profile, 'warm-up')),
+                ...mainExercises.map((exercise) => transformSuggestedExercise(exercise, profile, 'main')),
+                ...coolDownExercises.map((exercise) => transformSuggestedExercise(exercise, profile, 'cool-down')),
+            ],
         }
     });
 }

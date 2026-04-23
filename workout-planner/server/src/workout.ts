@@ -6,6 +6,7 @@ import { authMiddleware } from './auth';
 const prisma = new PrismaClient();
 const router = Router();
 type FocusKey = 'full-body' | 'abs' | 'legs' | 'butt' | 'arms';
+type FocusPhase = 'warm-up' | 'main' | 'cool-down';
 
 const FOCUS_CONFIG: Record<FocusKey, { label: string; summary: string }> = {
     'full-body': {
@@ -94,6 +95,22 @@ function getExerciseCount(timePerWorkout: number) {
     if (timePerWorkout <= 25) return 5;
     if (timePerWorkout <= 40) return 6;
     return 8;
+}
+
+function getFocusPhaseCounts(timePerWorkout: number) {
+    if (timePerWorkout <= 15) {
+        return { warmUp: 1, main: 3, coolDown: 1 };
+    }
+
+    if (timePerWorkout <= 25) {
+        return { warmUp: 2, main: 4, coolDown: 2 };
+    }
+
+    if (timePerWorkout <= 40) {
+        return { warmUp: 2, main: 5, coolDown: 2 };
+    }
+
+    return { warmUp: 3, main: 6, coolDown: 3 };
 }
 
 function getProfileSummary(profile: Profile) {
@@ -238,6 +255,58 @@ function matchesFocus(exercise: Exercise, focusKey: FocusKey) {
         );
 }
 
+function isMobilityExercise(exercise: Exercise) {
+    return exercise.workoutType === 'Mobility and recovery';
+}
+
+function isStaticStretch(exercise: Exercise) {
+    const lowerName = exercise.name.toLowerCase();
+    return lowerName.includes('stretch') || lowerName.includes('pose') || lowerName.includes('hang');
+}
+
+function matchesMobilityForFocus(exercise: Exercise, focusKey: FocusKey) {
+    const focusAreas = parseStringArray(exercise.focusAreaTags);
+    const lowerName = exercise.name.toLowerCase();
+    const lowerPattern = exercise.movementPattern.toLowerCase();
+
+    if (focusKey === 'full-body') {
+        return true;
+    }
+
+    if (focusKey === 'abs') {
+        return focusAreas.includes('Core')
+            || lowerPattern.includes('core')
+            || lowerName.includes('thoracic')
+            || lowerName.includes('open book')
+            || lowerName.includes('cat')
+            || lowerName.includes('child');
+    }
+
+    if (focusKey === 'legs') {
+        return focusAreas.includes('Glutes and legs')
+            || lowerName.includes('hip')
+            || lowerName.includes('hamstring')
+            || lowerName.includes('ankle')
+            || lowerName.includes('calf')
+            || lowerPattern.includes('hinge');
+    }
+
+    if (focusKey === 'butt') {
+        return focusAreas.includes('Glutes and legs')
+            || lowerName.includes('glute')
+            || lowerName.includes('hip')
+            || lowerName.includes('hamstring')
+            || lowerName.includes('figure four');
+    }
+
+    return focusAreas.includes('Chest and arms')
+        || lowerName.includes('shoulder')
+        || lowerName.includes('chest')
+        || lowerName.includes('lat')
+        || lowerName.includes('wall slide')
+        || lowerName.includes('external rotation');
+}
+
 function scoreFocusExercise(exercise: Exercise, profile: Profile, focusKey: FocusKey) {
     let score = 50;
     const focusAreas = parseStringArray(exercise.focusAreaTags);
@@ -310,7 +379,39 @@ function scoreFocusExercise(exercise: Exercise, profile: Profile, focusKey: Focu
     return score;
 }
 
-function buildExerciseTarget(exercise: Exercise, profile: Profile) {
+function scoreMobilityExercise(exercise: Exercise, focusKey: FocusKey, phase: FocusPhase) {
+    let score = 40;
+
+    if (matchesMobilityForFocus(exercise, focusKey)) {
+        score += 26;
+    }
+
+    if (phase === 'warm-up' && !isStaticStretch(exercise)) {
+        score += 18;
+    }
+
+    if (phase === 'cool-down' && isStaticStretch(exercise)) {
+        score += 18;
+    }
+
+    const lowerName = exercise.name.toLowerCase();
+
+    if (phase === 'warm-up') {
+        if (lowerName.includes('drill') || lowerName.includes('rotation') || lowerName.includes('rock') || lowerName.includes('slide') || lowerName.includes('camel')) {
+            score += 10;
+        }
+    }
+
+    if (phase === 'cool-down') {
+        if (lowerName.includes('stretch') || lowerName.includes('pose')) {
+            score += 10;
+        }
+    }
+
+    return score;
+}
+
+function buildExerciseTarget(exercise: Exercise, profile: Profile, phase: FocusPhase) {
     const lowerName = exercise.name.toLowerCase();
     const lowerPattern = exercise.movementPattern.toLowerCase();
     const sets = getSetCount(profile);
@@ -322,9 +423,14 @@ function buildExerciseTarget(exercise: Exercise, profile: Profile) {
         || lowerName.includes('dead hang')
         || lowerName.includes('wall sit');
 
-    if (exercise.workoutType === 'Mobility and recovery') {
-        const seconds = profile.timePerWorkout <= 25 ? 35 : 45;
-        return { sets: 2, seconds, restSeconds: 20, targetLabel: `2 x ${seconds}s` };
+    if (isMobilityExercise(exercise)) {
+        if (phase === 'warm-up' && !isStaticStretch(exercise)) {
+            const reps = experienceRank <= 1 ? 8 : 10;
+            return { sets: 1, reps, seconds: null, restSeconds: 15, targetLabel: `1 x ${reps} reps` };
+        }
+
+        const seconds = profile.timePerWorkout <= 25 ? 30 : 40;
+        return { sets: 1, reps: null, seconds, restSeconds: 15, targetLabel: `1 x ${seconds}s` };
     }
 
     if (exercise.workoutType === 'Cardio conditioning') {
@@ -341,14 +447,15 @@ function buildExerciseTarget(exercise: Exercise, profile: Profile) {
     return { sets, reps, restSeconds, targetLabel: `${sets} x ${reps} reps` };
 }
 
-function transformSuggestedExercise(exercise: Exercise, profile: Profile) {
+function transformSuggestedExercise(exercise: Exercise, profile: Profile, phase: FocusPhase) {
     const focusAreas = parseStringArray(exercise.focusAreaTags);
-    const target = buildExerciseTarget(exercise, profile);
+    const target = buildExerciseTarget(exercise, profile, phase);
     const difficultyMin = titleCase(exercise.difficultyMin);
     const difficultyMax = titleCase(exercise.difficultyMax);
 
     return {
         id: exercise.id,
+        phase,
         name: exercise.name,
         muscleGroup: titleCase(focusAreas[0] ?? exercise.movementPattern ?? 'Full body'),
         difficulty: difficultyMin === difficultyMax ? difficultyMin : `${difficultyMin} - ${difficultyMax}`,
@@ -358,8 +465,7 @@ function transformSuggestedExercise(exercise: Exercise, profile: Profile) {
     };
 }
 
-function selectFocusExercises(exercises: Exercise[], profile: Profile, focusKey: FocusKey) {
-    const limit = getExerciseCount(profile.timePerWorkout);
+function selectMainFocusExercises(exercises: Exercise[], profile: Profile, focusKey: FocusKey, limit: number) {
     const ranked = exercises
         .filter((exercise) => matchesFocus(exercise, focusKey))
         .map((exercise) => ({ exercise, score: scoreFocusExercise(exercise, profile, focusKey) }))
@@ -404,6 +510,23 @@ function selectFocusExercises(exercises: Exercise[], profile: Profile, focusKey:
     return selected;
 }
 
+function selectMobilityExercises(
+    exercises: Exercise[],
+    focusKey: FocusKey,
+    phase: FocusPhase,
+    limit: number,
+    excludedIds: Set<string>
+) {
+    return exercises
+        .filter((exercise) => isMobilityExercise(exercise))
+        .filter((exercise) => matchesMobilityForFocus(exercise, focusKey))
+        .filter((exercise) => !excludedIds.has(exercise.id))
+        .map((exercise) => ({ exercise, score: scoreMobilityExercise(exercise, focusKey, phase) }))
+        .sort((left, right) => right.score - left.score)
+        .slice(0, limit)
+        .map((entry) => entry.exercise);
+}
+
 async function getProfileForUser(userId: string) {
     return prisma.profile.findUnique({
         where: { userId }
@@ -418,7 +541,16 @@ async function buildFocusWorkout(userId: string, focusKey: FocusKey) {
 
     const exercises = await prisma.exercise.findMany();
     const allowedPool = filterExercisesForProfile(exercises, profile);
-    const selected = selectFocusExercises(allowedPool, profile, focusKey);
+    const phaseCounts = getFocusPhaseCounts(profile.timePerWorkout);
+    const mainExercises = selectMainFocusExercises(allowedPool, profile, focusKey, phaseCounts.main);
+    const usedIds = new Set(mainExercises.map((exercise) => exercise.id));
+    const warmUpExercises = selectMobilityExercises(allowedPool, focusKey, 'warm-up', phaseCounts.warmUp, usedIds);
+
+    for (const exercise of warmUpExercises) {
+        usedIds.add(exercise.id);
+    }
+
+    const coolDownExercises = selectMobilityExercises(allowedPool, focusKey, 'cool-down', phaseCounts.coolDown, usedIds);
     const config = FOCUS_CONFIG[focusKey];
 
     return {
@@ -428,7 +560,11 @@ async function buildFocusWorkout(userId: string, focusKey: FocusKey) {
         profileSummary: getProfileSummary(profile),
         estimatedMinutes: profile.timePerWorkout,
         experienceLevel: titleCase(profile.experienceLevel),
-        exercises: selected.map((exercise) => transformSuggestedExercise(exercise, profile)),
+        exercises: [
+            ...warmUpExercises.map((exercise) => transformSuggestedExercise(exercise, profile, 'warm-up')),
+            ...mainExercises.map((exercise) => transformSuggestedExercise(exercise, profile, 'main')),
+            ...coolDownExercises.map((exercise) => transformSuggestedExercise(exercise, profile, 'cool-down')),
+        ],
     };
 }
 
