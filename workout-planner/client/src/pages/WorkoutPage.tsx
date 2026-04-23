@@ -61,6 +61,7 @@ export function WorkoutPage() {
     const { dayId } = useParams<{ dayId: string }>();
     const navigate = useNavigate();
     const exerciseRefs = useRef<Record<string, HTMLElement | null>>({});
+    const pendingScrollExerciseId = useRef<string | null>(null);
 
     const [workout, setWorkout] = useState<WorkoutDay | null>(null);
     const [loading, setLoading] = useState(true);
@@ -93,9 +94,10 @@ export function WorkoutPage() {
     }, [dayId]);
 
     useEffect(() => {
-        if (!expandedExerciseId) return;
+        const targetExerciseId = pendingScrollExerciseId.current ?? expandedExerciseId;
+        if (!targetExerciseId) return;
 
-        const element = exerciseRefs.current[expandedExerciseId];
+        const element = exerciseRefs.current[targetExerciseId];
         if (!element) return;
 
         const timeout = window.setTimeout(() => {
@@ -103,12 +105,13 @@ export function WorkoutPage() {
                 behavior: 'smooth',
                 block: 'start',
             });
+            pendingScrollExerciseId.current = null;
         }, 80);
 
         return () => window.clearTimeout(timeout);
-    }, [expandedExerciseId]);
+    }, [expandedExerciseId, workout]);
 
-    const handleLogSet = async (exerciseId: string, setNumber: number, reps: number, weight: number) => {
+    const handleLogSet = async (workoutExerciseId: string, exerciseId: string, setNumber: number, reps: number, weight: number) => {
         try {
             const res = await api.post('/workout/day/log', {
                 dayId,
@@ -119,12 +122,13 @@ export function WorkoutPage() {
             });
 
             let nextExerciseId: string | null = null;
+            let shouldAdvanceToNextExercise = false;
 
             setWorkout((previousWorkout) => {
                 if (!previousWorkout) return null;
 
                 const exercises = previousWorkout.exercises.map((exercise) => {
-                    if (exercise.exerciseId !== exerciseId) {
+                    if (exercise.id !== workoutExerciseId) {
                         return exercise;
                     }
 
@@ -141,13 +145,14 @@ export function WorkoutPage() {
                     return { ...exercise, logs: nextLogs };
                 });
 
-                const currentIndex = exercises.findIndex((exercise) => exercise.exerciseId === exerciseId);
+                const currentIndex = exercises.findIndex((exercise) => exercise.id === workoutExerciseId);
                 const currentExercise = exercises[currentIndex];
                 const currentExerciseDone = currentExercise ? getCompletedSets(currentExercise) >= currentExercise.targetSets : false;
 
                 if (currentExerciseDone) {
                     const nextExercise = exercises[currentIndex + 1];
                     nextExerciseId = nextExercise?.id ?? currentExercise?.id ?? null;
+                    shouldAdvanceToNextExercise = Boolean(nextExercise);
                 } else {
                     nextExerciseId = currentExercise?.id ?? null;
                 }
@@ -159,6 +164,9 @@ export function WorkoutPage() {
             });
 
             if (nextExerciseId) {
+                if (shouldAdvanceToNextExercise) {
+                    pendingScrollExerciseId.current = nextExerciseId;
+                }
                 setExpandedExerciseId(nextExerciseId);
             }
         } catch (logError) {
@@ -361,7 +369,7 @@ export function WorkoutPage() {
                                                 </div>
 
                                                 <button
-                                                    onClick={() => handleLogSet(exercise.exerciseId, setNumber, exercise.targetReps ?? 0, 0)}
+                                                    onClick={() => handleLogSet(exercise.id, exercise.exerciseId, setNumber, exercise.targetReps ?? 0, 0)}
                                                     className={clsx(
                                                         'inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-[0.16em] transition',
                                                         isDone
