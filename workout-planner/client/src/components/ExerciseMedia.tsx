@@ -1,4 +1,4 @@
-import { ExternalLink, PlayCircle, Video } from 'lucide-react';
+import { PlayCircle, Video } from 'lucide-react';
 
 type VideoSource =
     | { kind: 'youtube' | 'vimeo'; embedUrl: string; externalUrl: string; posterUrl?: string; label: string }
@@ -82,8 +82,6 @@ interface ExerciseMediaProps {
     videoUrl: string | null;
     isExpanded: boolean;
     onToggle: () => void;
-    muscleGroup: string;
-    difficulty: string;
 }
 
 export function ExerciseMedia({
@@ -91,8 +89,6 @@ export function ExerciseMedia({
     videoUrl,
     isExpanded,
     onToggle,
-    muscleGroup,
-    difficulty,
 }: ExerciseMediaProps) {
     const source = videoUrl ? resolveVideoSource(videoUrl) : null;
 
@@ -129,46 +125,16 @@ export function ExerciseMedia({
                 </div>
             )}
 
-            <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-white/90 backdrop-blur">
-                    {muscleGroup}
-                </span>
-                <span className="rounded-full border border-emerald-300/30 bg-emerald-300/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100 backdrop-blur">
-                    {difficulty}
-                </span>
-            </div>
-
             <div className="absolute inset-x-0 bottom-0 p-4">
-                <div className="flex items-center justify-between gap-3 rounded-[20px] border border-white/10 bg-slate-950/70 px-4 py-3 text-white backdrop-blur-md">
-                    <div>
-                        <p className="text-xs uppercase tracking-[0.24em] text-white/55">
-                            Exercise Demo
-                        </p>
-                        <p className="text-sm font-semibold">
-                            {source ? source.label : 'Video slot ready'}
-                        </p>
-                    </div>
-                    <div className="flex gap-2">
-                        <button
-                            type="button"
-                            onClick={onToggle}
-                            className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-amber-100"
-                        >
-                            <PlayCircle className="h-4 w-4" />
-                            {source ? (isExpanded ? 'Hide demo' : 'Play demo') : 'Preview area'}
-                        </button>
-                        {source && (
-                            <a
-                                href={source.externalUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/90 transition hover:bg-white/10"
-                            >
-                                <ExternalLink className="h-4 w-4" />
-                                Open
-                            </a>
-                        )}
-                    </div>
+                <div className="flex justify-end">
+                    <button
+                        type="button"
+                        onClick={onToggle}
+                        className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-sky-100"
+                    >
+                        <PlayCircle className="h-4 w-4" />
+                        {source ? (isExpanded ? 'Hide' : 'Play') : 'Preview'}
+                    </button>
                 </div>
             </div>
         </div>

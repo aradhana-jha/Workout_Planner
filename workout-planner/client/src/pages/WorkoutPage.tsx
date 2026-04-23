@@ -45,18 +45,6 @@ function getCompletedSets(item: WorkoutExercise) {
     return item.logs.filter((log) => log.isDone).length;
 }
 
-function getTargetLabel(item: WorkoutExercise) {
-    if (item.targetReps != null) {
-        return `${item.targetSets} x ${item.targetReps} reps`;
-    }
-
-    if (item.targetSeconds != null) {
-        return `${item.targetSets} x ${item.targetSeconds}s`;
-    }
-
-    return `${item.targetSets} sets`;
-}
-
 function getSetTargetLabel(item: WorkoutExercise) {
     if (item.targetReps != null) {
         return `${item.targetReps} reps`;
@@ -67,19 +55,6 @@ function getSetTargetLabel(item: WorkoutExercise) {
     }
 
     return 'Target set';
-}
-
-function getMuscleGroupLabel(item: WorkoutExercise) {
-    return item.exercise.muscleGroup?.trim() || 'Full body';
-}
-
-function getDifficultyLabel(item: WorkoutExercise) {
-    return item.exercise.difficulty?.trim() || 'All levels';
-}
-
-function getNextSetNumber(item: WorkoutExercise) {
-    return Array.from({ length: item.targetSets }, (_, index) => index + 1)
-        .find((setNumber) => !item.logs.find((log) => log.setNumber === setNumber)?.isDone) ?? null;
 }
 
 export function WorkoutPage() {
@@ -171,8 +146,8 @@ export function WorkoutPage() {
                 const currentExerciseDone = currentExercise ? getCompletedSets(currentExercise) >= currentExercise.targetSets : false;
 
                 if (currentExerciseDone) {
-                    const nextUnfinished = exercises.slice(currentIndex + 1).find((exercise) => getCompletedSets(exercise) < exercise.targetSets);
-                    nextExerciseId = nextUnfinished?.id ?? currentExercise?.id ?? exercises[exercises.length - 1]?.id ?? null;
+                    const nextExercise = exercises[currentIndex + 1];
+                    nextExerciseId = nextExercise?.id ?? currentExercise?.id ?? null;
                 } else {
                     nextExerciseId = currentExercise?.id ?? null;
                 }
@@ -306,7 +281,6 @@ export function WorkoutPage() {
                 <main className="space-y-4">
                     {workout.exercises.map((exercise, index) => {
                         const completedExerciseSets = getCompletedSets(exercise);
-                        const nextSetNumber = getNextSetNumber(exercise);
                         const isComplete = completedExerciseSets >= exercise.targetSets;
                         const isExpanded = expandedExerciseId === exercise.id;
 
@@ -345,21 +319,10 @@ export function WorkoutPage() {
                                     </div>
                                 </button>
 
-                                <div className="grid gap-3 px-4 pb-4 sm:grid-cols-3">
-                                    <div className="rounded-[20px] bg-slate-950 px-4 py-4 text-white">
-                                        <p className="section-label text-white/50">Target</p>
-                                        <p className="mt-2 text-base font-black">{getTargetLabel(exercise)}</p>
-                                    </div>
-                                    <div className="rounded-[20px] border border-slate-200 bg-white px-4 py-4">
-                                        <p className="section-label">Focus</p>
-                                        <p className="mt-2 text-base font-black text-slate-900">{getMuscleGroupLabel(exercise)}</p>
-                                    </div>
-                                    <div className="rounded-[20px] border border-slate-200 bg-white px-4 py-4">
-                                        <p className="section-label">Rest</p>
-                                        <p className="mt-2 flex items-center gap-2 text-base font-black text-slate-900">
-                                            <TimerReset className="h-4 w-4 text-pink-500" />
-                                            {exercise.targetRestSeconds ?? 0}s
-                                        </p>
+                                <div className="flex justify-end px-4 pb-4">
+                                    <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-900 shadow-[0_10px_24px_rgba(37,99,235,0.06)]">
+                                        <TimerReset className="h-4 w-4 text-pink-500" />
+                                        {exercise.targetRestSeconds ?? 0}s rest
                                     </div>
                                 </div>
 
@@ -367,8 +330,6 @@ export function WorkoutPage() {
                                     <ExerciseMedia
                                         title={exercise.exercise.name}
                                         videoUrl={exercise.exercise.videoUrl}
-                                        muscleGroup={getMuscleGroupLabel(exercise)}
-                                        difficulty={getDifficultyLabel(exercise)}
                                         isExpanded={isExpanded}
                                         onToggle={() => setExpandedExerciseId((current) => current === exercise.id ? null : exercise.id)}
                                     />
@@ -425,26 +386,13 @@ export function WorkoutPage() {
                                     })}
                                 </div>
 
-                                <div className="border-t border-slate-100 px-4 py-4">
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div>
-                                            <p className="section-label">Status</p>
-                                            <p className="mt-1 text-sm font-semibold text-slate-600">
-                                                {isComplete
-                                                    ? 'Exercise complete. The screen has moved you to the next unfinished item.'
-                                                    : nextSetNumber
-                                                        ? `Next up: set ${nextSetNumber}`
-                                                        : 'Ready to continue'}
-                                            </p>
+                                {isComplete && (
+                                    <div className="border-t border-slate-100 px-4 py-4">
+                                        <div className="rounded-full bg-sky-100 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-sky-700 w-fit">
+                                            Completed
                                         </div>
-
-                                        {isComplete && (
-                                            <div className="rounded-full bg-sky-100 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-sky-700">
-                                                Completed
-                                            </div>
-                                        )}
                                     </div>
-                                </div>
+                                )}
                             </article>
                         );
                     })}
