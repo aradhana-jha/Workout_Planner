@@ -45,6 +45,10 @@ function getCompletedSets(item: WorkoutExercise) {
     return item.logs.filter((log) => log.isDone).length;
 }
 
+function isExerciseComplete(item: WorkoutExercise) {
+    return getCompletedSets(item) >= item.targetSets;
+}
+
 function getSetTargetLabel(item: WorkoutExercise) {
     if (item.targetReps != null) {
         return `${item.targetReps} reps`;
@@ -121,52 +125,52 @@ export function WorkoutPage() {
                 weight,
             });
 
-            let nextExerciseId: string | null = null;
-            let shouldAdvanceToNextExercise = false;
+            if (!workout) {
+                return;
+            }
 
-            setWorkout((previousWorkout) => {
-                if (!previousWorkout) return null;
-
-                const exercises = previousWorkout.exercises.map((exercise) => {
-                    if (exercise.id !== workoutExerciseId) {
-                        return exercise;
-                    }
-
-                    const existingLogIndex = exercise.logs.findIndex((log) => log.setNumber === setNumber);
-                    const newLog = res.data.log;
-                    const nextLogs = [...exercise.logs];
-
-                    if (existingLogIndex >= 0) {
-                        nextLogs[existingLogIndex] = newLog;
-                    } else {
-                        nextLogs.push(newLog);
-                    }
-
-                    return { ...exercise, logs: nextLogs };
-                });
-
-                const currentIndex = exercises.findIndex((exercise) => exercise.id === workoutExerciseId);
-                const currentExercise = exercises[currentIndex];
-                const currentExerciseDone = currentExercise ? getCompletedSets(currentExercise) >= currentExercise.targetSets : false;
-
-                if (currentExerciseDone) {
-                    const nextExercise = exercises[currentIndex + 1];
-                    nextExerciseId = nextExercise?.id ?? currentExercise?.id ?? null;
-                    shouldAdvanceToNextExercise = Boolean(nextExercise);
-                } else {
-                    nextExerciseId = currentExercise?.id ?? null;
+            const nextExercises = workout.exercises.map((exercise) => {
+                if (exercise.id !== workoutExerciseId) {
+                    return exercise;
                 }
 
-                return {
-                    ...previousWorkout,
-                    exercises,
-                };
+                const existingLogIndex = exercise.logs.findIndex((log) => log.setNumber === setNumber);
+                const newLog = res.data.log;
+                const nextLogs = [...exercise.logs];
+
+                if (existingLogIndex >= 0) {
+                    nextLogs[existingLogIndex] = newLog;
+                } else {
+                    nextLogs.push(newLog);
+                }
+
+                return { ...exercise, logs: nextLogs };
             });
 
+            const currentIndex = nextExercises.findIndex((exercise) => exercise.id === workoutExerciseId);
+            const currentExercise = currentIndex >= 0 ? nextExercises[currentIndex] : null;
+            const currentExerciseDone = currentExercise ? isExerciseComplete(currentExercise) : false;
+
+            let nextExerciseId = currentExercise?.id ?? null;
+
+            if (currentExerciseDone && currentIndex >= 0) {
+                const nextUnfinishedExercise = nextExercises
+                    .slice(currentIndex + 1)
+                    .find((exercise) => !isExerciseComplete(exercise));
+
+                nextExerciseId = nextUnfinishedExercise?.id ?? nextExercises[currentIndex + 1]?.id ?? currentExercise?.id ?? null;
+            }
+
+            setWorkout({
+                ...workout,
+                exercises: nextExercises,
+            });
+
+            if (nextExerciseId && nextExerciseId !== currentExercise?.id) {
+                pendingScrollExerciseId.current = nextExerciseId;
+            }
+
             if (nextExerciseId) {
-                if (shouldAdvanceToNextExercise) {
-                    pendingScrollExerciseId.current = nextExerciseId;
-                }
                 setExpandedExerciseId(nextExerciseId);
             }
         } catch (logError) {
@@ -289,7 +293,7 @@ export function WorkoutPage() {
                 <main className="space-y-4">
                     {workout.exercises.map((exercise, index) => {
                         const completedExerciseSets = getCompletedSets(exercise);
-                        const isComplete = completedExerciseSets >= exercise.targetSets;
+                        const isComplete = isExerciseComplete(exercise);
                         const isExpanded = expandedExerciseId === exercise.id;
 
                         return (
