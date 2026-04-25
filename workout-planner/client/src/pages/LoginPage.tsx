@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { BrandMark } from '../components/BrandMark';
-import { APP_NAME, APP_SUPPORTING_LINE, APP_TAGLINE } from '../lib/brand';
+import { APP_NAME } from '../lib/brand';
+import logoImage from '../assets/brand/workout-planner-logo.png';
 
 export function LoginPage() {
     const [email, setEmail] = useState('');
@@ -38,27 +38,20 @@ export function LoginPage() {
                     <div className="absolute -right-8 bottom-4 h-28 w-28 rounded-full bg-pink-300/28 blur-2xl" />
 
                     <div className="relative flex flex-col items-center text-center">
-                        <BrandMark size="lg" />
-                        <p className="mt-5 text-[0.68rem] font-semibold uppercase tracking-[0.34em] text-sky-700">Personal training</p>
-                        <h1 className="mt-3 text-[2.35rem] font-black tracking-[-0.04em] text-slate-950">
+                        <img
+                            src={logoImage}
+                            alt={`${APP_NAME} logo`}
+                            className="h-28 w-28 rounded-[28px] object-cover shadow-[0_22px_48px_rgba(37,99,235,0.22)]"
+                        />
+                        <h1 className="mt-5 text-[2.35rem] font-black tracking-[-0.04em] text-slate-950">
                             {APP_NAME}
                         </h1>
-                        <p className="mt-3 max-w-[18rem] text-base font-semibold leading-7 text-slate-700">
-                            {APP_TAGLINE}
-                        </p>
-                        <p className="mt-2 max-w-[18rem] text-sm leading-6 text-slate-500">
-                            {APP_SUPPORTING_LINE}
-                        </p>
                     </div>
                 </section>
 
                 <section className="mobile-card px-5 py-5">
                     <div className="space-y-2 text-center">
-                        <p className="section-label">Login</p>
-                        <h2 className="text-2xl font-black tracking-tight text-slate-900">Continue with email</h2>
-                        <p className="text-sm leading-6 text-slate-600">
-                            Open your dashboard or start your first plan.
-                        </p>
+                        <h2 className="text-2xl font-black tracking-tight text-slate-900">Login with Email</h2>
                     </div>
 
                     {error && (
@@ -80,17 +73,6 @@ export function LoginPage() {
                                 placeholder="you@example.com"
                                 required
                             />
-                        </div>
-
-                        <div className="flex flex-wrap justify-center gap-2">
-                            {['Personalized', 'Trackable', 'Daily-ready'].map((item) => (
-                                <span
-                                    key={item}
-                                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-500"
-                                >
-                                    {item}
-                                </span>
-                            ))}
                         </div>
 
                         <div className="space-y-3">

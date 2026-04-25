@@ -14,8 +14,8 @@ import {
 import { api } from '../lib/axios';
 import { useAuthStore } from '../store/authStore';
 import { ExerciseMedia } from '../components/ExerciseMedia';
-import { BrandMark } from '../components/BrandMark';
 import { APP_NAME } from '../lib/brand';
+import logoImage from '../assets/brand/workout-planner-logo.png';
 import fullBodyArt from '../assets/focus/full-body.jpg';
 import absArt from '../assets/focus/abs.jpg';
 import legsArt from '../assets/focus/legs.jpg';
@@ -890,9 +890,12 @@ export function DashboardPage() {
             <div className="mobile-shell">
                 <header className="mb-4 flex items-start justify-between gap-4 px-1">
                     <div className="flex items-center gap-3">
-                        <BrandMark size="sm" />
+                        <img
+                            src={logoImage}
+                            alt={`${APP_NAME} logo`}
+                            className="h-11 w-11 rounded-[14px] object-cover shadow-[0_12px_24px_rgba(37,99,235,0.16)]"
+                        />
                         <div>
-                            <p className="section-label text-sky-700">Personal training</p>
                             <p className="text-sm font-black tracking-tight text-slate-900">{APP_NAME}</p>
                         </div>
                     </div>
