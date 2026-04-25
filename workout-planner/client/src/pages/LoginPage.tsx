@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Compass, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { BrandMark } from '../components/BrandMark';
+import { APP_NAME, APP_SUPPORTING_LINE, APP_TAGLINE } from '../lib/brand';
 
 export function LoginPage() {
     const [email, setEmail] = useState('');
@@ -29,57 +31,33 @@ export function LoginPage() {
     };
 
     return (
-        <div className="app-shell px-4 py-6">
-            <div className="mobile-shell justify-center gap-4">
-                <section className="overflow-hidden rounded-[32px] bg-[linear-gradient(150deg,#0ea5e9,#2563eb_50%,#ec4899)] px-5 py-6 text-white shadow-[0_28px_60px_rgba(37,99,235,0.28)]">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.3em] text-white/72">Workout Planner</p>
-                    <h1 className="mt-3 text-3xl font-black tracking-tight">
-                        Your daily workout plan, ready when you are.
-                    </h1>
-                    <p className="mt-3 text-sm leading-6 text-white/80">
-                        Build a plan around your time, level, and equipment. Open the next session fast, or discover a body-focus workout when you want to train a specific area.
-                    </p>
+        <div className="app-shell overflow-hidden px-4 py-6">
+            <div className="mobile-shell justify-center gap-5">
+                <section className="relative overflow-hidden rounded-[34px] bg-[linear-gradient(160deg,rgba(255,255,255,0.82),rgba(255,255,255,0.58))] px-5 py-7 shadow-[0_30px_70px_rgba(37,99,235,0.14)] backdrop-blur-xl">
+                    <div className="absolute -left-10 top-4 h-24 w-24 rounded-full bg-sky-300/32 blur-2xl" />
+                    <div className="absolute -right-8 bottom-4 h-28 w-28 rounded-full bg-pink-300/28 blur-2xl" />
 
-                    <div className="mt-5 grid gap-3">
-                        {[
-                            {
-                                icon: Sparkles,
-                                label: 'Personal plan',
-                                copy: '30-day routines shaped around your goal, recovery, and available equipment.',
-                            },
-                            {
-                                icon: Compass,
-                                label: 'Discover tab',
-                                copy: 'Quick picks for abs, legs, glutes, arms, and full-body training.',
-                            },
-                            {
-                                icon: CheckCircle2,
-                                label: 'Track progress',
-                                copy: 'See completed workouts, return to any day, and keep your history in one place.',
-                            },
-                        ].map((item) => (
-                            <div
-                                key={item.label}
-                                className="rounded-[22px] border border-white/18 bg-white/12 px-4 py-4 backdrop-blur-sm"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="rounded-full bg-white/16 p-2">
-                                        <item.icon className="h-4 w-4" />
-                                    </div>
-                                    <p className="text-sm font-black uppercase tracking-[0.16em]">{item.label}</p>
-                                </div>
-                                <p className="mt-3 text-sm leading-6 text-white/78">{item.copy}</p>
-                            </div>
-                        ))}
+                    <div className="relative flex flex-col items-center text-center">
+                        <BrandMark size="lg" />
+                        <p className="mt-5 text-[0.68rem] font-semibold uppercase tracking-[0.34em] text-sky-700">Personal training</p>
+                        <h1 className="mt-3 text-[2.35rem] font-black tracking-[-0.04em] text-slate-950">
+                            {APP_NAME}
+                        </h1>
+                        <p className="mt-3 max-w-[18rem] text-base font-semibold leading-7 text-slate-700">
+                            {APP_TAGLINE}
+                        </p>
+                        <p className="mt-2 max-w-[18rem] text-sm leading-6 text-slate-500">
+                            {APP_SUPPORTING_LINE}
+                        </p>
                     </div>
                 </section>
 
-                <section className="mobile-card p-5">
-                    <div className="space-y-2">
-                        <p className="section-label">Continue</p>
-                        <h2 className="text-2xl font-black tracking-tight text-slate-900">Sign in with your email</h2>
+                <section className="mobile-card px-5 py-5">
+                    <div className="space-y-2 text-center">
+                        <p className="section-label">Login</p>
+                        <h2 className="text-2xl font-black tracking-tight text-slate-900">Continue with email</h2>
                         <p className="text-sm leading-6 text-slate-600">
-                            Returning users go to their dashboard. First-time users can start onboarding right after sign-in.
+                            Open your dashboard or start your first plan.
                         </p>
                     </div>
 
@@ -102,6 +80,17 @@ export function LoginPage() {
                                 placeholder="you@example.com"
                                 required
                             />
+                        </div>
+
+                        <div className="flex flex-wrap justify-center gap-2">
+                            {['Personalized', 'Trackable', 'Daily-ready'].map((item) => (
+                                <span
+                                    key={item}
+                                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-500"
+                                >
+                                    {item}
+                                </span>
+                            ))}
                         </div>
 
                         <div className="space-y-3">
