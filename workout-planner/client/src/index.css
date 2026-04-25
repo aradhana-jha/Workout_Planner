@@ -5,18 +5,28 @@
 @layer base {
   :root {
     color-scheme: light;
-    --app-navy: #061427;
-    --app-navy-soft: #0b1e3f;
-    --app-teal: #18ddd2;
-    --app-teal-deep: #0eb8b0;
-    --app-steel: #8295b0;
-    --app-mist: #dce6f2;
-    --app-ink: #0d1930;
+    --app-dark: #0b1220;
+    --app-dark-secondary: #132238;
+    --app-dark-tertiary: #10243b;
+    --app-teal: #22c7b8;
+    --app-teal-deep: #0eafa3;
+    --app-soft-teal-bg: #e8fbf8;
+    --app-surface-main: #f7fafa;
+    --app-card-surface: #ffffff;
+    --app-border: #dde7ea;
+    --app-border-strong: #e1e8ed;
+    --app-ink: #0b1220;
+    --app-text-secondary: #66758a;
+    --app-inactive: #738097;
+    --app-dark-soft-text: #d7e0ea;
+    --app-dark-brand-text: #eaf7f5;
+    --app-hero-gradient: linear-gradient(135deg, #0b1220 0%, #10243b 60%, #18bdb2 130%);
+    --app-active-gradient: linear-gradient(135deg, #0b1220 0%, #10243b 55%, #17bdb2 130%);
   }
 
   html {
     min-height: 100%;
-    background: var(--app-navy);
+    background: var(--app-dark);
   }
 
   body {
@@ -24,9 +34,9 @@
     margin: 0;
     color: var(--app-ink);
     background:
-      radial-gradient(circle at top left, rgba(24, 221, 210, 0.2), transparent 18rem),
-      radial-gradient(circle at right center, rgba(130, 149, 176, 0.16), transparent 24rem),
-      linear-gradient(180deg, #071225 0%, #0a1730 38%, #0e2140 100%);
+      radial-gradient(circle at top left, rgba(34, 199, 184, 0.12), transparent 16rem),
+      radial-gradient(circle at right center, rgba(19, 34, 56, 0.34), transparent 24rem),
+      linear-gradient(180deg, #0b1220 0%, #0f1b2d 48%, #132238 100%);
     font-family: "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -42,29 +52,36 @@
   }
 
   ::selection {
-    background: rgba(24, 221, 210, 0.24);
+    background: rgba(34, 199, 184, 0.24);
   }
 }
 
 @layer components {
   .app-shell {
-    @apply min-h-screen text-slate-900;
+    @apply min-h-screen;
+    color: var(--app-ink);
   }
 
   .surface-panel {
-    @apply rounded-[28px] border border-white bg-white shadow-[0_24px_60px_rgba(6,20,39,0.28)] backdrop-blur-sm;
+    @apply rounded-[28px] backdrop-blur-sm;
+    border: 1px solid var(--app-border);
+    background: rgba(247, 250, 250, 0.96);
+    box-shadow: 0 24px 60px rgba(11, 18, 32, 0.24);
   }
 
   .section-label {
-    @apply text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#0eb8b0];
+    @apply text-[0.68rem] font-semibold uppercase tracking-[0.28em];
+    color: var(--app-teal-deep);
   }
 
   .progress-track {
-    @apply h-2.5 overflow-hidden rounded-full bg-slate-200/70;
+    @apply h-2.5 overflow-hidden rounded-full;
+    background: rgba(221, 231, 234, 0.9);
   }
 
   .progress-fill {
-    @apply h-full rounded-full bg-[linear-gradient(90deg,#18ddd2,#0eb8b0,#8295b0)];
+    @apply h-full rounded-full;
+    background: linear-gradient(90deg, #22c7b8 0%, #0eafa3 100%);
   }
 
   .mobile-shell {
@@ -76,10 +93,14 @@
   }
 
   .mobile-card {
-    @apply rounded-[24px] border border-white bg-white p-4 shadow-[0_18px_36px_rgba(6,20,39,0.24)];
+    @apply rounded-[24px] p-4;
+    border: 1px solid var(--app-border);
+    background: var(--app-surface-main);
+    box-shadow: 0 18px 36px rgba(11, 18, 32, 0.12);
   }
 
   .gradient-chip {
-    @apply rounded-full bg-[linear-gradient(90deg,#0b1e3f,#18ddd2)] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-white;
+    @apply rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-white;
+    background: var(--app-active-gradient);
   }
 }

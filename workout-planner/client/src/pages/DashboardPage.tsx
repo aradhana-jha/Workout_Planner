@@ -198,52 +198,52 @@ function PlanTab({
 
     return (
         <div className="space-y-4">
-            <section className="overflow-hidden rounded-[30px] bg-[linear-gradient(145deg,#061427,#0b1e3f_58%,#18ddd2)] p-5 text-white shadow-[0_26px_56px_rgba(6,20,39,0.4)]">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-white/72">Current plan</p>
+            <section className="overflow-hidden rounded-[30px] bg-[linear-gradient(135deg,#0B1220_0%,#10243B_60%,#18BDB2_130%)] p-5 text-white shadow-[0_26px_56px_rgba(11,18,32,0.32)]">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#D7E0EA]">Current plan</p>
                 <h2 className="mt-3 text-2xl font-black tracking-tight">
                     {currentDay ? currentDay.title : 'You finished the current block'}
                 </h2>
-                <p className="mt-3 max-w-sm text-sm leading-6 text-white/78">
+                <p className="mt-3 max-w-sm text-sm leading-6 text-[#D7E0EA]">
                     {currentDay
                         ? 'Jump into the next guided workout or open any day from the plan below.'
                         : 'Rebuild a new 30-day sequence when you want a fresh program.'}
                 </p>
 
                 <div className="mt-5 grid grid-cols-3 gap-3">
-                    <div className="rounded-[20px] bg-white/16 px-3 py-3 backdrop-blur-sm">
-                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-white/68">Done</p>
+                    <div className="rounded-[20px] border border-white/10 bg-white/8 px-3 py-3 backdrop-blur-sm">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[#D7E0EA]">Done</p>
                         <p className="mt-2 text-xl font-black">{completedDays}/30</p>
                     </div>
-                    <div className="rounded-[20px] bg-white/16 px-3 py-3 backdrop-blur-sm">
-                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-white/68">Left</p>
+                    <div className="rounded-[20px] border border-white/10 bg-white/8 px-3 py-3 backdrop-blur-sm">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[#D7E0EA]">Left</p>
                         <p className="mt-2 text-xl font-black">{remainingDays}</p>
                     </div>
-                    <div className="rounded-[20px] bg-white/16 px-3 py-3 backdrop-blur-sm">
-                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-white/68">Streak</p>
+                    <div className="rounded-[20px] border border-white/10 bg-white/8 px-3 py-3 backdrop-blur-sm">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[#D7E0EA]">Streak</p>
                         <p className="mt-2 text-xl font-black">{streak}d</p>
                     </div>
                 </div>
 
                 <div className="mt-5">
-                    <div className="h-2.5 overflow-hidden rounded-full bg-white/18">
+                    <div className="h-2.5 overflow-hidden rounded-full bg-white/12">
                         <div
-                            className="h-full rounded-full bg-[linear-gradient(90deg,#ffffff,#c7d5e4,#18ddd2)]"
+                            className="h-full rounded-full bg-[linear-gradient(90deg,#D7E0EA_0%,#A9E7E1_40%,#22C7B8_100%)]"
                             style={{ width: `${progressPercent}%` }}
                         />
                     </div>
-                    <p className="mt-3 text-sm font-medium text-white/78">{progressPercent}% complete</p>
+                    <p className="mt-3 text-sm font-medium text-[#D7E0EA]">{progressPercent}% complete</p>
                 </div>
 
                 <div className="mt-5 flex gap-3">
                     <button
                         onClick={() => currentDay ? onOpenDay(currentDay.id) : onRebuild()}
-                        className="flex-1 rounded-full bg-white px-4 py-3 text-sm font-bold uppercase tracking-[0.16em] text-slate-900 transition hover:bg-slate-100"
+                        className="flex-1 rounded-full bg-white px-4 py-3 text-sm font-bold uppercase tracking-[0.16em] text-[#0B1220] transition hover:bg-[#F7FAFA]"
                     >
                         {currentDay ? 'Continue' : 'Build again'}
                     </button>
                     <button
                         onClick={onRebuild}
-                        className="rounded-full border border-white/24 px-4 py-3 text-sm font-bold uppercase tracking-[0.16em] text-white transition hover:bg-white/10"
+                        className="rounded-full border border-white/20 px-4 py-3 text-sm font-bold uppercase tracking-[0.16em] text-[#EAF7F5] transition hover:bg-white/8"
                     >
                         Reset
                     </button>
@@ -252,7 +252,7 @@ function PlanTab({
 
             <section className="mobile-card space-y-4">
                 <div>
-                    <h3 className="text-xl font-black tracking-tight text-slate-900">30-day plan</h3>
+                    <h3 className="text-xl font-black tracking-tight text-[#0B1220]">30-day plan</h3>
                 </div>
 
                 <div className="space-y-2">
@@ -266,23 +266,23 @@ function PlanTab({
                                 className={clsx(
                                     'flex w-full items-center justify-between rounded-[20px] border px-4 py-3 text-left transition',
                                     isCurrent
-                                        ? 'border-[#18ddd2]/50 bg-[#e8fffd] shadow-[0_12px_24px_rgba(24,221,210,0.16)]'
+                                        ? 'border-[#22C7B8] bg-[#F3FFFC] shadow-[0_12px_24px_rgba(34,199,184,0.08)]'
                                         : day.isCompleted
-                                            ? 'border-[#b7c5d6] bg-[#f1f6fb]'
-                                            : 'border-slate-200 bg-white'
+                                            ? 'border-[#DDE7EA] bg-[#F7FAFA]'
+                                            : 'border-[#E1E8ED] bg-white shadow-[0_10px_22px_rgba(11,18,32,0.04)]'
                                 )}
                             >
                                 <div className="min-w-0">
-                                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[#66758A]">
                                         Day {day.dayNumber}
                                     </p>
-                                    <p className="mt-1 truncate text-sm font-bold text-slate-900">{day.title}</p>
+                                    <p className="mt-1 truncate text-sm font-bold text-[#0B1220]">{day.title}</p>
                                 </div>
                                 <div className="ml-4 flex items-center gap-2">
                                     {day.isCompleted ? (
-                                        <CheckCircle2 className="h-4 w-4 text-[#0eb8b0]" />
+                                        <CheckCircle2 className="h-4 w-4 text-[#0EAFA3]" />
                                     ) : (
-                                        <ChevronRight className="h-4 w-4 text-slate-400" />
+                                        <ChevronRight className="h-4 w-4 text-[#738097]" />
                                     )}
                                 </div>
                             </button>
@@ -440,9 +440,9 @@ function DiscoverTab({
     return (
         <div className="space-y-4">
             <section className="mobile-card overflow-hidden p-0">
-                <div className="bg-[linear-gradient(145deg,#061427,#0b1e3f_58%,#18ddd2)] px-5 py-5 text-white">
+                <div className="bg-[linear-gradient(135deg,#0B1220_0%,#10243B_60%,#18BDB2_130%)] px-5 py-5 text-white">
                     <h2 className="mt-2 text-2xl font-black tracking-tight">Pick an area to train</h2>
-                    <p className="mt-2 text-sm leading-6 text-white/78">
+                    <p className="mt-2 text-sm leading-6 text-[#D7E0EA]">
                         Inspired by category-first workout apps: quick visual picks, then a tight list of exercises matched to your time and level.
                     </p>
                 </div>
@@ -461,14 +461,16 @@ function DiscoverTab({
                                 className={clsx(
                                     'overflow-hidden rounded-[24px] border text-left transition',
                                     isActive
-                                        ? 'border-[#18ddd2]/50 bg-[#e8fffd] shadow-[0_16px_32px_rgba(24,221,210,0.18)]'
-                                        : 'border-slate-200 bg-white'
+                                        ? 'border-[#22C7B8] bg-[#F3FFFC] shadow-[0_16px_32px_rgba(34,199,184,0.08)]'
+                                        : 'border-[#E1E8ED] bg-white shadow-[0_12px_24px_rgba(11,18,32,0.06)]'
                                 )}
                             >
-                                <img src={focus.image} alt={focus.label} className="h-28 w-full object-cover" style={{ objectPosition: focus.imagePosition }} />
+                                <div className="bg-[#F1F4F6]">
+                                    <img src={focus.image} alt={focus.label} className="h-28 w-full object-cover" style={{ objectPosition: focus.imagePosition }} />
+                                </div>
                                 <div className="px-3 pb-4 pt-3">
-                                    <p className="text-sm font-black text-slate-900">{focus.label}</p>
-                                    <p className="mt-1 text-xs leading-5 text-slate-500">{focus.blurb}</p>
+                                    <p className="text-sm font-black text-[#0B1220]">{focus.label}</p>
+                                    <p className="mt-1 text-xs leading-5 text-[#66758A]">{focus.blurb}</p>
                                 </div>
                             </button>
                         );
@@ -478,7 +480,7 @@ function DiscoverTab({
 
             <section ref={workoutSectionRef} className="space-y-4">
                 {focusLoading && !focusWorkout ? (
-                    <div className="mobile-card flex items-center gap-3 text-sm font-semibold text-slate-500">
+                    <div className="mobile-card flex items-center gap-3 text-sm font-semibold text-[#66758A]">
                         <LoaderCircle className="h-4 w-4 animate-spin" />
                         Loading your workout suggestions...
                     </div>
@@ -489,31 +491,31 @@ function DiscoverTab({
                         </div>
                         <button
                             onClick={onRebuild}
-                            className="rounded-full bg-slate-900 px-5 py-3 text-sm font-bold uppercase tracking-[0.16em] text-white"
+                            className="rounded-full bg-[linear-gradient(135deg,#0B1220_0%,#10243B_55%,#17BDB2_130%)] px-5 py-3 text-sm font-bold uppercase tracking-[0.16em] text-white shadow-[0_14px_28px_rgba(11,18,32,0.18)]"
                         >
                             Complete onboarding
                         </button>
                     </div>
                 ) : focusWorkout ? (
                     <div className="space-y-4">
-                        <section className="overflow-hidden rounded-[30px] bg-[linear-gradient(145deg,#061427,#0b1e3f_58%,#18ddd2)] px-5 py-5 text-white shadow-[0_26px_56px_rgba(6,20,39,0.4)]">
+                        <section className="overflow-hidden rounded-[30px] bg-[linear-gradient(135deg,#0B1220_0%,#10243B_60%,#18BDB2_130%)] px-5 py-5 text-white shadow-[0_26px_56px_rgba(11,18,32,0.32)]">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-white/72">Discover workout</p>
+                                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#D7E0EA]">Discover workout</p>
                                     <h3 className="mt-2 text-2xl font-black tracking-tight">{focusWorkout.label}</h3>
-                                    <p className="mt-3 text-sm leading-6 text-white/80">{focusWorkout.summary}</p>
+                                    <p className="mt-3 text-sm leading-6 text-[#D7E0EA]">{focusWorkout.summary}</p>
                                 </div>
-                                <div className="rounded-[20px] bg-white/14 px-3 py-3 text-right backdrop-blur-sm">
-                                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-white/70">Length</p>
+                                <div className="rounded-[20px] border border-white/10 bg-white/8 px-3 py-3 text-right backdrop-blur-sm">
+                                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[#D7E0EA]">Length</p>
                                     <p className="mt-1 text-lg font-black">{focusWorkout.estimatedMinutes} min</p>
                                 </div>
                             </div>
 
                             <div className="mt-5 flex flex-wrap gap-2">
-                                <span className="rounded-full bg-white/12 px-3 py-1.5 text-xs font-semibold text-white/84">
+                                <span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-[#EAF7F5]">
                                     {focusWorkout.profileSummary}
                                 </span>
-                                <span className="rounded-full bg-white/12 px-3 py-1.5 text-xs font-semibold text-white/84">
+                                <span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-[#EAF7F5]">
                                     {focusWorkout.exercises.length} exercises
                                 </span>
                             </div>
@@ -523,7 +525,7 @@ function DiscoverTab({
                             <section key={section.phase} className="space-y-3">
                                 <div className="px-1">
                                     <p className="section-label">{section.label}</p>
-                                    <p className="mt-1 text-sm text-slate-500">{section.description}</p>
+                                    <p className="mt-1 text-sm text-[#66758A]">{section.description}</p>
                                 </div>
 
                                 <div className="space-y-4">
@@ -540,8 +542,8 @@ function DiscoverTab({
                                                 }}
                                                 className={clsx(
                                                     'mobile-card overflow-hidden p-0 transition',
-                                                    isExpanded && 'ring-2 ring-[#18ddd2]/40 shadow-[0_20px_44px_rgba(6,20,39,0.22)]',
-                                                    isComplete && 'border-[#8fd7d2] bg-[#e8fffd]'
+                                                    isExpanded && 'ring-2 ring-[#22C7B8]/30 shadow-[0_20px_44px_rgba(11,18,32,0.14)]',
+                                                    isComplete && 'border-[#22C7B8] bg-[#F3FFFC]'
                                                 )}
                                             >
                                                 <button
@@ -550,26 +552,26 @@ function DiscoverTab({
                                                     className="flex w-full items-start justify-between gap-3 px-4 pb-3 pt-4 text-left"
                                                 >
                                                     <div className="min-w-0">
-                                                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                                                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[#66758A]">
                                                             {section.label} {index + 1}
                                                         </p>
-                                                        <h4 className="mt-2 text-xl font-black tracking-tight text-slate-900">
+                                                        <h4 className="mt-2 text-xl font-black tracking-tight text-[#0B1220]">
                                                             {exercise.name}
                                                         </h4>
-                                                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                                                        <p className="mt-2 text-sm leading-6 text-[#66758A]">
                                                             {exercise.description || 'Follow the listed sets with steady control and clean range of motion.'}
                                                         </p>
                                                     </div>
 
-                                                    <div className="shrink-0 rounded-[18px] bg-slate-100 px-3 py-2 text-right">
-                                                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Progress</p>
-                                                        <p className="mt-1 text-sm font-black text-slate-900">{completedExerciseSets}/{exercise.targetSets}</p>
+                                                    <div className="shrink-0 rounded-[18px] bg-[#F1F4F6] px-3 py-2 text-right">
+                                                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[#66758A]">Progress</p>
+                                                        <p className="mt-1 text-sm font-black text-[#0B1220]">{completedExerciseSets}/{exercise.targetSets}</p>
                                                     </div>
                                                 </button>
 
                                                 <div className="flex justify-end px-4 pb-4">
-                                                    <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-900 shadow-[0_10px_24px_rgba(6,20,39,0.12)]">
-                                                        <TimerReset className="h-4 w-4 text-[#0eb8b0]" />
+                                                    <div className="inline-flex items-center gap-2 rounded-full border border-[#DDE7EA] bg-white px-4 py-2 text-sm font-black text-[#0B1220] shadow-[0_10px_24px_rgba(11,18,32,0.08)]">
+                                                        <TimerReset className="h-4 w-4 text-[#0EAFA3]" />
                                                         {exercise.targetRestSeconds ?? 0}s rest
                                                     </div>
                                                 </div>
@@ -583,7 +585,7 @@ function DiscoverTab({
                                                     />
                                                 </div>
 
-                                                <div className="space-y-2 border-t border-slate-100 bg-white/70 px-4 py-4">
+                                                <div className="space-y-2 border-t border-[#E7EEF0] bg-white/70 px-4 py-4">
                                                     {Array.from({ length: exercise.targetSets }, (_, itemIndex) => {
                                                         const setNumber = itemIndex + 1;
                                                         const isDone = (completedSetLookup[exercise.id] ?? []).includes(setNumber);
@@ -594,15 +596,15 @@ function DiscoverTab({
                                                                 className={clsx(
                                                                     'flex items-center justify-between rounded-[18px] border px-4 py-3 transition',
                                                                     isDone
-                                                                        ? 'border-[#8fd7d2] bg-[#e8fffd]'
-                                                                        : 'border-slate-200 bg-white'
+                                                                        ? 'border-[#22C7B8] bg-[#F3FFFC]'
+                                                                        : 'border-[#E1E8ED] bg-white'
                                                                 )}
                                                             >
                                                                 <div>
-                                                                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                                                                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#66758A]">
                                                                         Set {setNumber}
                                                                     </p>
-                                                                    <p className="mt-1 text-sm font-black text-slate-900">
+                                                                    <p className="mt-1 text-sm font-black text-[#0B1220]">
                                                                         {getFocusSetTargetLabel(exercise)}
                                                                     </p>
                                                                 </div>
@@ -613,8 +615,8 @@ function DiscoverTab({
                                                                     className={clsx(
                                                                         'inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-[0.16em] transition',
                                                                         isDone
-                                                                            ? 'bg-[#0b1e3f] text-white'
-                                                                            : 'bg-[linear-gradient(90deg,#061427,#0b1e3f,#18ddd2)] text-white shadow-[0_12px_24px_rgba(6,20,39,0.22)]'
+                                                                            ? 'bg-[#132238] text-white'
+                                                                            : 'bg-[linear-gradient(135deg,#0B1220_0%,#10243B_55%,#17BDB2_130%)] text-white shadow-[0_12px_24px_rgba(11,18,32,0.18)]'
                                                                     )}
                                                                 >
                                                                     {isDone ? (
@@ -635,8 +637,8 @@ function DiscoverTab({
                                                 </div>
 
                                                 {isComplete && (
-                                                    <div className="border-t border-slate-100 px-4 py-4">
-                                                        <div className="w-fit rounded-full bg-[#e8fffd] px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#0b6a71]">
+                                                    <div className="border-t border-[#E7EEF0] px-4 py-4">
+                                                        <div className="w-fit rounded-full bg-[#E8FBF8] px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#0E6D68]">
                                                             Completed
                                                         </div>
                                                     </div>
@@ -674,14 +676,14 @@ function HistoryTab({
                 <div className="flex items-end justify-between gap-3">
                     <div>
                         <p className="section-label">History</p>
-                        <h2 className="mt-1 text-xl font-black tracking-tight text-slate-900">Completed workouts</h2>
+                        <h2 className="mt-1 text-xl font-black tracking-tight text-[#0B1220]">Completed workouts</h2>
                     </div>
                 </div>
 
                 {historyGroups.length === 0 ? (
-                    <div className="rounded-[20px] border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center">
-                        <p className="text-sm font-semibold text-slate-700">No completed workouts yet.</p>
-                        <p className="mt-2 text-sm leading-6 text-slate-500">Finish a session and it will show up here.</p>
+                    <div className="rounded-[20px] border border-dashed border-[#DDE7EA] bg-white px-4 py-8 text-center">
+                        <p className="text-sm font-semibold text-[#0B1220]">No completed workouts yet.</p>
+                        <p className="mt-2 text-sm leading-6 text-[#66758A]">Finish a session and it will show up here.</p>
                     </div>
                 ) : (
                     <div className="space-y-5">
@@ -693,15 +695,15 @@ function HistoryTab({
                                         key={day.id}
                                         type="button"
                                         onClick={() => onOpenDay(day.id)}
-                                        className="flex w-full items-center justify-between rounded-[18px] border border-slate-200 bg-white px-4 py-3 text-left transition hover:bg-slate-50"
+                                        className="flex w-full items-center justify-between rounded-[18px] border border-[#E1E8ED] bg-white px-4 py-3 text-left transition hover:bg-[#F7FAFA]"
                                     >
                                         <div className="min-w-0">
-                                            <p className="truncate text-sm font-bold text-slate-900">{day.title}</p>
-                                            <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-slate-500">
+                                            <p className="truncate text-sm font-bold text-[#0B1220]">{day.title}</p>
+                                            <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-[#66758A]">
                                                 {formatCompletionDate(day.completedAt)}
                                             </p>
                                         </div>
-                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-[#0eb8b0]" />
+                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-[#0EAFA3]" />
                                     </button>
                                 ))}
                             </div>
@@ -713,10 +715,10 @@ function HistoryTab({
             <section className="mobile-card space-y-4">
                 <div>
                     <p className="section-label">Calendar</p>
-                    <h3 className="mt-1 text-xl font-black tracking-tight text-slate-900">{currentMonthLabel}</h3>
+                    <h3 className="mt-1 text-xl font-black tracking-tight text-[#0B1220]">{currentMonthLabel}</h3>
                 </div>
 
-                <div className="grid grid-cols-7 gap-1.5 text-center text-[0.62rem] font-bold uppercase tracking-[0.16em] text-slate-400">
+                <div className="grid grid-cols-7 gap-1.5 text-center text-[0.62rem] font-bold uppercase tracking-[0.16em] text-[#738097]">
                     {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((label, index) => (
                         <div key={`${label}-${index}`} className="py-1">
                             {label}
@@ -731,10 +733,10 @@ function HistoryTab({
                             className={clsx(
                                 'flex aspect-square items-center justify-center rounded-[14px] text-sm font-semibold',
                                 cell.isCurrentMonth
-                                    ? 'bg-slate-100 text-slate-600'
-                                    : 'bg-transparent text-slate-300',
-                                cell.isCompleted && 'bg-[linear-gradient(145deg,#0b1e3f,#18ddd2)] text-white shadow-[0_10px_20px_rgba(6,20,39,0.24)]',
-                                cell.isToday && !cell.isCompleted && 'ring-2 ring-[#18ddd2]/40'
+                                    ? 'bg-[#F1F4F6] text-[#66758A]'
+                                    : 'bg-transparent text-[#738097]/45',
+                                cell.isCompleted && 'bg-[linear-gradient(135deg,#0B1220_0%,#10243B_55%,#17BDB2_130%)] text-white shadow-[0_10px_20px_rgba(11,18,32,0.18)]',
+                                cell.isToday && !cell.isCompleted && 'ring-2 ring-[#22C7B8]/30'
                             )}
                         >
                             {cell.dayNumber}
@@ -822,9 +824,9 @@ export function DashboardPage() {
             <div className="app-shell px-4 py-8">
                 <div className="mobile-shell">
                     <div className="surface-panel animate-pulse p-6">
-                        <div className="h-4 w-24 rounded-full bg-slate-200" />
-                        <div className="mt-4 h-10 w-56 rounded-full bg-slate-200" />
-                        <div className="mt-6 h-48 rounded-[28px] bg-slate-100" />
+                        <div className="h-4 w-24 rounded-full bg-[#DDE7EA]" />
+                        <div className="mt-4 h-10 w-56 rounded-full bg-[#DDE7EA]" />
+                        <div className="mt-6 h-48 rounded-[28px] bg-[#F1F4F6]" />
                     </div>
                 </div>
             </div>
@@ -837,13 +839,13 @@ export function DashboardPage() {
                 <div className="mobile-shell">
                     <div className="surface-panel space-y-6 p-8 text-center">
                         <p className="section-label">Dashboard unavailable</p>
-                        <h1 className="text-3xl font-black tracking-tight text-slate-900">
+                        <h1 className="text-3xl font-black tracking-tight text-[#0B1220]">
                             We could not load your plan.
                         </h1>
-                        <p className="text-base leading-7 text-slate-600">{error}</p>
+                        <p className="text-base leading-7 text-[#66758A]">{error}</p>
                         <button
                             onClick={handleLogout}
-                            className="rounded-full border border-slate-300 px-5 py-3 text-sm font-bold uppercase tracking-[0.18em] text-slate-600 transition hover:bg-slate-100"
+                            className="rounded-full border border-[#DDE7EA] px-5 py-3 text-sm font-bold uppercase tracking-[0.18em] text-[#66758A] transition hover:bg-[#F7FAFA]"
                         >
                             Logout
                         </button>
@@ -859,22 +861,22 @@ export function DashboardPage() {
                 <div className="mobile-shell">
                     <div className="surface-panel space-y-6 p-8 text-center">
                         <p className="section-label">No active plan</p>
-                        <h1 className="text-3xl font-black tracking-tight text-slate-900">
+                        <h1 className="text-3xl font-black tracking-tight text-[#0B1220]">
                             Start your first guided block.
                         </h1>
-                        <p className="mx-auto max-w-xl text-base leading-7 text-slate-600">
+                        <p className="mx-auto max-w-xl text-base leading-7 text-[#66758A]">
                             Answer onboarding questions and the app will build a 30-day sequence around your goal, equipment, and current fitness level.
                         </p>
                         <div className="flex flex-col items-center justify-center gap-3">
                             <button
                                 onClick={() => navigate('/onboarding')}
-                                className="w-full rounded-full bg-slate-900 px-6 py-3 text-sm font-bold uppercase tracking-[0.2em] text-white transition hover:bg-slate-800"
+                                className="w-full rounded-full bg-[linear-gradient(135deg,#0B1220_0%,#10243B_55%,#17BDB2_130%)] px-6 py-3 text-sm font-bold uppercase tracking-[0.2em] text-white transition hover:opacity-95"
                             >
                                 Create a plan
                             </button>
                             <button
                                 onClick={handleLogout}
-                                className="w-full rounded-full border border-slate-300 px-6 py-3 text-sm font-bold uppercase tracking-[0.2em] text-slate-600 transition hover:bg-slate-100"
+                                className="w-full rounded-full border border-[#DDE7EA] px-6 py-3 text-sm font-bold uppercase tracking-[0.2em] text-[#66758A] transition hover:bg-[#F7FAFA]"
                             >
                                 Logout
                             </button>
@@ -893,15 +895,15 @@ export function DashboardPage() {
                         <img
                             src={logoImage}
                             alt={`${APP_NAME} logo`}
-                            className="h-11 w-11 rounded-[14px] object-cover shadow-[0_12px_24px_rgba(6,20,39,0.26)]"
+                            className="h-11 w-11 rounded-[14px] object-cover shadow-[0_12px_24px_rgba(11,18,32,0.18)]"
                         />
                         <div>
-                            <p className="text-sm font-black tracking-tight text-slate-900">{APP_NAME}</p>
+                            <p className="text-sm font-black tracking-tight text-[rgba(234,247,245,0.88)]">{APP_NAME}</p>
                         </div>
                     </div>
                     <button
                         onClick={handleLogout}
-                        className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-600 shadow-[0_12px_24px_rgba(6,20,39,0.14)]"
+                        className="rounded-full border border-[rgba(234,247,245,0.35)] bg-[rgba(255,255,255,0.08)] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#EAF7F5] shadow-[0_12px_24px_rgba(11,18,32,0.16)] backdrop-blur-sm"
                     >
                         Logout
                     </button>
@@ -935,7 +937,7 @@ export function DashboardPage() {
                     )}
                 </main>
 
-                <nav className="fixed bottom-4 left-1/2 z-40 w-[calc(100%-1.5rem)] max-w-[27.5rem] -translate-x-1/2 rounded-full border border-white/70 bg-white/88 p-2 shadow-[0_18px_40px_rgba(6,20,39,0.22)] backdrop-blur-xl">
+                <nav className="fixed bottom-4 left-1/2 z-40 w-[calc(100%-1.5rem)] max-w-[27.5rem] -translate-x-1/2 rounded-full border border-[#E4EAEE] bg-[rgba(255,255,255,0.92)] p-2 shadow-[0_18px_40px_rgba(11,18,32,0.16)] backdrop-blur-xl">
                     <div className="flex items-center gap-2">
                         {[
                             { key: 'plan' as const, label: 'Plan', icon: Sparkles },
@@ -951,8 +953,8 @@ export function DashboardPage() {
                                     className={clsx(
                                         'mobile-tab',
                                         isActive
-                                            ? 'bg-[linear-gradient(90deg,#061427,#0b1e3f,#18ddd2)] text-white shadow-[0_12px_24px_rgba(6,20,39,0.24)]'
-                                            : 'text-slate-500'
+                                            ? 'bg-[linear-gradient(135deg,#0B1220_0%,#10243B_55%,#17BDB2_130%)] text-white shadow-[0_12px_24px_rgba(11,18,32,0.18)]'
+                                            : 'text-[#738097]'
                                     )}
                                 >
                                     <span className="flex items-center gap-2">

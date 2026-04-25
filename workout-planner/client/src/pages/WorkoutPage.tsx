@@ -195,9 +195,9 @@ export function WorkoutPage() {
             <div className="app-shell px-4 py-8">
                 <div className="mobile-shell">
                     <div className="surface-panel animate-pulse p-6">
-                        <div className="h-4 w-24 rounded-full bg-slate-200" />
-                        <div className="mt-4 h-10 w-48 rounded-full bg-slate-200" />
-                        <div className="mt-6 h-64 rounded-[28px] bg-slate-100" />
+                        <div className="h-4 w-24 rounded-full bg-[#DDE7EA]" />
+                        <div className="mt-4 h-10 w-48 rounded-full bg-[#DDE7EA]" />
+                        <div className="mt-6 h-64 rounded-[28px] bg-[#F1F4F6]" />
                     </div>
                 </div>
             </div>
@@ -219,26 +219,26 @@ export function WorkoutPage() {
                     <header className="flex items-center gap-3 px-1">
                         <button
                             onClick={() => navigate('/dashboard')}
-                            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-[0_12px_30px_rgba(6,20,39,0.14)]"
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#DDE7EA] bg-white text-[#66758A] shadow-[0_12px_30px_rgba(11,18,32,0.10)]"
                         >
                             <ArrowLeft className="h-5 w-5" />
                         </button>
                         <div>
                             <p className="section-label">Day {workout.dayNumber}</p>
-                            <h1 className="text-2xl font-black tracking-tight text-slate-900">{workout.title}</h1>
+                            <h1 className="text-2xl font-black tracking-tight text-[#0B1220]">{workout.title}</h1>
                         </div>
                     </header>
 
-                    <section className="overflow-hidden rounded-[30px] bg-[linear-gradient(145deg,#061427,#0b1e3f_58%,#18ddd2)] p-6 text-white shadow-[0_24px_54px_rgba(6,20,39,0.4)]">
-                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-white/72">Recovery day</p>
+                    <section className="overflow-hidden rounded-[30px] bg-[linear-gradient(135deg,#0B1220_0%,#10243B_60%,#18BDB2_130%)] p-6 text-white shadow-[0_24px_54px_rgba(11,18,32,0.30)]">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#D7E0EA]">Recovery day</p>
                         <h2 className="mt-3 text-3xl font-black tracking-tight">No training blocks today.</h2>
-                        <p className="mt-3 text-sm leading-6 text-white/80">
+                        <p className="mt-3 text-sm leading-6 text-[#D7E0EA]">
                             Use today to walk, stretch lightly, or simply recover so tomorrow feels sharper. You can still mark the day complete to keep the plan moving.
                         </p>
                         <button
                             onClick={handleCompleteWorkout}
                             disabled={completing}
-                            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-slate-900 transition hover:bg-slate-100 disabled:cursor-wait disabled:opacity-70"
+                            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-[#0B1220] transition hover:bg-[#F7FAFA] disabled:cursor-wait disabled:opacity-70"
                         >
                             {completing ? 'Completing...' : 'Complete recovery day'}
                             <ChevronRight className="h-4 w-4" />
@@ -256,37 +256,37 @@ export function WorkoutPage() {
     return (
         <div className="app-shell px-4 py-4">
             <div className="mobile-shell gap-4">
-                <header className="overflow-hidden rounded-[30px] bg-[linear-gradient(145deg,#061427,#0b1e3f_58%,#18ddd2)] px-5 py-5 text-white shadow-[0_26px_56px_rgba(6,20,39,0.4)]">
+                <header className="overflow-hidden rounded-[30px] bg-[linear-gradient(135deg,#0B1220_0%,#10243B_60%,#18BDB2_130%)] px-5 py-5 text-white shadow-[0_26px_56px_rgba(11,18,32,0.32)]">
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex min-w-0 items-start gap-3">
                             <button
                                 onClick={() => navigate('/dashboard')}
-                                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/12 text-white backdrop-blur-sm"
+                                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/16 bg-white/10 text-white backdrop-blur-sm"
                             >
                                 <ArrowLeft className="h-5 w-5" />
                             </button>
                             <div className="min-w-0">
-                                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-white/72">Day {workout.dayNumber}</p>
+                                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#D7E0EA]">Day {workout.dayNumber}</p>
                                 <h1 className="mt-2 text-2xl font-black tracking-tight">
                                     {workout.title}
                                 </h1>
                             </div>
                         </div>
 
-                        <div className="rounded-[20px] bg-white/14 px-3 py-3 text-right backdrop-blur-sm">
-                            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-white/70">Sets</p>
+                        <div className="rounded-[20px] border border-white/10 bg-white/8 px-3 py-3 text-right backdrop-blur-sm">
+                            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[#D7E0EA]">Sets</p>
                             <p className="mt-1 text-lg font-black">{completedSets}/{totalSets}</p>
                         </div>
                     </div>
 
                     <div className="mt-5">
-                        <div className="h-2.5 overflow-hidden rounded-full bg-white/20">
+                        <div className="h-2.5 overflow-hidden rounded-full bg-white/12">
                             <div
-                                className="h-full rounded-full bg-[linear-gradient(90deg,#ffffff,#c7d5e4,#18ddd2)]"
+                                className="h-full rounded-full bg-[linear-gradient(90deg,#D7E0EA_0%,#A9E7E1_40%,#22C7B8_100%)]"
                                 style={{ width: `${progressPercent}%` }}
                             />
                         </div>
-                        <p className="mt-3 text-sm font-medium text-white/78">{progressPercent}% complete</p>
+                        <p className="mt-3 text-sm font-medium text-[#D7E0EA]">{progressPercent}% complete</p>
                     </div>
                 </header>
 
@@ -304,8 +304,8 @@ export function WorkoutPage() {
                                 }}
                                 className={clsx(
                                     'mobile-card overflow-hidden p-0 transition',
-                                    isExpanded && 'ring-2 ring-[#18ddd2]/40 shadow-[0_20px_44px_rgba(6,20,39,0.22)]',
-                                    isComplete && 'border-[#8fd7d2] bg-[#e8fffd]'
+                                    isExpanded && 'ring-2 ring-[#22C7B8]/30 shadow-[0_20px_44px_rgba(11,18,32,0.14)]',
+                                    isComplete && 'border-[#22C7B8] bg-[#F3FFFC]'
                                 )}
                             >
                                 <button
@@ -314,26 +314,26 @@ export function WorkoutPage() {
                                     className="flex w-full items-start justify-between gap-3 px-4 pb-3 pt-4 text-left"
                                 >
                                     <div className="min-w-0">
-                                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[#66758A]">
                                             Exercise {index + 1}
                                         </p>
-                                        <h2 className="mt-2 text-xl font-black tracking-tight text-slate-900">
+                                        <h2 className="mt-2 text-xl font-black tracking-tight text-[#0B1220]">
                                             {exercise.exercise.name}
                                         </h2>
-                                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                                        <p className="mt-2 text-sm leading-6 text-[#66758A]">
                                             {exercise.exercise.description || 'Follow the target, keep the movement controlled, and move on when all sets are complete.'}
                                         </p>
                                     </div>
 
-                                    <div className="shrink-0 rounded-[18px] bg-slate-100 px-3 py-2 text-right">
-                                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-slate-500">Progress</p>
-                                        <p className="mt-1 text-sm font-black text-slate-900">{completedExerciseSets}/{exercise.targetSets}</p>
+                                    <div className="shrink-0 rounded-[18px] bg-[#F1F4F6] px-3 py-2 text-right">
+                                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[#66758A]">Progress</p>
+                                        <p className="mt-1 text-sm font-black text-[#0B1220]">{completedExerciseSets}/{exercise.targetSets}</p>
                                     </div>
                                 </button>
 
                                 <div className="flex justify-end px-4 pb-4">
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-900 shadow-[0_10px_24px_rgba(6,20,39,0.12)]">
-                                        <TimerReset className="h-4 w-4 text-[#0eb8b0]" />
+                                    <div className="inline-flex items-center gap-2 rounded-full border border-[#DDE7EA] bg-white px-4 py-2 text-sm font-black text-[#0B1220] shadow-[0_10px_24px_rgba(11,18,32,0.08)]">
+                                        <TimerReset className="h-4 w-4 text-[#0EAFA3]" />
                                         {exercise.targetRestSeconds ?? 0}s rest
                                     </div>
                                 </div>
@@ -347,7 +347,7 @@ export function WorkoutPage() {
                                     />
                                 </div>
 
-                                <div className="space-y-2 border-t border-slate-100 bg-white/70 px-4 py-4">
+                                <div className="space-y-2 border-t border-[#E7EEF0] bg-white/70 px-4 py-4">
                                     {Array.from({ length: exercise.targetSets }, (_, itemIndex) => {
                                         const setNumber = itemIndex + 1;
                                         const log = exercise.logs.find((entry) => entry.setNumber === setNumber);
@@ -359,15 +359,15 @@ export function WorkoutPage() {
                                                 className={clsx(
                                                     'flex items-center justify-between rounded-[18px] border px-4 py-3 transition',
                                                     isDone
-                                                        ? 'border-[#8fd7d2] bg-[#e8fffd]'
-                                                        : 'border-slate-200 bg-white'
+                                                        ? 'border-[#22C7B8] bg-[#F3FFFC]'
+                                                        : 'border-[#E1E8ED] bg-white'
                                                 )}
                                             >
                                                 <div>
-                                                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                                                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#66758A]">
                                                         Set {setNumber}
                                                     </p>
-                                                    <p className="mt-1 text-sm font-black text-slate-900">
+                                                    <p className="mt-1 text-sm font-black text-[#0B1220]">
                                                         {getSetTargetLabel(exercise)}
                                                     </p>
                                                 </div>
@@ -377,8 +377,8 @@ export function WorkoutPage() {
                                                     className={clsx(
                                                         'inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-[0.16em] transition',
                                                         isDone
-                                                            ? 'bg-[#0b1e3f] text-white'
-                                                            : 'bg-[linear-gradient(90deg,#061427,#0b1e3f,#18ddd2)] text-white shadow-[0_12px_24px_rgba(6,20,39,0.22)]'
+                                                            ? 'bg-[#132238] text-white'
+                                                            : 'bg-[linear-gradient(135deg,#0B1220_0%,#10243B_55%,#17BDB2_130%)] text-white shadow-[0_12px_24px_rgba(11,18,32,0.18)]'
                                                     )}
                                                 >
                                                     {isDone ? (
@@ -399,8 +399,8 @@ export function WorkoutPage() {
                                 </div>
 
                                 {isComplete && (
-                                    <div className="border-t border-slate-100 px-4 py-4">
-                                        <div className="rounded-full bg-[#e8fffd] px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#0b6a71] w-fit">
+                                    <div className="border-t border-[#E7EEF0] px-4 py-4">
+                                        <div className="rounded-full bg-[#E8FBF8] px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#0E6D68] w-fit">
                                             Completed
                                         </div>
                                     </div>
@@ -413,14 +413,14 @@ export function WorkoutPage() {
                 <section className="mobile-card flex flex-col gap-4">
                     <div>
                         <p className="section-label">Finish session</p>
-                        <p className="mt-2 text-base font-semibold text-slate-700">
+                        <p className="mt-2 text-base font-semibold text-[#66758A]">
                             {completedSets} of {totalSets} sets logged across {workout.exercises.length} exercises.
                         </p>
                     </div>
                     <button
                         onClick={handleCompleteWorkout}
                         disabled={completing}
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(90deg,#061427,#0b1e3f,#18ddd2)] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_32px_rgba(6,20,39,0.24)] transition hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#0B1220_0%,#10243B_55%,#17BDB2_130%)] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_32px_rgba(11,18,32,0.18)] transition hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
                     >
                         {completing ? 'Completing...' : 'Complete workout'}
                         <ChevronRight className="h-4 w-4" />

@@ -332,14 +332,14 @@ export function OnboardingPage() {
                                 key={idx}
                                 type="button"
                                 onClick={() => handleSingleSelect(q.id, value)}
-                                className={`w-full p-4 text-left rounded-lg border-2 transition-all ${isSelected
-                                    ? 'border-[#18ddd2] bg-[#e8fffd] text-[#0d1930]'
-                                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                                className={`w-full rounded-lg border-2 p-4 text-left transition-all ${isSelected
+                                    ? 'border-[#22C7B8] bg-[#F3FFFC] text-[#0B1220]'
+                                    : 'border-[#DDE7EA] text-[#66758A] hover:border-[#C9D8DD]'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">
                                     <span className="font-medium">{label}</span>
-                                    {isSelected && <Check className="w-5 h-5 text-[#0eb8b0]" />}
+                                    {isSelected && <Check className="w-5 h-5 text-[#0EAFA3]" />}
                                 </div>
                             </button>
                         );
@@ -361,14 +361,14 @@ export function OnboardingPage() {
                                 key={idx}
                                 type="button"
                                 onClick={() => handleMultiSelect(q.id, optionStr, q.maxSelect)}
-                                className={`w-full p-4 text-left rounded-lg border-2 transition-all ${isSelected
-                                    ? 'border-[#18ddd2] bg-[#e8fffd] text-[#0d1930]'
-                                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                                className={`w-full rounded-lg border-2 p-4 text-left transition-all ${isSelected
+                                    ? 'border-[#22C7B8] bg-[#F3FFFC] text-[#0B1220]'
+                                    : 'border-[#DDE7EA] text-[#66758A] hover:border-[#C9D8DD]'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">
                                     <span className="font-medium">{optionStr}</span>
-                                    {isSelected && <Check className="w-5 h-5 text-[#0eb8b0]" />}
+                                    {isSelected && <Check className="w-5 h-5 text-[#0EAFA3]" />}
                                 </div>
                             </button>
                         );
@@ -382,7 +382,7 @@ export function OnboardingPage() {
                 <div className="space-y-6">
                     {q.abilities?.map((ability) => (
                         <div key={ability.id} className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
+                            <label className="block text-sm font-medium text-[#66758A]">
                                 {ability.label}
                             </label>
                             <div className="grid grid-cols-2 gap-2">
@@ -393,9 +393,9 @@ export function OnboardingPage() {
                                             key={idx}
                                             type="button"
                                             onClick={() => handleAbilitySelect(ability.id, option)}
-                                            className={`p-3 text-sm rounded-lg border-2 transition-all ${isSelected
-                                                ? 'border-[#18ddd2] bg-[#e8fffd] text-[#0d1930]'
-                                                : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                                            className={`rounded-lg border-2 p-3 text-sm transition-all ${isSelected
+                                                ? 'border-[#22C7B8] bg-[#F3FFFC] text-[#0B1220]'
+                                                : 'border-[#DDE7EA] text-[#66758A] hover:border-[#C9D8DD]'
                                                 }`}
                                         >
                                             {option}
@@ -405,7 +405,7 @@ export function OnboardingPage() {
                             </div>
                         </div>
                     ))}
-                    <p className="text-sm text-gray-500 italic">
+                    <p className="text-sm italic text-[#66758A]">
                         You can skip this if you're not sure.
                     </p>
                 </div>
@@ -416,21 +416,21 @@ export function OnboardingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[linear-gradient(180deg,#071225_0%,#0a1730_42%,#0e2140_100%)] flex flex-col">
+        <div className="flex min-h-screen flex-col bg-[linear-gradient(180deg,#0B1220_0%,#101B2E_42%,#132238_100%)]">
             {/* Progress bar */}
-            <div className="bg-white/90 shadow-[0_12px_40px_rgba(6,20,39,0.2)] backdrop-blur-sm">
+            <div className="bg-[rgba(247,250,250,0.94)] shadow-[0_12px_40px_rgba(11,18,32,0.16)] backdrop-blur-sm">
                 <div className="max-w-xl mx-auto px-4 py-4">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-600">
+                        <span className="text-sm font-medium text-[#66758A]">
                             Question {currentStep + 1} of {QUESTIONS.length}
                         </span>
-                        <span className="text-sm font-medium text-[#0eb8b0]">
+                        <span className="text-sm font-medium text-[#0EAFA3]">
                             {Math.round(progress)}%
                         </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="h-2 w-full rounded-full bg-[#DDE7EA]">
                         <div
-                            className="h-2 rounded-full bg-[linear-gradient(90deg,#061427,#0b1e3f,#18ddd2)] transition-all duration-300"
+                            className="h-2 rounded-full bg-[linear-gradient(90deg,#0B1220,#10243B,#22C7B8)] transition-all duration-300"
                             style={{ width: `${progress}%` }}
                         />
                     </div>
@@ -440,12 +440,12 @@ export function OnboardingPage() {
             {/* Question content */}
             <div className="flex-1 flex flex-col justify-center px-4 py-8">
                 <div className="max-w-xl mx-auto w-full">
-                    <div className="bg-white rounded-2xl shadow-xl p-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    <div className="rounded-2xl border border-[#DDE7EA] bg-[#F7FAFA] p-8 shadow-[0_24px_48px_rgba(11,18,32,0.14)]">
+                        <h2 className="mb-2 text-2xl font-bold text-[#0B1220]">
                             {currentQuestion.title}
                         </h2>
                         {currentQuestion.subtitle && (
-                            <p className="text-gray-500 mb-6">{currentQuestion.subtitle}</p>
+                            <p className="mb-6 text-[#66758A]">{currentQuestion.subtitle}</p>
                         )}
 
                         <div className="mb-8">
@@ -458,9 +458,9 @@ export function OnboardingPage() {
                                 type="button"
                                 onClick={handleBack}
                                 disabled={currentStep === 0}
-                                className={`flex items-center px-4 py-2 rounded-lg transition-all ${currentStep === 0
-                                    ? 'text-gray-300 cursor-not-allowed'
-                                    : 'text-gray-600 hover:bg-gray-100'
+                                className={`flex items-center rounded-lg px-4 py-2 transition-all ${currentStep === 0
+                                    ? 'cursor-not-allowed text-[#B7C3CF]'
+                                    : 'text-[#66758A] hover:bg-white'
                                     }`}
                             >
                                 <ChevronLeft className="w-5 h-5 mr-1" />
@@ -471,9 +471,9 @@ export function OnboardingPage() {
                                 type="button"
                                 onClick={handleNext}
                                 disabled={!canProceed() || loading}
-                                className={`flex items-center px-6 py-2 rounded-lg font-medium transition-all ${canProceed() && !loading
-                                    ? 'bg-[linear-gradient(90deg,#061427,#0b1e3f,#18ddd2)] text-white shadow-[0_12px_24px_rgba(6,20,39,0.22)] hover:opacity-95'
-                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                className={`flex items-center rounded-lg px-6 py-2 font-medium transition-all ${canProceed() && !loading
+                                    ? 'bg-[linear-gradient(135deg,#0B1220_0%,#10243B_55%,#17BDB2_130%)] text-white shadow-[0_12px_24px_rgba(11,18,32,0.18)] hover:opacity-95'
+                                    : 'cursor-not-allowed bg-[#DDE7EA] text-[#9BA9B8]'
                                     }`}
                             >
                                 {loading ? (

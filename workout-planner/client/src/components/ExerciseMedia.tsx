@@ -93,7 +93,7 @@ export function ExerciseMedia({
     const source = videoUrl ? resolveVideoSource(videoUrl) : null;
 
     return (
-        <div className="relative overflow-hidden rounded-[24px] border border-slate-200 bg-slate-950 shadow-[0_18px_60px_rgba(15,23,42,0.24)]">
+        <div className="relative overflow-hidden rounded-[24px] border border-[#DDE7EA] bg-[#0B1220] shadow-[0_18px_60px_rgba(11,18,32,0.20)]">
             {source && isExpanded && (source.kind === 'youtube' || source.kind === 'vimeo') ? (
                 <iframe
                     className="aspect-video w-full"
@@ -116,7 +116,7 @@ export function ExerciseMedia({
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
                 </div>
             ) : (
-                <div className="aspect-video bg-[radial-gradient(circle_at_top,#334155,transparent_55%),linear-gradient(135deg,#0f172a,#1e293b_58%,#334155)]">
+                <div className="aspect-video bg-[radial-gradient(circle_at_top,rgba(34,199,184,0.18),transparent_52%),linear-gradient(135deg,#0B1220,#132238_58%,#10243B)]">
                     <div className="flex h-full items-center justify-center">
                         <div className="rounded-full border border-white/20 bg-white/10 p-5 backdrop-blur">
                             <Video className="h-8 w-8 text-white" />
@@ -130,7 +130,7 @@ export function ExerciseMedia({
                     <button
                         type="button"
                         onClick={onToggle}
-                        className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-[#e8fffd]"
+                        className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0B1220] transition hover:bg-[#E8FBF8]"
                     >
                         <PlayCircle className="h-4 w-4" />
                         {source ? (isExpanded ? 'Hide' : 'Play') : 'Preview'}
