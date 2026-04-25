@@ -5,17 +5,18 @@
 @layer base {
   :root {
     color-scheme: light;
-    --app-blue: #2563eb;
-    --app-sky: #38bdf8;
-    --app-pink: #ec4899;
-    --app-rose: #fb7185;
-    --app-cream: #fff8fb;
-    --app-ink: #172554;
+    --app-navy: #061427;
+    --app-navy-soft: #0b1e3f;
+    --app-teal: #18ddd2;
+    --app-teal-deep: #0eb8b0;
+    --app-steel: #8295b0;
+    --app-mist: #dce6f2;
+    --app-ink: #0d1930;
   }
 
   html {
     min-height: 100%;
-    background: #f6f7ff;
+    background: var(--app-navy);
   }
 
   body {
@@ -23,9 +24,9 @@
     margin: 0;
     color: var(--app-ink);
     background:
-      radial-gradient(circle at top left, rgba(56, 189, 248, 0.24), transparent 20rem),
-      radial-gradient(circle at top right, rgba(236, 72, 153, 0.22), transparent 22rem),
-      linear-gradient(180deg, #f9fbff 0%, #fdf4ff 56%, #fff8fb 100%);
+      radial-gradient(circle at top left, rgba(24, 221, 210, 0.2), transparent 18rem),
+      radial-gradient(circle at right center, rgba(130, 149, 176, 0.16), transparent 24rem),
+      linear-gradient(180deg, #071225 0%, #0a1730 38%, #0e2140 100%);
     font-family: "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -41,7 +42,7 @@
   }
 
   ::selection {
-    background: rgba(236, 72, 153, 0.18);
+    background: rgba(24, 221, 210, 0.24);
   }
 }
 
@@ -51,11 +52,11 @@
   }
 
   .surface-panel {
-    @apply rounded-[28px] border border-white/80 bg-white/80 shadow-[0_24px_60px_rgba(37,99,235,0.12)] backdrop-blur-sm;
+    @apply rounded-[28px] border border-white bg-white shadow-[0_24px_60px_rgba(6,20,39,0.28)] backdrop-blur-sm;
   }
 
   .section-label {
-    @apply text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-slate-500;
+    @apply text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#0eb8b0];
   }
 
   .progress-track {
@@ -63,7 +64,7 @@
   }
 
   .progress-fill {
-    @apply h-full rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-pink-500;
+    @apply h-full rounded-full bg-[linear-gradient(90deg,#18ddd2,#0eb8b0,#8295b0)];
   }
 
   .mobile-shell {
@@ -75,10 +76,10 @@
   }
 
   .mobile-card {
-    @apply rounded-[24px] border border-white/80 bg-white/90 p-4 shadow-[0_18px_36px_rgba(37,99,235,0.1)];
+    @apply rounded-[24px] border border-white bg-white p-4 shadow-[0_18px_36px_rgba(6,20,39,0.24)];
   }
 
   .gradient-chip {
-    @apply rounded-full bg-gradient-to-r from-sky-500 to-pink-500 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-white;
+    @apply rounded-full bg-[linear-gradient(90deg,#0b1e3f,#18ddd2)] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-white;
   }
 }

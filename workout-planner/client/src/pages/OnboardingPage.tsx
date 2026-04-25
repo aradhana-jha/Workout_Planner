@@ -333,13 +333,13 @@ export function OnboardingPage() {
                                 type="button"
                                 onClick={() => handleSingleSelect(q.id, value)}
                                 className={`w-full p-4 text-left rounded-lg border-2 transition-all ${isSelected
-                                    ? 'border-blue-500 bg-blue-50 text-blue-900'
+                                    ? 'border-[#18ddd2] bg-[#e8fffd] text-[#0d1930]'
                                     : 'border-gray-200 hover:border-gray-300 text-gray-700'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">
                                     <span className="font-medium">{label}</span>
-                                    {isSelected && <Check className="w-5 h-5 text-blue-500" />}
+                                    {isSelected && <Check className="w-5 h-5 text-[#0eb8b0]" />}
                                 </div>
                             </button>
                         );
@@ -362,13 +362,13 @@ export function OnboardingPage() {
                                 type="button"
                                 onClick={() => handleMultiSelect(q.id, optionStr, q.maxSelect)}
                                 className={`w-full p-4 text-left rounded-lg border-2 transition-all ${isSelected
-                                    ? 'border-blue-500 bg-blue-50 text-blue-900'
+                                    ? 'border-[#18ddd2] bg-[#e8fffd] text-[#0d1930]'
                                     : 'border-gray-200 hover:border-gray-300 text-gray-700'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">
                                     <span className="font-medium">{optionStr}</span>
-                                    {isSelected && <Check className="w-5 h-5 text-blue-500" />}
+                                    {isSelected && <Check className="w-5 h-5 text-[#0eb8b0]" />}
                                 </div>
                             </button>
                         );
@@ -394,7 +394,7 @@ export function OnboardingPage() {
                                             type="button"
                                             onClick={() => handleAbilitySelect(ability.id, option)}
                                             className={`p-3 text-sm rounded-lg border-2 transition-all ${isSelected
-                                                ? 'border-blue-500 bg-blue-50 text-blue-900'
+                                                ? 'border-[#18ddd2] bg-[#e8fffd] text-[#0d1930]'
                                                 : 'border-gray-200 hover:border-gray-300 text-gray-700'
                                                 }`}
                                         >
@@ -416,21 +416,21 @@ export function OnboardingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
+        <div className="min-h-screen bg-[linear-gradient(180deg,#071225_0%,#0a1730_42%,#0e2140_100%)] flex flex-col">
             {/* Progress bar */}
-            <div className="bg-white shadow-sm">
+            <div className="bg-white/90 shadow-[0_12px_40px_rgba(6,20,39,0.2)] backdrop-blur-sm">
                 <div className="max-w-xl mx-auto px-4 py-4">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-600">
                             Question {currentStep + 1} of {QUESTIONS.length}
                         </span>
-                        <span className="text-sm font-medium text-blue-600">
+                        <span className="text-sm font-medium text-[#0eb8b0]">
                             {Math.round(progress)}%
                         </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                            className="h-2 rounded-full bg-[linear-gradient(90deg,#061427,#0b1e3f,#18ddd2)] transition-all duration-300"
                             style={{ width: `${progress}%` }}
                         />
                     </div>
@@ -472,7 +472,7 @@ export function OnboardingPage() {
                                 onClick={handleNext}
                                 disabled={!canProceed() || loading}
                                 className={`flex items-center px-6 py-2 rounded-lg font-medium transition-all ${canProceed() && !loading
-                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                    ? 'bg-[linear-gradient(90deg,#061427,#0b1e3f,#18ddd2)] text-white shadow-[0_12px_24px_rgba(6,20,39,0.22)] hover:opacity-95'
                                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                     }`}
                             >

@@ -130,7 +130,7 @@ export function ExerciseMedia({
                     <button
                         type="button"
                         onClick={onToggle}
-                        className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-sky-100"
+                        className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-[#e8fffd]"
                     >
                         <PlayCircle className="h-4 w-4" />
                         {source ? (isExpanded ? 'Hide' : 'Play') : 'Preview'}

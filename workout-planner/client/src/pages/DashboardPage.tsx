@@ -198,7 +198,7 @@ function PlanTab({
 
     return (
         <div className="space-y-4">
-            <section className="overflow-hidden rounded-[30px] bg-[linear-gradient(145deg,#2563eb,#4f46e5_50%,#ec4899)] p-5 text-white shadow-[0_26px_56px_rgba(37,99,235,0.28)]">
+            <section className="overflow-hidden rounded-[30px] bg-[linear-gradient(145deg,#061427,#0b1e3f_58%,#18ddd2)] p-5 text-white shadow-[0_26px_56px_rgba(6,20,39,0.4)]">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-white/72">Current plan</p>
                 <h2 className="mt-3 text-2xl font-black tracking-tight">
                     {currentDay ? currentDay.title : 'You finished the current block'}
@@ -227,7 +227,7 @@ function PlanTab({
                 <div className="mt-5">
                     <div className="h-2.5 overflow-hidden rounded-full bg-white/18">
                         <div
-                            className="h-full rounded-full bg-[linear-gradient(90deg,#fff,#c4b5fd,#fbcfe8)]"
+                            className="h-full rounded-full bg-[linear-gradient(90deg,#ffffff,#c7d5e4,#18ddd2)]"
                             style={{ width: `${progressPercent}%` }}
                         />
                     </div>
@@ -266,9 +266,9 @@ function PlanTab({
                                 className={clsx(
                                     'flex w-full items-center justify-between rounded-[20px] border px-4 py-3 text-left transition',
                                     isCurrent
-                                        ? 'border-pink-300 bg-pink-50 shadow-[0_12px_24px_rgba(236,72,153,0.12)]'
+                                        ? 'border-[#18ddd2]/50 bg-[#e8fffd] shadow-[0_12px_24px_rgba(24,221,210,0.16)]'
                                         : day.isCompleted
-                                            ? 'border-sky-200 bg-sky-50/80'
+                                            ? 'border-[#b7c5d6] bg-[#f1f6fb]'
                                             : 'border-slate-200 bg-white'
                                 )}
                             >
@@ -280,7 +280,7 @@ function PlanTab({
                                 </div>
                                 <div className="ml-4 flex items-center gap-2">
                                     {day.isCompleted ? (
-                                        <CheckCircle2 className="h-4 w-4 text-sky-600" />
+                                        <CheckCircle2 className="h-4 w-4 text-[#0eb8b0]" />
                                     ) : (
                                         <ChevronRight className="h-4 w-4 text-slate-400" />
                                     )}
@@ -440,7 +440,7 @@ function DiscoverTab({
     return (
         <div className="space-y-4">
             <section className="mobile-card overflow-hidden p-0">
-                <div className="bg-[linear-gradient(145deg,#0ea5e9,#2563eb_50%,#ec4899)] px-5 py-5 text-white">
+                <div className="bg-[linear-gradient(145deg,#061427,#0b1e3f_58%,#18ddd2)] px-5 py-5 text-white">
                     <h2 className="mt-2 text-2xl font-black tracking-tight">Pick an area to train</h2>
                     <p className="mt-2 text-sm leading-6 text-white/78">
                         Inspired by category-first workout apps: quick visual picks, then a tight list of exercises matched to your time and level.
@@ -461,7 +461,7 @@ function DiscoverTab({
                                 className={clsx(
                                     'overflow-hidden rounded-[24px] border text-left transition',
                                     isActive
-                                        ? 'border-pink-300 bg-pink-50 shadow-[0_16px_32px_rgba(236,72,153,0.16)]'
+                                        ? 'border-[#18ddd2]/50 bg-[#e8fffd] shadow-[0_16px_32px_rgba(24,221,210,0.18)]'
                                         : 'border-slate-200 bg-white'
                                 )}
                             >
@@ -496,7 +496,7 @@ function DiscoverTab({
                     </div>
                 ) : focusWorkout ? (
                     <div className="space-y-4">
-                        <section className="overflow-hidden rounded-[30px] bg-[linear-gradient(145deg,#0ea5e9,#2563eb_50%,#ec4899)] px-5 py-5 text-white shadow-[0_26px_56px_rgba(37,99,235,0.24)]">
+                        <section className="overflow-hidden rounded-[30px] bg-[linear-gradient(145deg,#061427,#0b1e3f_58%,#18ddd2)] px-5 py-5 text-white shadow-[0_26px_56px_rgba(6,20,39,0.4)]">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
                                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-white/72">Discover workout</p>
@@ -522,7 +522,7 @@ function DiscoverTab({
                         {focusSections.map((section) => (
                             <section key={section.phase} className="space-y-3">
                                 <div className="px-1">
-                                    <p className="section-label text-sky-700">{section.label}</p>
+                                    <p className="section-label">{section.label}</p>
                                     <p className="mt-1 text-sm text-slate-500">{section.description}</p>
                                 </div>
 
@@ -540,8 +540,8 @@ function DiscoverTab({
                                                 }}
                                                 className={clsx(
                                                     'mobile-card overflow-hidden p-0 transition',
-                                                    isExpanded && 'ring-2 ring-sky-200 shadow-[0_20px_44px_rgba(37,99,235,0.16)]',
-                                                    isComplete && 'border-sky-200 bg-sky-50/70'
+                                                    isExpanded && 'ring-2 ring-[#18ddd2]/40 shadow-[0_20px_44px_rgba(6,20,39,0.22)]',
+                                                    isComplete && 'border-[#8fd7d2] bg-[#e8fffd]'
                                                 )}
                                             >
                                                 <button
@@ -568,8 +568,8 @@ function DiscoverTab({
                                                 </button>
 
                                                 <div className="flex justify-end px-4 pb-4">
-                                                    <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-900 shadow-[0_10px_24px_rgba(37,99,235,0.06)]">
-                                                        <TimerReset className="h-4 w-4 text-pink-500" />
+                                                    <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-900 shadow-[0_10px_24px_rgba(6,20,39,0.12)]">
+                                                        <TimerReset className="h-4 w-4 text-[#0eb8b0]" />
                                                         {exercise.targetRestSeconds ?? 0}s rest
                                                     </div>
                                                 </div>
@@ -594,7 +594,7 @@ function DiscoverTab({
                                                                 className={clsx(
                                                                     'flex items-center justify-between rounded-[18px] border px-4 py-3 transition',
                                                                     isDone
-                                                                        ? 'border-sky-200 bg-sky-50'
+                                                                        ? 'border-[#8fd7d2] bg-[#e8fffd]'
                                                                         : 'border-slate-200 bg-white'
                                                                 )}
                                                             >
@@ -613,8 +613,8 @@ function DiscoverTab({
                                                                     className={clsx(
                                                                         'inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-[0.16em] transition',
                                                                         isDone
-                                                                            ? 'bg-sky-600 text-white'
-                                                                            : 'bg-[linear-gradient(90deg,#0ea5e9,#2563eb,#ec4899)] text-white shadow-[0_12px_24px_rgba(37,99,235,0.16)]'
+                                                                            ? 'bg-[#0b1e3f] text-white'
+                                                                            : 'bg-[linear-gradient(90deg,#061427,#0b1e3f,#18ddd2)] text-white shadow-[0_12px_24px_rgba(6,20,39,0.22)]'
                                                                     )}
                                                                 >
                                                                     {isDone ? (
@@ -636,7 +636,7 @@ function DiscoverTab({
 
                                                 {isComplete && (
                                                     <div className="border-t border-slate-100 px-4 py-4">
-                                                        <div className="w-fit rounded-full bg-sky-100 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-sky-700">
+                                                        <div className="w-fit rounded-full bg-[#e8fffd] px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#0b6a71]">
                                                             Completed
                                                         </div>
                                                     </div>
@@ -687,7 +687,7 @@ function HistoryTab({
                     <div className="space-y-5">
                         {historyGroups.map((group) => (
                             <div key={group.month} className="space-y-2.5">
-                                <p className="section-label text-sky-700">{group.month}</p>
+                                <p className="section-label">{group.month}</p>
                                 {group.items.map((day) => (
                                     <button
                                         key={day.id}
@@ -701,7 +701,7 @@ function HistoryTab({
                                                 {formatCompletionDate(day.completedAt)}
                                             </p>
                                         </div>
-                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-sky-600" />
+                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-[#0eb8b0]" />
                                     </button>
                                 ))}
                             </div>
@@ -733,8 +733,8 @@ function HistoryTab({
                                 cell.isCurrentMonth
                                     ? 'bg-slate-100 text-slate-600'
                                     : 'bg-transparent text-slate-300',
-                                cell.isCompleted && 'bg-[linear-gradient(145deg,#38bdf8,#ec4899)] text-white shadow-[0_10px_20px_rgba(59,130,246,0.18)]',
-                                cell.isToday && !cell.isCompleted && 'ring-2 ring-sky-200'
+                                cell.isCompleted && 'bg-[linear-gradient(145deg,#0b1e3f,#18ddd2)] text-white shadow-[0_10px_20px_rgba(6,20,39,0.24)]',
+                                cell.isToday && !cell.isCompleted && 'ring-2 ring-[#18ddd2]/40'
                             )}
                         >
                             {cell.dayNumber}
@@ -893,7 +893,7 @@ export function DashboardPage() {
                         <img
                             src={logoImage}
                             alt={`${APP_NAME} logo`}
-                            className="h-11 w-11 rounded-[14px] object-cover shadow-[0_12px_24px_rgba(37,99,235,0.16)]"
+                            className="h-11 w-11 rounded-[14px] object-cover shadow-[0_12px_24px_rgba(6,20,39,0.26)]"
                         />
                         <div>
                             <p className="text-sm font-black tracking-tight text-slate-900">{APP_NAME}</p>
@@ -901,7 +901,7 @@ export function DashboardPage() {
                     </div>
                     <button
                         onClick={handleLogout}
-                        className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-600 shadow-[0_12px_24px_rgba(37,99,235,0.08)]"
+                        className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-600 shadow-[0_12px_24px_rgba(6,20,39,0.14)]"
                     >
                         Logout
                     </button>
@@ -935,7 +935,7 @@ export function DashboardPage() {
                     )}
                 </main>
 
-                <nav className="fixed bottom-4 left-1/2 z-40 w-[calc(100%-1.5rem)] max-w-[27.5rem] -translate-x-1/2 rounded-full border border-white/80 bg-white/88 p-2 shadow-[0_18px_40px_rgba(37,99,235,0.16)] backdrop-blur-xl">
+                <nav className="fixed bottom-4 left-1/2 z-40 w-[calc(100%-1.5rem)] max-w-[27.5rem] -translate-x-1/2 rounded-full border border-white/70 bg-white/88 p-2 shadow-[0_18px_40px_rgba(6,20,39,0.22)] backdrop-blur-xl">
                     <div className="flex items-center gap-2">
                         {[
                             { key: 'plan' as const, label: 'Plan', icon: Sparkles },
@@ -951,7 +951,7 @@ export function DashboardPage() {
                                     className={clsx(
                                         'mobile-tab',
                                         isActive
-                                            ? 'bg-[linear-gradient(90deg,#0ea5e9,#2563eb,#ec4899)] text-white shadow-[0_12px_24px_rgba(37,99,235,0.2)]'
+                                            ? 'bg-[linear-gradient(90deg,#061427,#0b1e3f,#18ddd2)] text-white shadow-[0_12px_24px_rgba(6,20,39,0.24)]'
                                             : 'text-slate-500'
                                     )}
                                 >

@@ -16,7 +16,7 @@ export function BrandMark({
     return (
         <div
             className={clsx(
-                'relative overflow-hidden rounded-[22px] bg-[linear-gradient(145deg,#0ea5e9,#2563eb_50%,#ec4899)] shadow-[0_18px_36px_rgba(37,99,235,0.22)]',
+                'relative overflow-hidden rounded-[22px] bg-[linear-gradient(145deg,#061427,#0b1e3f_58%,#18ddd2)] shadow-[0_18px_36px_rgba(6,20,39,0.28)]',
                 sizeClasses,
                 className
             )}

@@ -219,17 +219,17 @@ export function WorkoutPage() {
                     <header className="flex items-center gap-3 px-1">
                         <button
                             onClick={() => navigate('/dashboard')}
-                            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-[0_12px_30px_rgba(37,99,235,0.08)]"
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-[0_12px_30px_rgba(6,20,39,0.14)]"
                         >
                             <ArrowLeft className="h-5 w-5" />
                         </button>
                         <div>
-                            <p className="section-label text-sky-700">Day {workout.dayNumber}</p>
+                            <p className="section-label">Day {workout.dayNumber}</p>
                             <h1 className="text-2xl font-black tracking-tight text-slate-900">{workout.title}</h1>
                         </div>
                     </header>
 
-                    <section className="overflow-hidden rounded-[30px] bg-[linear-gradient(145deg,#38bdf8,#2563eb_50%,#ec4899)] p-6 text-white shadow-[0_24px_54px_rgba(37,99,235,0.24)]">
+                    <section className="overflow-hidden rounded-[30px] bg-[linear-gradient(145deg,#061427,#0b1e3f_58%,#18ddd2)] p-6 text-white shadow-[0_24px_54px_rgba(6,20,39,0.4)]">
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-white/72">Recovery day</p>
                         <h2 className="mt-3 text-3xl font-black tracking-tight">No training blocks today.</h2>
                         <p className="mt-3 text-sm leading-6 text-white/80">
@@ -256,7 +256,7 @@ export function WorkoutPage() {
     return (
         <div className="app-shell px-4 py-4">
             <div className="mobile-shell gap-4">
-                <header className="overflow-hidden rounded-[30px] bg-[linear-gradient(145deg,#0ea5e9,#2563eb_50%,#ec4899)] px-5 py-5 text-white shadow-[0_26px_56px_rgba(37,99,235,0.24)]">
+                <header className="overflow-hidden rounded-[30px] bg-[linear-gradient(145deg,#061427,#0b1e3f_58%,#18ddd2)] px-5 py-5 text-white shadow-[0_26px_56px_rgba(6,20,39,0.4)]">
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex min-w-0 items-start gap-3">
                             <button
@@ -282,7 +282,7 @@ export function WorkoutPage() {
                     <div className="mt-5">
                         <div className="h-2.5 overflow-hidden rounded-full bg-white/20">
                             <div
-                                className="h-full rounded-full bg-[linear-gradient(90deg,#fff,#c4b5fd,#fbcfe8)]"
+                                className="h-full rounded-full bg-[linear-gradient(90deg,#ffffff,#c7d5e4,#18ddd2)]"
                                 style={{ width: `${progressPercent}%` }}
                             />
                         </div>
@@ -304,8 +304,8 @@ export function WorkoutPage() {
                                 }}
                                 className={clsx(
                                     'mobile-card overflow-hidden p-0 transition',
-                                    isExpanded && 'ring-2 ring-sky-200 shadow-[0_20px_44px_rgba(37,99,235,0.16)]',
-                                    isComplete && 'border-sky-200 bg-sky-50/70'
+                                    isExpanded && 'ring-2 ring-[#18ddd2]/40 shadow-[0_20px_44px_rgba(6,20,39,0.22)]',
+                                    isComplete && 'border-[#8fd7d2] bg-[#e8fffd]'
                                 )}
                             >
                                 <button
@@ -332,8 +332,8 @@ export function WorkoutPage() {
                                 </button>
 
                                 <div className="flex justify-end px-4 pb-4">
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-900 shadow-[0_10px_24px_rgba(37,99,235,0.06)]">
-                                        <TimerReset className="h-4 w-4 text-pink-500" />
+                                    <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-900 shadow-[0_10px_24px_rgba(6,20,39,0.12)]">
+                                        <TimerReset className="h-4 w-4 text-[#0eb8b0]" />
                                         {exercise.targetRestSeconds ?? 0}s rest
                                     </div>
                                 </div>
@@ -359,7 +359,7 @@ export function WorkoutPage() {
                                                 className={clsx(
                                                     'flex items-center justify-between rounded-[18px] border px-4 py-3 transition',
                                                     isDone
-                                                        ? 'border-sky-200 bg-sky-50'
+                                                        ? 'border-[#8fd7d2] bg-[#e8fffd]'
                                                         : 'border-slate-200 bg-white'
                                                 )}
                                             >
@@ -377,8 +377,8 @@ export function WorkoutPage() {
                                                     className={clsx(
                                                         'inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-[0.16em] transition',
                                                         isDone
-                                                            ? 'bg-sky-600 text-white'
-                                                            : 'bg-[linear-gradient(90deg,#0ea5e9,#2563eb,#ec4899)] text-white shadow-[0_12px_24px_rgba(37,99,235,0.16)]'
+                                                            ? 'bg-[#0b1e3f] text-white'
+                                                            : 'bg-[linear-gradient(90deg,#061427,#0b1e3f,#18ddd2)] text-white shadow-[0_12px_24px_rgba(6,20,39,0.22)]'
                                                     )}
                                                 >
                                                     {isDone ? (
@@ -400,7 +400,7 @@ export function WorkoutPage() {
 
                                 {isComplete && (
                                     <div className="border-t border-slate-100 px-4 py-4">
-                                        <div className="rounded-full bg-sky-100 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-sky-700 w-fit">
+                                        <div className="rounded-full bg-[#e8fffd] px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#0b6a71] w-fit">
                                             Completed
                                         </div>
                                     </div>
@@ -420,7 +420,7 @@ export function WorkoutPage() {
                     <button
                         onClick={handleCompleteWorkout}
                         disabled={completing}
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(90deg,#0ea5e9,#2563eb,#ec4899)] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_32px_rgba(37,99,235,0.18)] transition hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(90deg,#061427,#0b1e3f,#18ddd2)] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_32px_rgba(6,20,39,0.24)] transition hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
                     >
                         {completing ? 'Completing...' : 'Complete workout'}
                         <ChevronRight className="h-4 w-4" />

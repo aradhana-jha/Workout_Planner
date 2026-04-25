@@ -33,17 +33,17 @@ export function LoginPage() {
     return (
         <div className="app-shell overflow-hidden px-4 py-6">
             <div className="mobile-shell justify-center gap-5">
-                <section className="relative overflow-hidden rounded-[34px] bg-[linear-gradient(160deg,rgba(255,255,255,0.82),rgba(255,255,255,0.58))] px-5 py-7 shadow-[0_30px_70px_rgba(37,99,235,0.14)] backdrop-blur-xl">
-                    <div className="absolute -left-10 top-4 h-24 w-24 rounded-full bg-sky-300/32 blur-2xl" />
-                    <div className="absolute -right-8 bottom-4 h-28 w-28 rounded-full bg-pink-300/28 blur-2xl" />
+                <section className="relative overflow-hidden rounded-[34px] border border-white/10 bg-[linear-gradient(160deg,rgba(6,20,39,0.95),rgba(11,30,63,0.92)_58%,rgba(24,221,210,0.24))] px-5 py-7 shadow-[0_30px_70px_rgba(6,20,39,0.42)] backdrop-blur-xl">
+                    <div className="absolute -left-10 top-4 h-24 w-24 rounded-full bg-[#18ddd2]/22 blur-2xl" />
+                    <div className="absolute -right-8 bottom-4 h-28 w-28 rounded-full bg-[#8295b0]/24 blur-2xl" />
 
                     <div className="relative flex flex-col items-center text-center">
                         <img
                             src={logoImage}
                             alt={`${APP_NAME} logo`}
-                            className="h-28 w-28 rounded-[28px] object-cover shadow-[0_22px_48px_rgba(37,99,235,0.22)]"
+                            className="h-28 w-28 rounded-[28px] object-cover shadow-[0_22px_48px_rgba(6,20,39,0.32)]"
                         />
-                        <h1 className="mt-5 text-[2.35rem] font-black tracking-[-0.04em] text-slate-950">
+                        <h1 className="mt-5 text-[2.35rem] font-black tracking-[-0.04em] text-white">
                             {APP_NAME}
                         </h1>
                     </div>
@@ -69,7 +69,7 @@ export function LoginPage() {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="block w-full rounded-[20px] border border-slate-200 bg-white px-4 py-4 text-base text-slate-900 shadow-[0_10px_30px_rgba(37,99,235,0.06)] outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                                className="block w-full rounded-[20px] border border-slate-200 bg-white px-4 py-4 text-base text-slate-900 shadow-[0_10px_30px_rgba(6,20,39,0.08)] outline-none transition focus:border-[#18ddd2] focus:ring-4 focus:ring-[#18ddd2]/20"
                                 placeholder="you@example.com"
                                 required
                             />
@@ -79,7 +79,7 @@ export function LoginPage() {
                             <button
                                 type="submit"
                                 disabled={loadingTarget !== null}
-                                className="flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(90deg,#0ea5e9,#2563eb,#ec4899)] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_32px_rgba(37,99,235,0.22)] transition hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
+                                className="flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(90deg,#061427,#0b1e3f,#18ddd2)] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_32px_rgba(6,20,39,0.28)] transition hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
                             >
                                 {loadingTarget === 'dashboard' ? 'Opening dashboard...' : 'Login'}
                                 <ArrowRight className="h-4 w-4" />
@@ -91,7 +91,7 @@ export function LoginPage() {
                                 onClick={() => {
                                     void submit('onboarding');
                                 }}
-                                className="flex w-full items-center justify-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-sky-700 transition hover:border-sky-300 hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="flex w-full items-center justify-center gap-2 rounded-full border border-[#18ddd2]/30 bg-[#18ddd2]/10 px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-[#0b6a71] transition hover:border-[#18ddd2]/50 hover:bg-[#18ddd2]/16 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 {loadingTarget === 'onboarding' ? 'Starting onboarding...' : 'Create my plan'}
                                 <Sparkles className="h-4 w-4" />
