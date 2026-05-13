@@ -47,6 +47,71 @@ const updateMockDayComplete = (dayId: string) => {
     }
 };
 
+type DemoAccount = {
+    id: string;
+    email: string;
+    hasProfile: boolean;
+};
+
+const DEMO_ACCOUNTS_KEY = 'demo_accounts';
+
+const getDemoAccounts = (): DemoAccount[] => JSON.parse(localStorage.getItem(DEMO_ACCOUNTS_KEY) || '[]');
+
+const saveDemoAccounts = (accounts: DemoAccount[]) => {
+    localStorage.setItem(DEMO_ACCOUNTS_KEY, JSON.stringify(accounts));
+};
+
+const getLegacyStoredUser = (): { email?: string } | null => {
+    return JSON.parse(localStorage.getItem('user') || 'null');
+};
+
+const findDemoAccount = (email: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    return getDemoAccounts().find((account) => account.email === normalizedEmail) || null;
+};
+
+const upsertDemoAccount = (email: string, hasProfile = false) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const accounts = getDemoAccounts();
+    const existing = accounts.find((account) => account.email === normalizedEmail);
+
+    if (existing) {
+        existing.hasProfile = existing.hasProfile || hasProfile;
+        saveDemoAccounts(accounts);
+        return existing;
+    }
+
+    const created = {
+        id: `demo-user-${normalizedEmail.replace(/[^a-z0-9]+/g, '-') || 'account'}`,
+        email: normalizedEmail,
+        hasProfile,
+    };
+
+    accounts.push(created);
+    saveDemoAccounts(accounts);
+    return created;
+};
+
+const markDemoProfileComplete = () => {
+    const storedUser = JSON.parse(localStorage.getItem('user') || 'null') as { email?: string } | null;
+    if (!storedUser?.email) return;
+    const normalizedEmail = storedUser.email.toLowerCase();
+
+    const accounts = getDemoAccounts();
+    const account = accounts.find((item) => item.email === normalizedEmail);
+    if (!account) return;
+
+    account.hasProfile = true;
+    saveDemoAccounts(accounts);
+};
+
+const buildDemoAuthPayload = (account: DemoAccount, message?: string) => ({
+    token: `mock-demo-token:${account.id}`,
+    user: { id: account.id, email: account.email },
+    nextStep: account.hasProfile ? 'dashboard' : 'onboarding',
+    ...(message ? { message } : {}),
+});
+
 type MockFocusExercise = {
     id: string;
     phase: 'warm-up' | 'main' | 'cool-down';
@@ -158,16 +223,60 @@ if (DEMO_MODE_ENABLED) {
             const method = error.config?.method || '';
 
             if (url.includes('/auth/login') && method === 'post') {
-                const email = JSON.parse(error.config.data).email;
-                return {
-                    data: {
-                        token: 'mock-demo-token',
-                        user: { id: 'demo-user', email }
+                const email = JSON.parse(error.config.data).email as string;
+                let account = findDemoAccount(email);
+
+                if (!account) {
+                    const legacyUser = getLegacyStoredUser();
+                    const normalizedEmail = email.trim().toLowerCase();
+                    const hasLegacyMatch = legacyUser?.email?.trim().toLowerCase() === normalizedEmail;
+
+                    if (hasLegacyMatch) {
+                        account = upsertDemoAccount(normalizedEmail, Boolean(localStorage.getItem('demo_plan')));
                     }
+                }
+
+                if (!account) {
+                    return Promise.reject({
+                        ...error,
+                        response: {
+                            status: 404,
+                            data: { error: 'account_not_found' },
+                        },
+                    });
+                }
+
+                return {
+                    data: buildDemoAuthPayload(account),
+                };
+            }
+
+            if (url.includes('/auth/signup') && method === 'post') {
+                const email = JSON.parse(error.config.data).email as string;
+                const existingAccount = findDemoAccount(email);
+
+                if (existingAccount) {
+                    return {
+                        data: buildDemoAuthPayload(
+                            existingAccount,
+                            existingAccount.hasProfile
+                                ? 'Account already exists. Signed you in.'
+                                : 'Account already exists. Continue onboarding to build your plan.',
+                        ),
+                    };
+                }
+
+                const createdAccount = upsertDemoAccount(email, false);
+                return {
+                    data: buildDemoAuthPayload(
+                        createdAccount,
+                        'Account created. Continue onboarding to build your plan.',
+                    ),
                 };
             }
 
             if (url.includes('/profile') && method === 'post') {
+                markDemoProfileComplete();
                 return { data: { success: true } };
             }
 

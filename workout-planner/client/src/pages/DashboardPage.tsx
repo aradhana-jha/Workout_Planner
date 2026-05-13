@@ -23,6 +23,7 @@ import buttArt from '../assets/focus/butt.jpg';
 import armsArt from '../assets/focus/arms.jpg';
 
 type DashboardTab = 'plan' | 'discover' | 'history';
+const POST_AUTH_NOTICE_KEY = 'post_auth_notice';
 type FocusKey = 'full-body' | 'abs' | 'legs' | 'butt' | 'arms';
 
 interface Day {
@@ -757,6 +758,7 @@ export function DashboardPage() {
     const [error, setError] = useState<string | null>(null);
 
     const [activeTab, setActiveTab] = useState<DashboardTab>('plan');
+    const [authNotice, setAuthNotice] = useState<string | null>(null);
     const [activeFocus, setActiveFocus] = useState<FocusKey>('full-body');
     const [focusWorkouts, setFocusWorkouts] = useState<Partial<Record<FocusKey, FocusWorkout>>>({});
     const [focusLoadingKey, setFocusLoadingKey] = useState<FocusKey | null>(null);
@@ -766,6 +768,14 @@ export function DashboardPage() {
         logout();
         navigate('/login');
     };
+
+    useEffect(() => {
+        const pendingNotice = sessionStorage.getItem(POST_AUTH_NOTICE_KEY);
+        if (!pendingNotice) return;
+
+        setAuthNotice(pendingNotice);
+        sessionStorage.removeItem(POST_AUTH_NOTICE_KEY);
+    }, []);
 
     useEffect(() => {
         const fetchPlan = async () => {
@@ -910,6 +920,12 @@ export function DashboardPage() {
                 </header>
 
                 <main className="space-y-4">
+                    {authNotice && (
+                        <section className="mobile-card border border-[#22C7B8]/18 bg-[rgba(232,251,248,0.98)] text-[#0E6D68]">
+                            <p className="text-sm font-semibold leading-6">{authNotice}</p>
+                        </section>
+                    )}
+
                     {activeTab === 'plan' && (
                         <PlanTab
                             plan={plan}

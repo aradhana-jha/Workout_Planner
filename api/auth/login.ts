@@ -1,9 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
+import { buildAuthResponse, findUserByEmail, resolveNextStep } from './_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Set CORS headers
@@ -26,20 +22,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Email is required' });
         }
 
-        // Find or create user
-        let user = await prisma.user.findUnique({ where: { email } });
+        const user = await findUserByEmail(email);
 
         if (!user) {
-            user = await prisma.user.create({ data: { email } });
+            return res.status(404).json({ error: 'account_not_found' });
         }
 
-        // Generate JWT
-        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '30d' });
+        const nextStep = await resolveNextStep(user.id);
 
-        return res.status(200).json({
-            token,
-            user: { id: user.id, email: user.email }
-        });
+        return res.status(200).json(buildAuthResponse(user, nextStep));
     } catch (error) {
         console.error('Login error:', error);
         return res.status(500).json({ error: 'Internal server error' });

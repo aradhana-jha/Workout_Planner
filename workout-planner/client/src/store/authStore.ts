@@ -6,13 +6,28 @@ interface User {
     email: string;
 }
 
+type NextStep = 'dashboard' | 'onboarding';
+
+type AuthResponse = {
+    token: string;
+    user: User;
+    nextStep: NextStep;
+    message?: string;
+};
+
 interface AuthState {
     user: User | null;
     token: string | null;
-    login: (email: string) => Promise<void>;
+    login: (email: string) => Promise<AuthResponse>;
+    signup: (email: string) => Promise<AuthResponse>;
     logout: () => void;
     checkAuth: () => void;
 }
+
+const persistAuthState = ({ token, user }: Pick<AuthResponse, 'token' | 'user'>) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+};
 
 export const useAuthStore = create<AuthState>((set) => ({
     user: JSON.parse(localStorage.getItem('user') || 'null'),
@@ -20,10 +35,18 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     login: async (email: string) => {
         const res = await api.post('/auth/login', { email });
-        const { token, user } = res.data;
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        set({ token, user });
+        const payload = res.data as AuthResponse;
+        persistAuthState(payload);
+        set({ token: payload.token, user: payload.user });
+        return payload;
+    },
+
+    signup: async (email: string) => {
+        const res = await api.post('/auth/signup', { email });
+        const payload = res.data as AuthResponse;
+        persistAuthState(payload);
+        set({ token: payload.token, user: payload.user });
+        return payload;
     },
 
     logout: () => {

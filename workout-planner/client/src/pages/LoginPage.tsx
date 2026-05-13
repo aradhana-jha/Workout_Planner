@@ -1,104 +1,273 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowRight, LockKeyhole, Mail, MoveRight } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { APP_NAME } from '../lib/brand';
-import logoImage from '../assets/brand/workout-planner-logo.png';
+import loginReferenceImage from '../assets/login/login-reference.png';
+
+const DEMO_MODE_ENABLED = import.meta.env.VITE_ENABLE_DEMO_MODE === 'true';
+const GOOGLE_LOGIN_URL = '/api/auth/google/start?redirectTo=%2Fdashboard';
+const DEMO_GOOGLE_EMAIL = 'google.demo@workoutplanner.app';
+const POST_AUTH_NOTICE_KEY = 'post_auth_notice';
+
+type AuthIntent = 'login' | 'signup' | 'google';
+
+function GoogleIcon() {
+    return (
+        <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6">
+            <path
+                fill="#EA4335"
+                d="M12.25 10.2v3.92h5.45c-.24 1.28-.97 2.37-2.03 3.1l3.3 2.56c1.92-1.77 3.03-4.37 3.03-7.44 0-.73-.06-1.43-.2-2.1H12.25Z"
+            />
+            <path
+                fill="#4285F4"
+                d="M12.25 22c2.74 0 5.03-.9 6.71-2.44l-3.3-2.56c-.92.62-2.09.99-3.41.99-2.63 0-4.86-1.77-5.66-4.16H3.19v2.64A10.14 10.14 0 0 0 12.25 22Z"
+            />
+            <path
+                fill="#FBBC05"
+                d="M6.59 13.83a6.08 6.08 0 0 1 0-3.66V7.53H3.19a10.14 10.14 0 0 0 0 8.94l3.4-2.64Z"
+            />
+            <path
+                fill="#34A853"
+                d="M12.25 6.01c1.49 0 2.83.51 3.89 1.52l2.92-2.92C17.28 2.95 14.99 2 12.25 2A10.14 10.14 0 0 0 3.19 7.53l3.4 2.64c.8-2.39 3.03-4.16 5.66-4.16Z"
+            />
+        </svg>
+    );
+}
+
+function parseAuthMessage(error: unknown) {
+    const errorCode = (
+        typeof error === 'object' &&
+        error !== null &&
+        'response' in error &&
+        typeof (error as { response?: { data?: { error?: unknown } } }).response?.data?.error === 'string'
+    )
+        ? (error as { response?: { data?: { error?: string } } }).response?.data?.error
+        : '';
+
+    switch (errorCode) {
+        case 'account_not_found':
+            return 'No account found for this email. Use Create account to start your plan.';
+        case 'google_not_configured':
+            return 'Google sign-in is not configured yet. Add the Google client ID and secret first.';
+        case 'access_denied':
+            return 'Google sign-in was cancelled.';
+        case 'google_email_not_verified':
+            return 'Your Google account email must be verified before signing in.';
+        default:
+            return errorCode || 'Something went wrong. Please try again.';
+    }
+}
+
+function getAuthErrorMessage(code: string) {
+    return parseAuthMessage({ response: { data: { error: code } } });
+}
 
 export function LoginPage() {
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
-    const [loadingTarget, setLoadingTarget] = useState<'dashboard' | 'onboarding' | null>(null);
+    const [notice, setNotice] = useState('');
+    const [loadingIntent, setLoadingIntent] = useState<AuthIntent | null>(null);
     const login = useAuthStore((state) => state.login);
+    const signup = useAuthStore((state) => state.signup);
+    const token = useAuthStore((state) => state.token);
     const navigate = useNavigate();
+    const location = useLocation();
+    const emailInputId = 'login-email';
 
-    const submit = async (target: 'dashboard' | 'onboarding') => {
+    useEffect(() => {
+        if (token) {
+            navigate('/dashboard', { replace: true });
+        }
+    }, [navigate, token]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const authError = params.get('error');
+        if (authError) {
+            setNotice('');
+            setError(getAuthErrorMessage(authError));
+        }
+    }, [location.search]);
+
+    const applySuccessfulAuth = (nextStep: 'dashboard' | 'onboarding', message?: string) => {
+        setError('');
+        setNotice(message || '');
+        if (message) {
+            sessionStorage.setItem(POST_AUTH_NOTICE_KEY, message);
+        } else {
+            sessionStorage.removeItem(POST_AUTH_NOTICE_KEY);
+        }
+        navigate(nextStep === 'onboarding' ? '/onboarding' : '/dashboard');
+    };
+
+    const handleEmailLogin = async (event: React.FormEvent) => {
+        event.preventDefault();
+        setLoadingIntent('login');
+        setError('');
+        setNotice('');
+
         try {
-            setLoadingTarget(target);
-            setError('');
-            await login(email);
-            navigate(target === 'onboarding' ? '/onboarding' : '/dashboard');
-        } catch {
-            setError('Login failed. Please try again.');
+            const response = await login(email);
+            applySuccessfulAuth(response.nextStep, response.message);
+        } catch (authError) {
+            setError(parseAuthMessage(authError));
         } finally {
-            setLoadingTarget(null);
+            setLoadingIntent(null);
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        await submit('dashboard');
+    const handleCreateAccount = async () => {
+        if (!email.trim()) {
+            setNotice('');
+            setError('Enter your email first to create an account.');
+            document.getElementById(emailInputId)?.focus();
+            return;
+        }
+
+        setLoadingIntent('signup');
+        setError('');
+        setNotice('');
+
+        try {
+            const response = await signup(email);
+            applySuccessfulAuth(response.nextStep, response.message);
+        } catch (authError) {
+            setError(parseAuthMessage(authError));
+        } finally {
+            setLoadingIntent(null);
+        }
     };
 
+    const handleGoogleSignIn = async () => {
+        setLoadingIntent('google');
+        setError('');
+        setNotice('');
+
+        if (DEMO_MODE_ENABLED) {
+            try {
+                const response = await signup(DEMO_GOOGLE_EMAIL);
+                applySuccessfulAuth(response.nextStep, response.message);
+            } catch (authError) {
+                setError(parseAuthMessage(authError));
+                setLoadingIntent(null);
+            }
+            return;
+        }
+
+        window.location.assign(GOOGLE_LOGIN_URL);
+    };
+
+    const isBusy = loadingIntent !== null;
+
     return (
-        <div className="app-shell overflow-hidden px-4 py-6">
-            <div className="mobile-shell justify-center gap-5">
-                <section className="relative overflow-hidden rounded-[34px] border border-white/8 bg-[linear-gradient(135deg,#0B1220_0%,#10243B_60%,#18BDB2_130%)] px-5 py-7 shadow-[0_30px_70px_rgba(11,18,32,0.36)] backdrop-blur-xl">
-                    <div className="absolute -left-10 top-4 h-24 w-24 rounded-full bg-[#22C7B8]/16 blur-2xl" />
-                    <div className="absolute -right-8 bottom-4 h-28 w-28 rounded-full bg-[#132238]/34 blur-2xl" />
-
-                    <div className="relative flex flex-col items-center text-center">
+        <div className="app-shell px-3 py-4 sm:px-4 sm:py-6">
+            <div className="mx-auto flex min-h-screen w-full max-w-[29.5rem] items-center justify-center">
+                <div className="w-full overflow-hidden rounded-[34px] border border-white/8 bg-[linear-gradient(180deg,#07111D_0%,#081427_100%)] shadow-[0_35px_80px_rgba(1,6,16,0.56)]">
+                    <div className="relative h-[23.5rem] overflow-hidden sm:h-[24rem]">
                         <img
-                            src={logoImage}
-                            alt={`${APP_NAME} logo`}
-                            className="h-28 w-28 rounded-[28px] object-cover shadow-[0_22px_48px_rgba(11,18,32,0.28)]"
+                            src={loginReferenceImage}
+                            alt="Workout Planner hero"
+                            className="h-full w-full scale-[1.02] object-cover object-top"
                         />
-                        <h1 className="mt-5 text-[2.35rem] font-black tracking-[-0.04em] text-white">
-                            {APP_NAME}
-                        </h1>
-                    </div>
-                </section>
-
-                <section className="mobile-card px-5 py-5">
-                    <div className="space-y-2 text-center">
-                        <h2 className="text-2xl font-black tracking-tight text-[#0B1220]">Login with Email</h2>
+                        <div className="absolute right-5 top-5 h-14 w-14 rounded-[20px] bg-[radial-gradient(circle_at_top_right,rgba(18,31,49,0.78)_0%,rgba(10,20,34,0.98)_74%)] shadow-[0_8px_20px_rgba(6,12,22,0.36)]" />
+                        <div className="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,rgba(7,17,29,0)_0%,rgba(7,17,29,0.92)_60%,#081427_100%)]" />
                     </div>
 
-                    {error && (
-                        <div className="mt-5 rounded-[18px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
-                            {error}
-                        </div>
-                    )}
+                    <div className="relative -mt-5 px-5 pb-5">
+                        <section className="flex flex-col gap-4 rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,19,39,0.98)_0%,rgba(5,17,35,0.98)_100%)] px-4 py-5 shadow-[0_24px_50px_rgba(2,8,20,0.4)] backdrop-blur-sm">
+                            <div className="mx-auto h-1.5 w-12 rounded-full bg-[linear-gradient(90deg,#0798D8_0%,#18F5E9_100%)]" />
 
-                    <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold uppercase tracking-[0.18em] text-[#66758A]">
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="block w-full rounded-[20px] border border-[#DDE7EA] bg-white px-4 py-4 text-base text-[#0B1220] shadow-[0_10px_30px_rgba(11,18,32,0.08)] outline-none transition focus:border-[#22C7B8] focus:ring-4 focus:ring-[#22C7B8]/18"
-                                placeholder="you@example.com"
-                                required
-                            />
-                        </div>
+                            <header className="space-y-1 text-center">
+                                <h1 className="text-[1.62rem] font-semibold tracking-[-0.03em] text-white">
+                                    Welcome back
+                                </h1>
+                                <p className="text-[0.86rem] text-[#94A5BE]">
+                                    Log in to continue your journey.
+                                </p>
+                            </header>
 
-                        <div className="space-y-3">
-                            <button
-                                type="submit"
-                                disabled={loadingTarget !== null}
-                                className="flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#0B1220_0%,#10243B_55%,#17BDB2_130%)] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_32px_rgba(11,18,32,0.22)] transition hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
-                            >
-                                {loadingTarget === 'dashboard' ? 'Opening dashboard...' : 'Login'}
-                                <ArrowRight className="h-4 w-4" />
-                            </button>
+                            {(error || notice) && (
+                                <div
+                                    className={[
+                                        'rounded-[18px] px-4 py-3 text-sm font-medium leading-5',
+                                        error
+                                            ? 'border border-rose-400/35 bg-rose-500/14 text-rose-100'
+                                            : 'border border-cyan-300/20 bg-cyan-400/10 text-cyan-100',
+                                    ].join(' ')}
+                                >
+                                    {error || notice}
+                                </div>
+                            )}
+
+                            <form onSubmit={handleEmailLogin} className="flex flex-col gap-3">
+                                <label
+                                    htmlFor="login-email"
+                                    className="flex min-h-[52px] w-full items-center gap-3 rounded-[18px] border border-white/12 bg-[rgba(30,45,71,0.74)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition focus-within:border-cyan-300/55 focus-within:ring-2 focus-within:ring-cyan-300/20"
+                                >
+                                    <Mail className="h-5 w-5 text-[#D7E0EA]" strokeWidth={1.8} />
+                                    <input
+                                        id="login-email"
+                                        type="email"
+                                        value={email}
+                                        onChange={(event) => setEmail(event.target.value)}
+                                        autoComplete="email"
+                                        inputMode="email"
+                                        placeholder="Email"
+                                        required
+                                        className="w-full bg-transparent text-[0.95rem] text-[#F5F8FC] outline-none placeholder:text-[#95A3B9]"
+                                    />
+                                </label>
+
+                                <button
+                                    type="submit"
+                                    disabled={isBusy}
+                                    className="flex min-h-[50px] w-full items-center justify-center gap-2.5 rounded-full bg-[linear-gradient(90deg,#1696D4_0%,#1BEDE0_100%)] px-6 py-3 text-[0.92rem] font-semibold tracking-[-0.01em] text-[#04141E] shadow-[0_16px_26px_rgba(11,219,214,0.2)] transition hover:brightness-[1.03] disabled:cursor-wait disabled:opacity-70"
+                                >
+                                    <span>{loadingIntent === 'login' ? 'Signing in...' : 'Continue'}</span>
+                                    <ArrowRight className="h-4 w-4" strokeWidth={2.4} />
+                                </button>
+                            </form>
+
+                            <div className="flex items-center gap-4 text-[0.78rem] text-[#7B899D]">
+                                <div className="h-px flex-1 bg-white/12" />
+                                <span>or</span>
+                                <div className="h-px flex-1 bg-white/12" />
+                            </div>
 
                             <button
                                 type="button"
-                                disabled={!email || loadingTarget !== null}
+                                disabled={isBusy}
                                 onClick={() => {
-                                    void submit('onboarding');
+                                    void handleGoogleSignIn();
                                 }}
-                                className="flex w-full items-center justify-center gap-2 rounded-full border border-[#22C7B8]/28 bg-[#E8FBF8] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-[#0E6D68] transition hover:border-[#22C7B8]/45 hover:bg-[#F3FFFC] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="flex min-h-[50px] w-full items-center justify-center gap-3 rounded-full border border-white/22 bg-transparent px-6 py-3 text-[0.9rem] font-medium text-white transition hover:border-white/40 hover:bg-white/[0.02] disabled:cursor-wait disabled:opacity-70"
                             >
-                                {loadingTarget === 'onboarding' ? 'Starting onboarding...' : 'Create my plan'}
-                                <Sparkles className="h-4 w-4" />
+                                <GoogleIcon />
+                                <span>{loadingIntent === 'google' ? 'Connecting to Google...' : 'Continue with Google'}</span>
                             </button>
+
+                            <div className="flex items-center justify-center gap-2 pt-1 text-[0.88rem] text-[#8F9DB1]">
+                                <span>Don’t have an account?</span>
+                                <button
+                                    type="button"
+                                    disabled={isBusy}
+                                    onClick={() => {
+                                        void handleCreateAccount();
+                                    }}
+                                    className="inline-flex items-center gap-1.5 text-[#10E9EA] transition hover:text-[#7EF7F5] disabled:cursor-wait disabled:opacity-60"
+                                >
+                                    <span>{loadingIntent === 'signup' ? 'Creating account...' : 'Create account'}</span>
+                                    <MoveRight className="h-4 w-4" strokeWidth={2.2} />
+                                </button>
+                            </div>
+                        </section>
+
+                        <div className="mt-5 flex items-center justify-center gap-2 text-sm text-[#95A3B8]">
+                            <LockKeyhole className="h-4 w-4" strokeWidth={1.9} />
+                            <span>Secure login</span>
                         </div>
-                    </form>
-                </section>
+                    </div>
+                </div>
             </div>
         </div>
     );
