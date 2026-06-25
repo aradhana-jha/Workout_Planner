@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowRight, LockKeyhole, Mail, MoveRight } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import loginReferenceImage from '../assets/login/login-reference.png';
+import loginReferenceImage from '../assets/login/login-reference-nomenu.png';
 
 const DEMO_MODE_ENABLED = import.meta.env.VITE_ENABLE_DEMO_MODE === 'true';
 const GOOGLE_LOGIN_URL = '/api/auth/google/start?redirectTo=%2Fdashboard';
@@ -153,7 +153,6 @@ export function LoginPage() {
                             alt="Workout Planner hero"
                             className="h-full w-full scale-[1.02] object-cover object-top"
                         />
-                        <div className="absolute right-2 top-2 h-20 w-20 rounded-[2rem] bg-[#07111D]/96 blur-sm" />
                         <div className="absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,rgba(7,17,29,0)_0%,rgba(7,17,29,0.18)_100%)]" />
                     </div>
 
