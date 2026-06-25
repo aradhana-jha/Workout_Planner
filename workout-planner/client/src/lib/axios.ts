@@ -105,10 +105,14 @@ const markDemoProfileComplete = () => {
     saveDemoAccounts(accounts);
 };
 
-const buildDemoAuthPayload = (account: DemoAccount, message?: string) => ({
+const buildDemoAuthPayload = (
+    account: DemoAccount,
+    message?: string,
+    nextStepOverride?: 'dashboard' | 'onboarding',
+) => ({
     token: `mock-demo-token:${account.id}`,
     user: { id: account.id, email: account.email },
-    nextStep: account.hasProfile ? 'dashboard' : 'onboarding',
+    nextStep: nextStepOverride ?? (account.hasProfile ? 'dashboard' : 'onboarding'),
     ...(message ? { message } : {}),
 });
 
@@ -260,8 +264,9 @@ if (DEMO_MODE_ENABLED) {
                         data: buildDemoAuthPayload(
                             existingAccount,
                             existingAccount.hasProfile
-                                ? 'Account already exists. Signed you in.'
+                                ? 'Account already exists. We opened onboarding so you can update your plan.'
                                 : 'Account already exists. Continue onboarding to build your plan.',
+                            'onboarding',
                         ),
                     };
                 }

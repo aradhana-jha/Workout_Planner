@@ -9,7 +9,7 @@ const GOOGLE_LOGIN_URL = '/api/auth/google/start?redirectTo=%2Fdashboard';
 const DEMO_GOOGLE_EMAIL = 'google.demo@workoutplanner.app';
 const POST_AUTH_NOTICE_KEY = 'post_auth_notice';
 
-type AuthIntent = 'login' | 'signup' | 'google';
+type AuthIntent = 'login' | 'google';
 
 function GoogleIcon() {
     return (
@@ -72,7 +72,6 @@ export function LoginPage() {
     const token = useAuthStore((state) => state.token);
     const navigate = useNavigate();
     const location = useLocation();
-    const emailInputId = 'login-email';
 
     useEffect(() => {
         if (token) {
@@ -116,26 +115,11 @@ export function LoginPage() {
         }
     };
 
-    const handleCreateAccount = async () => {
-        if (!email.trim()) {
-            setNotice('');
-            setError('Enter your email first to create an account.');
-            document.getElementById(emailInputId)?.focus();
-            return;
-        }
-
-        setLoadingIntent('signup');
-        setError('');
-        setNotice('');
-
-        try {
-            const response = await signup(email);
-            applySuccessfulAuth(response.nextStep, response.message);
-        } catch (authError) {
-            setError(parseAuthMessage(authError));
-        } finally {
-            setLoadingIntent(null);
-        }
+    const handleCreateAccount = () => {
+        const nextUrl = email.trim()
+            ? `/create-account?email=${encodeURIComponent(email.trim())}`
+            : '/create-account';
+        navigate(nextUrl);
     };
 
     const handleGoogleSignIn = async () => {
@@ -163,25 +147,25 @@ export function LoginPage() {
         <div className="app-shell px-3 py-4 sm:px-4 sm:py-6">
             <div className="mx-auto flex min-h-screen w-full max-w-[29.5rem] items-center justify-center">
                 <div className="w-full overflow-hidden rounded-[34px] border border-white/8 bg-[linear-gradient(180deg,#07111D_0%,#081427_100%)] shadow-[0_35px_80px_rgba(1,6,16,0.56)]">
-                    <div className="relative h-[23.5rem] overflow-hidden sm:h-[24rem]">
+                    <div className="relative h-[30rem] overflow-hidden sm:h-[30.5rem]">
                         <img
                             src={loginReferenceImage}
                             alt="Workout Planner hero"
                             className="h-full w-full scale-[1.02] object-cover object-top"
                         />
-                        <div className="absolute right-5 top-5 h-14 w-14 rounded-[20px] bg-[radial-gradient(circle_at_top_right,rgba(18,31,49,0.78)_0%,rgba(10,20,34,0.98)_74%)] shadow-[0_8px_20px_rgba(6,12,22,0.36)]" />
-                        <div className="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,rgba(7,17,29,0)_0%,rgba(7,17,29,0.92)_60%,#081427_100%)]" />
+                        <div className="absolute right-2 top-2 h-20 w-20 rounded-[2rem] bg-[#07111D]/96 blur-sm" />
+                        <div className="absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,rgba(7,17,29,0)_0%,rgba(7,17,29,0.18)_100%)]" />
                     </div>
 
-                    <div className="relative -mt-5 px-5 pb-5">
-                        <section className="flex flex-col gap-4 rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,19,39,0.98)_0%,rgba(5,17,35,0.98)_100%)] px-4 py-5 shadow-[0_24px_50px_rgba(2,8,20,0.4)] backdrop-blur-sm">
-                            <div className="mx-auto h-1.5 w-12 rounded-full bg-[linear-gradient(90deg,#0798D8_0%,#18F5E9_100%)]" />
+                    <div className="relative -mt-[9.5rem] px-5 pb-5">
+                        <section className="flex flex-col gap-3 rounded-[24px] border border-white/12 bg-[linear-gradient(180deg,rgba(8,19,39,0.62)_0%,rgba(5,17,35,0.56)_100%)] px-4 py-4 backdrop-blur-md">
+                            <div className="mx-auto h-1.5 w-10 rounded-full bg-[linear-gradient(90deg,#0798D8_0%,#18F5E9_100%)]" />
 
                             <header className="space-y-1 text-center">
-                                <h1 className="text-[1.62rem] font-semibold tracking-[-0.03em] text-white">
+                                <h1 className="text-[1.42rem] font-semibold tracking-[-0.03em] text-white">
                                     Welcome back
                                 </h1>
-                                <p className="text-[0.86rem] text-[#94A5BE]">
+                                <p className="text-[0.78rem] text-[#A7B5C9]">
                                     Log in to continue your journey.
                                 </p>
                             </header>
@@ -199,12 +183,12 @@ export function LoginPage() {
                                 </div>
                             )}
 
-                            <form onSubmit={handleEmailLogin} className="flex flex-col gap-3">
+                            <form onSubmit={handleEmailLogin} className="flex flex-col gap-2.5">
                                 <label
                                     htmlFor="login-email"
-                                    className="flex min-h-[52px] w-full items-center gap-3 rounded-[18px] border border-white/12 bg-[rgba(30,45,71,0.74)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition focus-within:border-cyan-300/55 focus-within:ring-2 focus-within:ring-cyan-300/20"
+                                    className="flex min-h-[46px] w-full items-center gap-3 rounded-[16px] border border-white/14 bg-[rgba(30,45,71,0.46)] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition focus-within:border-cyan-300/55 focus-within:ring-2 focus-within:ring-cyan-300/20"
                                 >
-                                    <Mail className="h-5 w-5 text-[#D7E0EA]" strokeWidth={1.8} />
+                                    <Mail className="h-4.5 w-4.5 text-[#D7E0EA]" strokeWidth={1.8} />
                                     <input
                                         id="login-email"
                                         type="email"
@@ -214,21 +198,21 @@ export function LoginPage() {
                                         inputMode="email"
                                         placeholder="Email"
                                         required
-                                        className="w-full bg-transparent text-[0.95rem] text-[#F5F8FC] outline-none placeholder:text-[#95A3B9]"
+                                        className="w-full bg-transparent text-[0.88rem] text-[#F5F8FC] outline-none placeholder:text-[#95A3B9]"
                                     />
                                 </label>
 
                                 <button
                                     type="submit"
                                     disabled={isBusy}
-                                    className="flex min-h-[50px] w-full items-center justify-center gap-2.5 rounded-full bg-[linear-gradient(90deg,#1696D4_0%,#1BEDE0_100%)] px-6 py-3 text-[0.92rem] font-semibold tracking-[-0.01em] text-[#04141E] shadow-[0_16px_26px_rgba(11,219,214,0.2)] transition hover:brightness-[1.03] disabled:cursor-wait disabled:opacity-70"
+                                    className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(90deg,#1696D4_0%,#1BEDE0_100%)] px-6 py-2.5 text-[0.86rem] font-semibold tracking-[-0.01em] text-[#04141E] shadow-[0_12px_20px_rgba(11,219,214,0.16)] transition hover:brightness-[1.03] disabled:cursor-wait disabled:opacity-70"
                                 >
                                     <span>{loadingIntent === 'login' ? 'Signing in...' : 'Continue'}</span>
-                                    <ArrowRight className="h-4 w-4" strokeWidth={2.4} />
+                                    <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />
                                 </button>
                             </form>
 
-                            <div className="flex items-center gap-4 text-[0.78rem] text-[#7B899D]">
+                            <div className="flex items-center gap-4 text-[0.73rem] text-[#8A98AB]">
                                 <div className="h-px flex-1 bg-white/12" />
                                 <span>or</span>
                                 <div className="h-px flex-1 bg-white/12" />
@@ -240,23 +224,20 @@ export function LoginPage() {
                                 onClick={() => {
                                     void handleGoogleSignIn();
                                 }}
-                                className="flex min-h-[50px] w-full items-center justify-center gap-3 rounded-full border border-white/22 bg-transparent px-6 py-3 text-[0.9rem] font-medium text-white transition hover:border-white/40 hover:bg-white/[0.02] disabled:cursor-wait disabled:opacity-70"
+                                className="flex min-h-[46px] w-full items-center justify-center gap-3 rounded-full border border-white/22 bg-[rgba(8,19,39,0.16)] px-6 py-2.5 text-[0.84rem] font-medium text-white transition hover:border-white/40 hover:bg-white/[0.04] disabled:cursor-wait disabled:opacity-70"
                             >
                                 <GoogleIcon />
                                 <span>{loadingIntent === 'google' ? 'Connecting to Google...' : 'Continue with Google'}</span>
                             </button>
 
-                            <div className="flex items-center justify-center gap-2 pt-1 text-[0.88rem] text-[#8F9DB1]">
-                                <span>Don’t have an account?</span>
+                            <div className="flex items-center justify-center gap-2 pt-1 text-[0.8rem] text-[#95A3B8]">
+                                    <span>Don’t have an account?</span>
                                 <button
                                     type="button"
-                                    disabled={isBusy}
-                                    onClick={() => {
-                                        void handleCreateAccount();
-                                    }}
+                                    onClick={handleCreateAccount}
                                     className="inline-flex items-center gap-1.5 text-[#10E9EA] transition hover:text-[#7EF7F5] disabled:cursor-wait disabled:opacity-60"
                                 >
-                                    <span>{loadingIntent === 'signup' ? 'Creating account...' : 'Create account'}</span>
+                                    <span>Create account</span>
                                     <MoveRight className="h-4 w-4" strokeWidth={2.2} />
                                 </button>
                             </div>

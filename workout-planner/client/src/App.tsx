@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { useAuthStore } from './store/authStore';
 import { useEffect } from 'react';
+import { CreateAccountPage } from './pages/CreateAccountPage';
 
 import { OnboardingPage } from './pages/OnboardingPage';
 
@@ -26,6 +27,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/create-account" element={<CreateAccountPage />} />
         <Route
           path="/onboarding"
           element={
