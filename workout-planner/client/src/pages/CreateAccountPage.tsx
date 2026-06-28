@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Mail } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import loginReferenceImage from '../assets/login/login-reference.png';
+import loginReferenceImage from '../assets/login/login-reference-nomenu.png';
 
 function parseAuthMessage(error: unknown) {
     const errorCode = (
@@ -65,7 +65,6 @@ export function CreateAccountPage() {
                             alt="Workout Planner hero"
                             className="h-full w-full scale-[1.02] object-cover object-top"
                         />
-                        <div className="absolute right-5 top-5 h-14 w-14 rounded-[20px] bg-[radial-gradient(circle_at_top_right,rgba(18,31,49,0.78)_0%,rgba(10,20,34,0.98)_74%)] shadow-[0_8px_20px_rgba(6,12,22,0.36)]" />
                         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,10,18,0.12)_0%,rgba(4,12,21,0.7)_60%,rgba(7,17,29,0.98)_100%)]" />
                         <div className="absolute left-0 right-0 top-0 h-20 bg-[linear-gradient(180deg,rgba(4,10,18,0.8)_0%,rgba(4,10,18,0)_100%)]" />
                         <div className="absolute inset-x-0 bottom-0 px-6 pb-6">

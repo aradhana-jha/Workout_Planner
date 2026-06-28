@@ -57,13 +57,14 @@ const QUESTIONS = [
     },
     {
         id: 'recentConsistency',
-        title: 'In the last 4 weeks, how often did you work out?',
+        title: 'How many days per week can you realistically train?',
+        subtitle: 'This sets your workout days and rest days. Pick what you can repeat consistently.',
         type: 'single',
         options: [
-            '0 days per week',
-            '1-2 days per week',
-            '3-4 days per week',
-            '5+ days per week'
+            { label: '2 days per week', value: '2 days per week' },
+            { label: '3 days per week', value: '3 days per week' },
+            { label: '4 days per week', value: '4 days per week' },
+            { label: '5 days per week', value: '5 days per week' }
         ]
     },
     {

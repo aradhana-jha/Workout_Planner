@@ -1,58 +1,101 @@
 /**
- * Personalized Workout Plan Generator V2
- * 
- * Generates a 30-day personalized workout plan based on user profile.
- * Implements hard filtering, soft scoring, fixed weekly structure,
- * and week-over-week progression.
+ * Personalized Workout Plan Generator V3
+ *
+ * Builds a 30-day plan in three steps:
+ * 1. Design the weekly program from the user's goal, recovery, time, and training frequency.
+ * 2. Create movement slots for each workout day.
+ * 3. Fill those slots with safe, scored exercises and role-specific prescriptions.
  */
 
-import { PrismaClient, Exercise, Profile } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import type { Exercise, Profile } from '@prisma/client';
 
-const prisma = new PrismaClient();
+declare global {
+    var prismaPlanGeneratorSingleton: PrismaClient | undefined;
+}
 
-// Day types for the weekly structure
+const prisma = globalThis.prismaPlanGeneratorSingleton ?? new PrismaClient();
+globalThis.prismaPlanGeneratorSingleton = prisma;
+
 type DayType =
-    | "Strength Lower Focus"
-    | "Strength Upper Focus"
-    | "Conditioning Core Mobility"
-    | "Strength Balanced Posture"
-    | "Rest";
+    | 'Lower Body Strength'
+    | 'Upper Body Strength'
+    | 'Full Body Strength'
+    | 'Conditioning Core Mobility'
+    | 'Full Body Conditioning'
+    | 'Posterior Chain Core'
+    | 'Upper Body Posture'
+    | 'Mobility Strength Recovery'
+    | 'Rest';
 
-// Exercise with score for ranking
+type ExerciseRole = 'warm-up' | 'main' | 'accessory' | 'conditioning' | 'mobility' | 'cool-off';
+
+type MovementGroup =
+    | 'squat'
+    | 'hinge'
+    | 'lunge'
+    | 'push'
+    | 'pull'
+    | 'core'
+    | 'conditioning'
+    | 'mobility'
+    | 'stretch'
+    | 'carry'
+    | 'posture';
+
+type WorkoutTypeGroup = 'strength' | 'conditioning' | 'mobility';
+
 interface RankedExercise extends Exercise {
     score: number;
-    role?: string;
+    role?: ExerciseRole;
 }
 
 interface DayExerciseCounts {
     warmUp: number;
     main: number;
     stretch: number;
-    core: number;
-    mobility: number;
 }
 
-// Time budgets by workout duration
-const TIME_BUDGETS: Record<number, { warmUp: number; main: number; coolOff: number; finisher: number }> = {
-    15: { warmUp: 2, main: 11, coolOff: 2, finisher: 0 },
-    25: { warmUp: 4, main: 17, coolOff: 4, finisher: 0 },
-    40: { warmUp: 5, main: 28, coolOff: 5, finisher: 5 },
-    60: { warmUp: 7, main: 43, coolOff: 7, finisher: 8 }
-};
+interface ProgramDesign {
+    daysPerWeek: number;
+    schedule: DayType[];
+    strengthBias: number;
+    conditioningBias: number;
+    mobilityBias: number;
+    recoveryLevel: 'low' | 'normal' | 'high';
+}
+
+interface WorkoutSlot {
+    label: string;
+    role: ExerciseRole;
+    movements?: MovementGroup[];
+    workoutTypes?: WorkoutTypeGroup[];
+    focusBoosts?: string[];
+    required?: boolean;
+}
+
+interface ExerciseUsage {
+    count: number;
+    lastDay: number;
+}
+
+interface BuildContext {
+    dayNumber: number;
+    week: number;
+    dayType: DayType;
+    design: ProgramDesign;
+    history: Map<string, ExerciseUsage>;
+}
+
+const DIFFICULTY_ORDER = ['beginner', 'some experience', 'intermediate', 'advanced'];
 
 export class PlanGenerator {
-
-    /**
-     * Main entry point: Generate a complete 30-day plan
-     */
     async generate(userId: string, profile: Profile) {
         console.log(`[PlanGenerator] Starting plan generation for user ${userId}`);
 
-        // 1. Fetch all exercises
         const allExercises = await prisma.exercise.findMany();
         console.log(`[PlanGenerator] Loaded ${allExercises.length} exercises from database`);
 
-        // 2. Apply hard filtering
         const allowedPool = this.filterExercises(allExercises, profile);
         console.log(`[PlanGenerator] After filtering: ${allowedPool.length} exercises allowed`);
 
@@ -60,7 +103,9 @@ export class PlanGenerator {
             console.warn(`[PlanGenerator] Warning: Only ${allowedPool.length} exercises available after filtering`);
         }
 
-        // 3. Create Plan record
+        const design = this.designProgram(profile);
+        console.log(`[PlanGenerator] Program design: ${design.daysPerWeek} days/week`);
+
         const plan = await prisma.plan.create({
             data: {
                 userId,
@@ -69,129 +114,205 @@ export class PlanGenerator {
             },
         });
 
-        // 4. Generate 4 weeks (28 days) + 2 optional recovery days
-        const weeklySchedule: DayType[] = [
-            "Strength Lower Focus",      // Day 1
-            "Strength Upper Focus",      // Day 2
-            "Rest",                       // Day 3
-            "Conditioning Core Mobility", // Day 4
-            "Strength Balanced Posture", // Day 5
-            "Rest",                       // Day 6
-            "Rest"                        // Day 7
-        ];
-
-        let usedMainLowerPattern = "";
+        const history = new Map<string, ExerciseUsage>();
 
         for (let week = 1; week <= 4; week++) {
             for (let dayInWeek = 0; dayInWeek < 7; dayInWeek++) {
-                const dayType = weeklySchedule[dayInWeek];
+                const dayType = design.schedule[dayInWeek] ?? 'Rest';
                 const dayNumber = (week - 1) * 7 + dayInWeek + 1;
 
-                if (dayType === "Rest") {
-                    // Create rest day
+                if (dayType === 'Rest') {
                     await prisma.workoutDay.create({
                         data: {
                             planId: plan.id,
                             dayNumber,
                             weekNumber: week,
-                            dayType: "Rest",
+                            dayType: 'Rest',
                             estimatedMinutes: 0,
                         },
                     });
-                } else {
-                    // Build workout day
-                    const result = await this.buildDay(
-                        plan.id,
-                        dayNumber,
-                        week,
-                        dayType,
-                        allowedPool,
-                        profile,
-                        usedMainLowerPattern
-                    );
-
-                    // Track main lower pattern to avoid repeats
-                    if (dayType === "Strength Lower Focus" && result.mainLowerPattern) {
-                        usedMainLowerPattern = result.mainLowerPattern;
-                    }
+                    continue;
                 }
+
+                await this.buildDay(plan.id, dayNumber, week, dayType, allowedPool, profile, design, history);
             }
         }
 
-        // 5. Add 2 optional recovery days (Day 29 and 30)
-        await this.buildOptionalRecoveryDays(plan.id, 29, allowedPool, profile);
+        await this.buildOptionalRecoveryDays(plan.id, 29, allowedPool, profile, history);
 
-        // 6. Return plan with days
         return prisma.plan.findUnique({
             where: { id: plan.id },
-            include: { days: true }
+            include: { days: true },
         });
     }
 
-    /**
-     * HARD FILTERING: Remove exercises that violate constraints
-     */
+    private designProgram(profile: Profile): ProgramDesign {
+        const goal = profile.goal;
+        const style = profile.workoutStylePreference;
+        const daysPerWeek = this.getTrainingDaysPerWeek(profile);
+        const recoveryLevel = this.getRecoveryLevel(profile);
+
+        let strengthBias = 0.5;
+        let conditioningBias = 0.3;
+        let mobilityBias = 0.2;
+
+        if (goal === 'Build muscle' || goal === 'Get stronger') {
+            strengthBias += 0.25;
+            conditioningBias -= 0.05;
+        }
+
+        if (goal === 'Lose body fat' || goal === 'Improve stamina') {
+            conditioningBias += 0.25;
+            strengthBias -= 0.05;
+        }
+
+        if (goal === 'Improve mobility') {
+            mobilityBias += 0.3;
+            strengthBias -= 0.1;
+        }
+
+        if (style === 'Mostly strength training') {
+            strengthBias += 0.15;
+            conditioningBias -= 0.05;
+        } else if (style === 'Mostly cardio') {
+            conditioningBias += 0.15;
+            strengthBias -= 0.05;
+        }
+
+        return {
+            daysPerWeek,
+            schedule: this.buildWeeklySchedule(daysPerWeek, profile),
+            strengthBias: this.clamp(strengthBias, 0.15, 0.85),
+            conditioningBias: this.clamp(conditioningBias, 0.1, 0.75),
+            mobilityBias: this.clamp(mobilityBias, 0.1, 0.65),
+            recoveryLevel,
+        };
+    }
+
+    private buildWeeklySchedule(daysPerWeek: number, profile: Profile): DayType[] {
+        const goal = profile.goal;
+        const style = profile.workoutStylePreference;
+        const conditioningForward =
+            goal === 'Lose body fat' ||
+            goal === 'Improve stamina' ||
+            style === 'Mostly cardio';
+        const mobilityForward = goal === 'Improve mobility';
+
+        if (daysPerWeek <= 2) {
+            return mobilityForward
+                ? ['Full Body Strength', 'Rest', 'Rest', 'Mobility Strength Recovery', 'Rest', 'Rest', 'Rest']
+                : ['Full Body Strength', 'Rest', 'Rest', 'Conditioning Core Mobility', 'Rest', 'Rest', 'Rest'];
+        }
+
+        if (daysPerWeek === 3) {
+            if (conditioningForward) {
+                return ['Full Body Strength', 'Rest', 'Conditioning Core Mobility', 'Rest', 'Full Body Conditioning', 'Rest', 'Rest'];
+            }
+
+            if (mobilityForward) {
+                return ['Full Body Strength', 'Rest', 'Mobility Strength Recovery', 'Rest', 'Conditioning Core Mobility', 'Rest', 'Rest'];
+            }
+
+            return ['Lower Body Strength', 'Rest', 'Upper Body Strength', 'Rest', 'Full Body Strength', 'Rest', 'Rest'];
+        }
+
+        if (daysPerWeek === 4) {
+            return conditioningForward
+                ? ['Lower Body Strength', 'Conditioning Core Mobility', 'Rest', 'Upper Body Strength', 'Full Body Conditioning', 'Rest', 'Rest']
+                : ['Lower Body Strength', 'Upper Body Strength', 'Rest', 'Conditioning Core Mobility', 'Full Body Strength', 'Rest', 'Rest'];
+        }
+
+        return ['Lower Body Strength', 'Upper Body Strength', 'Conditioning Core Mobility', 'Posterior Chain Core', 'Upper Body Posture', 'Rest', 'Rest'];
+    }
+
+    private getTrainingDaysPerWeek(profile: Profile): number {
+        const raw = (profile.recentConsistency || '').toLowerCase();
+        const explicit = raw.match(/\b([2-5])\s*\+?\s*days?/);
+
+        let days = 3;
+
+        if (explicit) {
+            days = Number(explicit[1]);
+        } else if (raw.includes('0 days')) {
+            days = 3;
+        } else if (raw.includes('1-2') || raw.includes('1 to 2')) {
+            days = 3;
+        } else if (raw.includes('3-4') || raw.includes('3 to 4')) {
+            days = 4;
+        } else if (raw.includes('5+')) {
+            days = 5;
+        }
+
+        if (profile.experienceLevel === 'beginner' && days > 4) days = 4;
+        if (profile.sleepBucket === 'Under 6 hours' && profile.intensityPreference === 'Easy') days = Math.min(days, 3);
+
+        return this.clamp(Math.round(days), 2, 5);
+    }
+
     private filterExercises(exercises: Exercise[], profile: Profile): Exercise[] {
-        // Parse JSON fields from profile
-        const userEquipment = this.parseJson(profile.equipment);
-        const painAreas = this.parseJson(profile.painAreas);
-        const movementRestrictions = this.parseJson(profile.movementRestrictions);
-        const preferenceExclusions = this.parseJson(profile.preferenceExclusions);
+        const userEquipment = this.parseTags(profile.equipment);
+        const painAreas = this.parseTags(profile.painAreas);
+        const movementRestrictions = this.parseTags(profile.movementRestrictions);
+        const preferenceExclusions = this.parseTags(profile.preferenceExclusions);
 
-        return exercises.filter(ex => {
-            const exEquipment = this.parseJson(ex.equipmentTags);
-            const exAvoidFlags = this.parseJson(ex.avoidModifyFlags);
-            const exExclusionFlags = this.parseJson(ex.preferenceExclusionFlags);
+        return exercises.filter((exercise) => {
+            const equipment = this.parseTags(exercise.equipmentTags);
+            const avoidFlags = this.parseTags(exercise.avoidModifyFlags);
+            const exclusionFlags = this.parseTags(exercise.preferenceExclusionFlags);
+            const name = exercise.name.toLowerCase();
+            const movement = exercise.movementPattern.toLowerCase();
 
-            // A) Equipment filtering
-            if (exEquipment.length > 0) {
-                const hasNoEquipment = exEquipment.includes("No equipment");
-                const hasMatchingEquipment = exEquipment.some(eq => userEquipment.includes(eq));
-                if (!hasNoEquipment && !hasMatchingEquipment) return false;
+            if (equipment.length > 0) {
+                const needsOnlyBodyweight = equipment.includes('No equipment');
+                const hasMatchingEquipment = equipment.some((tag) => userEquipment.includes(tag));
+                if (!needsOnlyBodyweight && !hasMatchingEquipment) return false;
             }
 
-            // B) Pain/injury constraints
-            if (!painAreas.includes("None")) {
+            if (!painAreas.includes('None')) {
                 for (const pain of painAreas) {
-                    if (exAvoidFlags.includes(pain)) return false;
+                    if (avoidFlags.includes(pain)) return false;
                 }
             }
 
-            // C) Movement restriction constraints
             for (const restriction of movementRestrictions) {
-                if (restriction === "None") continue;
+                if (restriction === 'None') continue;
 
-                if (restriction === "Squatting down is difficult") {
-                    if (ex.movementPattern === "Squat" && !ex.name.toLowerCase().includes("chair") && !ex.name.toLowerCase().includes("sit-to-stand")) {
-                        return false;
-                    }
+                if (restriction === 'Squatting down is difficult') {
+                    const isSquatLike = this.matchesMovement(exercise, ['squat', 'lunge']);
+                    const hasRegression = name.includes('chair') || name.includes('box squat') || name.includes('sit-to-stand');
+                    if (isSquatLike && !hasRegression) return false;
                 }
-                if (restriction === "Lunges are difficult") {
-                    if (ex.movementPattern === "Lunge") return false;
+
+                if (restriction === 'Lunges are difficult' && this.matchesMovement(exercise, ['lunge'])) {
+                    return false;
                 }
-                if (restriction === "Push-ups are difficult") {
-                    if (ex.name.toLowerCase().includes("push-up") && !ex.name.toLowerCase().includes("wall") && !ex.name.toLowerCase().includes("incline")) {
-                        return false;
-                    }
+
+                if (restriction === 'Push-ups are difficult') {
+                    const isPushup = name.includes('push-up');
+                    const hasRegression = name.includes('wall') || name.includes('incline') || name.includes('knee');
+                    if (isPushup && !hasRegression) return false;
                 }
-                if (restriction === "Pull-ups are difficult") {
-                    if (ex.name.toLowerCase().includes("pull-up") && !ex.name.toLowerCase().includes("dead hang")) {
-                        return false;
-                    }
+
+                if (restriction === 'Pull-ups are difficult') {
+                    if ((name.includes('pull-up') || name.includes('chin-up')) && !name.includes('dead hang')) return false;
                 }
-                if (restriction === "Jumping is difficult" || restriction === "Running is difficult") {
-                    if (ex.impactLevel === "high") return false;
+
+                if (restriction === 'Jumping is difficult') {
+                    if (exercise.impactLevel === 'high' || movement.includes('plyometric') || name.includes('jump')) return false;
+                }
+
+                if (restriction === 'Running is difficult') {
+                    if (exclusionFlags.includes('Running') || name.includes('run') || name.includes('jog')) return false;
                 }
             }
 
-            // D) Preference exclusions
-            if (!preferenceExclusions.includes("None")) {
+            if (!preferenceExclusions.includes('None')) {
                 for (const exclusion of preferenceExclusions) {
-                    if (exExclusionFlags.includes(exclusion)) return false;
-
-                    if (exclusion === "Running" && ex.name.toLowerCase().includes("run")) return false;
-                    if (exclusion === "Jumping" && (ex.impactLevel === "high" || ex.name.toLowerCase().includes("jump"))) return false;
-                    if (exclusion === "Burpees" && ex.name.toLowerCase().includes("burpee")) return false;
+                    if (exclusionFlags.includes(exclusion)) return false;
+                    if (exclusion === 'Running' && (name.includes('run') || name.includes('jog'))) return false;
+                    if (exclusion === 'Jumping' && (exercise.impactLevel === 'high' || name.includes('jump'))) return false;
+                    if (exclusion === 'Burpees' && name.includes('burpee')) return false;
+                    if (exclusion === 'Heavy lifting' && exclusionFlags.includes('Heavy lifting')) return false;
                 }
             }
 
@@ -199,85 +320,75 @@ export class PlanGenerator {
         });
     }
 
-    /**
-     * SOFT SCORING: Rank exercises by relevance to user profile
-     */
-    private scoreExercises(exercises: Exercise[], profile: Profile, dayType: DayType): RankedExercise[] {
+    private scoreExercises(exercises: Exercise[], profile: Profile, dayType: DayType, design: ProgramDesign): RankedExercise[] {
         const goal = profile.goal;
         const style = profile.workoutStylePreference;
-        const focusAreas = this.parseJson(profile.focusAreas);
-        const intensity = profile.intensityPreference;
-        const experience = profile.experienceLevel.toLowerCase();
-        const sleep = profile.sleepBucket;
+        const focusAreas = this.parseTags(profile.focusAreas);
+        const userRank = this.getUserExperienceRank(profile);
+        const recoveryLevel = design.recoveryLevel;
 
-        return exercises.map(ex => {
-            let score = 50; // Base score
+        return exercises
+            .map((exercise) => {
+                let score = 50;
+                const focusTags = this.parseTags(exercise.focusAreaTags);
+                const minRank = this.getDifficultyRank(exercise.difficultyMin);
+                const maxRank = this.getDifficultyRank(exercise.difficultyMax);
+                const impact = exercise.impactLevel.toLowerCase();
 
-            const exFocusAreas = this.parseJson(ex.focusAreaTags);
+                if ((goal === 'Build muscle' || goal === 'Get stronger') && this.isStrengthType(exercise)) score += 18;
+                if ((goal === 'Lose body fat' || goal === 'Improve stamina') && this.isConditioningType(exercise)) score += 18;
+                if (goal === 'Improve mobility' && this.isMobilityType(exercise)) score += 20;
+                if (goal === 'General fitness' && this.parseTags(exercise.phaseTags).includes('Main exercise')) score += 6;
 
-            // Goal alignment
-            if (goal === "Build muscle" || goal === "Get stronger") {
-                if (ex.workoutType === "Strength training") score += 20;
-                if (this.parseJson(ex.phaseTags).includes("Main exercise")) score += 10;
-            }
-            if (goal === "Lose body fat" || goal === "Improve stamina") {
-                if (ex.workoutType === "Conditioning") score += 20;
-            }
-            if (goal === "Improve mobility") {
-                if (ex.workoutType === "Mobility and recovery") score += 20;
-            }
+                if (style === 'Mostly strength training' && this.isStrengthType(exercise)) score += 12;
+                if (style === 'Mostly cardio' && this.isConditioningType(exercise)) score += 12;
+                if (style === 'Mix of both' && (this.isStrengthType(exercise) || this.isConditioningType(exercise))) score += 6;
 
-            // Workout style preference
-            if (style === "Mostly strength training" && ex.workoutType === "Strength training") score += 15;
-            if (style === "Mostly cardio" && ex.workoutType === "Conditioning") score += 15;
+                for (const focus of focusAreas) {
+                    if (focus !== 'Full body balance' && focusTags.includes(focus)) score += 14;
+                }
 
-            // Focus area match
-            for (const focus of focusAreas) {
-                if (exFocusAreas.includes(focus)) score += 15;
-            }
+                if (userRank >= minRank && userRank <= maxRank) {
+                    score += 12;
+                } else if (userRank < minRank) {
+                    score -= 28 + (minRank - userRank) * 8;
+                } else if (userRank > maxRank + 1) {
+                    score -= 8;
+                }
 
-            // Experience alignment
-            const expOrder = ["beginner", "some experience", "intermediate", "advanced"];
-            const userExpIdx = expOrder.indexOf(experience);
-            const exMinIdx = expOrder.indexOf(ex.difficultyMin.toLowerCase());
-            const exMaxIdx = expOrder.indexOf(ex.difficultyMax.toLowerCase());
+                if (profile.intensityPreference === 'Easy') {
+                    if (impact === 'high') score -= 35;
+                    if (impact === 'low') score += 8;
+                } else if (profile.intensityPreference === 'Hard') {
+                    if (impact === 'high' || this.isConditioningType(exercise)) score += 8;
+                }
 
-            if (userExpIdx >= exMinIdx && userExpIdx <= exMaxIdx) {
-                score += 10; // Good fit
-            } else if (userExpIdx < exMinIdx) {
-                score -= 30; // Too hard
-            } else if (userExpIdx > exMaxIdx + 1) {
-                score -= 15; // Too easy
-            }
+                if (recoveryLevel === 'low') {
+                    if (impact === 'high') score -= 25;
+                    if (userRank < minRank) score -= 12;
+                }
 
-            // Intensity preference
-            if (intensity === "Easy" && ex.impactLevel === "low") score += 10;
-            if (intensity === "Hard" && ex.impactLevel === "high") score += 10;
+                if (profile.timePerWorkout <= 25 && this.hasSetupFriction(exercise)) score -= 5;
 
-            // Sleep-based adjustment
-            if (sleep === "Under 6 hours") score -= 5;
+                score += this.getDayTypeBonus(exercise, dayType);
 
-            // Day type bonus
-            if (dayType === "Strength Lower Focus" && (ex.movementPattern === "Squat" || ex.movementPattern === "Hinge" || ex.movementPattern === "Lunge")) {
-                score += 10;
-            }
-            if (dayType === "Strength Upper Focus" && (ex.movementPattern === "Push" || ex.movementPattern === "Pull")) {
-                score += 10;
-            }
-            if (dayType === "Conditioning Core Mobility" && (ex.workoutType === "Conditioning" || ex.movementPattern === "Core")) {
-                score += 10;
-            }
-            if (dayType === "Strength Balanced Posture" && exFocusAreas.includes("Back and posture")) {
-                score += 15;
-            }
-
-            return { ...ex, score };
-        }).sort((a, b) => b.score - a.score);
+                return { ...exercise, score };
+            })
+            .sort((a, b) => b.score - a.score);
     }
 
-    /**
-     * BUILD A SINGLE WORKOUT DAY
-     */
+    private getDayTypeBonus(exercise: Exercise, dayType: DayType): number {
+        if (dayType === 'Lower Body Strength' && this.matchesMovement(exercise, ['squat', 'hinge', 'lunge'])) return 16;
+        if (dayType === 'Upper Body Strength' && this.matchesMovement(exercise, ['push', 'pull', 'posture'])) return 16;
+        if (dayType === 'Full Body Strength' && this.matchesMovement(exercise, ['squat', 'hinge', 'push', 'pull', 'core'])) return 10;
+        if (dayType === 'Conditioning Core Mobility' && (this.isConditioningType(exercise) || this.matchesMovement(exercise, ['core', 'mobility']))) return 16;
+        if (dayType === 'Full Body Conditioning' && (this.isConditioningType(exercise) || this.matchesMovement(exercise, ['squat', 'push', 'core']))) return 14;
+        if (dayType === 'Posterior Chain Core' && this.matchesMovement(exercise, ['hinge', 'pull', 'core', 'posture'])) return 16;
+        if (dayType === 'Upper Body Posture' && this.matchesMovement(exercise, ['pull', 'posture', 'push', 'core'])) return 16;
+        if (dayType === 'Mobility Strength Recovery' && (this.isMobilityType(exercise) || this.matchesMovement(exercise, ['core', 'posture']))) return 18;
+        return 0;
+    }
+
     private async buildDay(
         planId: string,
         dayNumber: number,
@@ -285,464 +396,623 @@ export class PlanGenerator {
         dayType: DayType,
         pool: Exercise[],
         profile: Profile,
-        usedMainLowerPattern: string
-    ): Promise<{ mainLowerPattern?: string }> {
+        design: ProgramDesign,
+        history: Map<string, ExerciseUsage>,
+    ) {
+        const scoredPool = this.scoreExercises(pool, profile, dayType, design);
+        const counts = this.getDayExerciseCounts(profile.timePerWorkout, dayType);
+        const context: BuildContext = { dayNumber, week, dayType, design, history };
+        const selectedExercises = this.buildWorkoutFromSlots(scoredPool, profile, counts, context);
 
-        const scoredPool = this.scoreExercises(pool, profile, dayType);
-        const time = profile.timePerWorkout;
-        const counts = this.getDayExerciseCounts(time);
-
-        let selectedExercises: RankedExercise[] = [];
-        let mainLowerPattern = "";
-
-        if (dayType === "Conditioning Core Mobility") {
-            // Day 3: Conditioning + Core + Mobility
-            selectedExercises = this.buildConditioningDay(scoredPool, counts);
-        } else {
-            // Strength days (1, 2, 4)
-            const result = this.buildStrengthDay(scoredPool, profile, dayType, usedMainLowerPattern, counts);
-            selectedExercises = result.exercises;
-            mainLowerPattern = result.mainLowerPattern;
-        }
-
-        // Create workout day
         const workoutDay = await prisma.workoutDay.create({
             data: {
                 planId,
                 dayNumber,
                 weekNumber: week,
                 dayType,
-                estimatedMinutes: time,
+                estimatedMinutes: profile.timePerWorkout,
             },
         });
 
-        // Create workout exercises with prescriptions
         for (let i = 0; i < selectedExercises.length; i++) {
-            const ex = selectedExercises[i];
-            const prescription = this.getPrescription(ex, profile, week);
+            const exercise = selectedExercises[i];
+            if (!exercise) continue;
+
+            const prescription = this.getPrescription(exercise, profile, week, design);
 
             await prisma.workoutExercise.create({
                 data: {
                     workoutDayId: workoutDay.id,
-                    exerciseId: ex.id,
-                    role: ex.role || "main",
+                    exerciseId: exercise.id,
+                    role: exercise.role || 'main',
                     targetSets: prescription.sets,
                     targetReps: prescription.reps,
                     targetSeconds: prescription.seconds,
                     targetRestSeconds: prescription.rest,
                     sortOrder: i,
+                    notes: prescription.note,
                 },
             });
         }
 
-        return { mainLowerPattern };
+        this.recordUsage(selectedExercises, dayNumber, history);
     }
 
-    private getDayExerciseCounts(time: number): DayExerciseCounts {
-        if (time >= 60) return { warmUp: 5, main: 6, stretch: 3, core: 2, mobility: 2 };
-        if (time >= 40) return { warmUp: 5, main: 5, stretch: 3, core: 2, mobility: 2 };
-        if (time >= 25) return { warmUp: 4, main: 5, stretch: 3, core: 2, mobility: 1 };
-        return { warmUp: 3, main: 4, stretch: 2, core: 1, mobility: 1 };
+    private getDayExerciseCounts(time: number, dayType: DayType): DayExerciseCounts {
+        if (time >= 60) return { warmUp: 5, main: dayType.includes('Conditioning') ? 6 : 6, stretch: 3 };
+        if (time >= 40) return { warmUp: 5, main: dayType.includes('Conditioning') ? 6 : 6, stretch: 3 };
+        if (time >= 25) return { warmUp: 4, main: 5, stretch: 3 };
+        return { warmUp: 3, main: 4, stretch: 2 };
     }
 
-    private isWarmUpCandidate(ex: RankedExercise): boolean {
-        const phases = this.parseJson(ex.phaseTags);
-        return phases.includes("Stretching") || ex.workoutType === "Mobility and recovery";
+    private buildWorkoutFromSlots(
+        pool: RankedExercise[],
+        profile: Profile,
+        counts: DayExerciseCounts,
+        context: BuildContext,
+    ): RankedExercise[] {
+        const used = new Set<string>();
+        const selected: RankedExercise[] = [];
+
+        const slots: WorkoutSlot[] = [
+            ...this.getWarmUpSlots(counts.warmUp),
+            ...this.getMainSlots(context.dayType, counts.main, profile),
+            ...this.getCoolOffSlots(counts.stretch),
+        ];
+
+        for (const slot of slots) {
+            const exercise = this.selectForSlot(pool, slot, used, profile, context);
+            if (!exercise) continue;
+
+            used.add(exercise.id);
+            selected.push({ ...exercise, role: slot.role });
+        }
+
+        const minimumTotal = counts.warmUp + Math.max(3, counts.main - 1) + counts.stretch;
+        if (selected.length < minimumTotal) {
+            const fillers = this.takeFallbackExercises(pool, minimumTotal - selected.length, used, profile, context);
+            fillers.forEach((exercise) => {
+                used.add(exercise.id);
+                selected.push(exercise);
+            });
+        }
+
+        return selected;
     }
 
-    private isCoolOffCandidate(ex: RankedExercise): boolean {
-        const phases = this.parseJson(ex.phaseTags);
-        return phases.includes("Cool off") || phases.includes("Stretching");
+    private getWarmUpSlots(count: number): WorkoutSlot[] {
+        return Array.from({ length: count }, (_, index) => ({
+            label: `warm-up-${index + 1}`,
+            role: 'warm-up' as ExerciseRole,
+            movements: index % 2 === 0 ? ['conditioning', 'mobility'] : ['mobility'],
+            workoutTypes: ['conditioning', 'mobility'],
+        }));
     }
 
-    private takeUnique(
+    private getCoolOffSlots(count: number): WorkoutSlot[] {
+        return Array.from({ length: count }, (_, index) => ({
+            label: `cool-off-${index + 1}`,
+            role: 'cool-off' as ExerciseRole,
+            movements: ['stretch', 'mobility'],
+            workoutTypes: ['mobility'],
+        }));
+    }
+
+    private getMainSlots(dayType: DayType, count: number, profile: Profile): WorkoutSlot[] {
+        const focusAreas = this.parseTags(profile.focusAreas).filter((focus) => focus !== 'Full body balance');
+        const focusBoosts = focusAreas.length > 0 ? focusAreas : ['Full body balance'];
+
+        const templates: Record<Exclude<DayType, 'Rest'>, WorkoutSlot[]> = {
+            'Lower Body Strength': [
+                this.mainSlot('squat-prime', ['squat'], focusBoosts),
+                this.mainSlot('hinge-prime', ['hinge'], focusBoosts),
+                this.mainSlot('single-leg', ['lunge'], focusBoosts),
+                this.mainSlot('core-bracing', ['core'], ['Core']),
+                this.mainSlot('posterior-accessory', ['hinge', 'posture'], ['Glutes and legs', 'Back and posture'], 'accessory'),
+                this.mainSlot('low-impact-finish', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+            ],
+            'Upper Body Strength': [
+                this.mainSlot('push-prime', ['push'], ['Chest and arms']),
+                this.mainSlot('pull-prime', ['pull'], ['Back and posture']),
+                this.mainSlot('posture-pull', ['posture', 'pull'], ['Back and posture'], 'accessory'),
+                this.mainSlot('core-stability', ['core'], ['Core']),
+                this.mainSlot('secondary-push', ['push'], ['Chest and arms'], 'accessory'),
+                this.mainSlot('low-impact-finish', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+            ],
+            'Full Body Strength': [
+                this.mainSlot('squat-or-lunge', ['squat', 'lunge'], ['Glutes and legs']),
+                this.mainSlot('hinge', ['hinge'], ['Glutes and legs', 'Back and posture']),
+                this.mainSlot('push', ['push'], ['Chest and arms']),
+                this.mainSlot('pull', ['pull', 'posture'], ['Back and posture']),
+                this.mainSlot('core', ['core'], ['Core']),
+                this.mainSlot('conditioning-finish', ['conditioning', 'carry'], ['Full body balance'], 'conditioning', ['conditioning']),
+            ],
+            'Conditioning Core Mobility': [
+                this.mainSlot('conditioning-1', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+                this.mainSlot('conditioning-2', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+                this.mainSlot('core-1', ['core'], ['Core']),
+                this.mainSlot('conditioning-3', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+                this.mainSlot('core-2', ['core'], ['Core'], 'accessory'),
+                this.mainSlot('mobility-control', ['mobility', 'posture'], ['Back and posture'], 'mobility', ['mobility']),
+            ],
+            'Full Body Conditioning': [
+                this.mainSlot('conditioning-1', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+                this.mainSlot('conditioning-2', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+                this.mainSlot('legs', ['squat', 'lunge'], ['Glutes and legs']),
+                this.mainSlot('upper', ['push', 'pull'], ['Chest and arms', 'Back and posture']),
+                this.mainSlot('core', ['core'], ['Core']),
+                this.mainSlot('conditioning-3', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+            ],
+            'Posterior Chain Core': [
+                this.mainSlot('hinge-prime', ['hinge'], ['Glutes and legs', 'Back and posture']),
+                this.mainSlot('lunge-or-squat', ['lunge', 'squat'], ['Glutes and legs']),
+                this.mainSlot('posture-pull', ['pull', 'posture'], ['Back and posture']),
+                this.mainSlot('core-1', ['core'], ['Core']),
+                this.mainSlot('core-2', ['core'], ['Core'], 'accessory'),
+                this.mainSlot('conditioning-finish', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+            ],
+            'Upper Body Posture': [
+                this.mainSlot('pull-prime', ['pull'], ['Back and posture']),
+                this.mainSlot('posture-prime', ['posture', 'pull'], ['Back and posture']),
+                this.mainSlot('push', ['push'], ['Chest and arms']),
+                this.mainSlot('core', ['core'], ['Core']),
+                this.mainSlot('shoulder-control', ['mobility', 'posture'], ['Back and posture'], 'mobility', ['mobility']),
+                this.mainSlot('conditioning-finish', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+            ],
+            'Mobility Strength Recovery': [
+                this.mainSlot('mobility-1', ['mobility'], ['Back and posture'], 'mobility', ['mobility']),
+                this.mainSlot('core-control', ['core'], ['Core'], 'accessory'),
+                this.mainSlot('hinge-pattern', ['hinge'], ['Glutes and legs', 'Back and posture'], 'accessory'),
+                this.mainSlot('posture', ['posture', 'pull'], ['Back and posture'], 'accessory'),
+                this.mainSlot('easy-conditioning', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+                this.mainSlot('mobility-2', ['stretch', 'mobility'], focusBoosts, 'mobility', ['mobility']),
+            ],
+        };
+
+        const slots = [...templates[dayType as Exclude<DayType, 'Rest'>]];
+
+        while (slots.length < count) {
+            slots.push(this.mainSlot(`focus-${slots.length + 1}`, ['squat', 'hinge', 'push', 'pull', 'core'], focusBoosts, 'accessory'));
+        }
+
+        return slots.slice(0, count);
+    }
+
+    private mainSlot(
+        label: string,
+        movements: MovementGroup[],
+        focusBoosts: string[],
+        role: ExerciseRole = 'main',
+        workoutTypes: WorkoutTypeGroup[] = ['strength'],
+    ): WorkoutSlot {
+        return {
+            label,
+            role,
+            movements,
+            focusBoosts,
+            workoutTypes,
+            required: role === 'main',
+        };
+    }
+
+    private selectForSlot(
+        pool: RankedExercise[],
+        slot: WorkoutSlot,
+        used: Set<string>,
+        profile: Profile,
+        context: BuildContext,
+    ): RankedExercise | null {
+        const candidates = pool
+            .filter((exercise) => !used.has(exercise.id))
+            .filter((exercise) => this.matchesSlot(exercise, slot));
+
+        const rankedCandidates = candidates.length > 0
+            ? candidates
+            : pool.filter((exercise) => !used.has(exercise.id) && this.matchesFallbackRole(exercise, slot.role));
+
+        return this.pickBest(rankedCandidates, slot, profile, context);
+    }
+
+    private pickBest(
+        candidates: RankedExercise[],
+        slot: WorkoutSlot,
+        profile: Profile,
+        context: BuildContext,
+    ): RankedExercise | null {
+        let best: RankedExercise | null = null;
+        let bestScore = Number.NEGATIVE_INFINITY;
+
+        for (const exercise of candidates) {
+            const score = this.scoreForSlot(exercise, slot, profile, context);
+            if (score > bestScore) {
+                best = exercise;
+                bestScore = score;
+            }
+        }
+
+        return best;
+    }
+
+    private scoreForSlot(exercise: RankedExercise, slot: WorkoutSlot, profile: Profile, context: BuildContext): number {
+        let score = exercise.score;
+        const focusTags = this.parseTags(exercise.focusAreaTags);
+        const userFocus = this.parseTags(profile.focusAreas);
+        const usage = context.history.get(exercise.id);
+
+        if (slot.movements?.some((movement) => this.matchesMovement(exercise, [movement]))) score += 30;
+        if (slot.workoutTypes?.some((type) => this.matchesWorkoutType(exercise, type))) score += 18;
+
+        for (const focus of slot.focusBoosts ?? []) {
+            if (focusTags.includes(focus)) score += 12;
+        }
+
+        for (const focus of userFocus) {
+            if (focusTags.includes(focus) && focus !== 'Full body balance') score += 8;
+        }
+
+        score += this.getAbilityFitBonus(exercise, slot, profile);
+
+        if (slot.role === 'warm-up') {
+            if (this.isMobilityType(exercise)) score += 8;
+            if (this.isWarmUpConditioning(exercise)) score += 30;
+            if (slot.movements?.includes('conditioning') && this.isWarmUpConditioning(exercise)) score += 20;
+            if (this.isCoolOffCandidate(exercise)) score -= 40;
+            if (this.matchesMovement(exercise, ['stretch'])) score -= 12;
+        }
+
+        if (slot.role === 'cool-off') {
+            if (this.parseTags(exercise.phaseTags).includes('Cool off')) score += 16;
+            if (this.matchesMovement(exercise, ['stretch'])) score += 10;
+        }
+
+        if (usage) {
+            score -= usage.count * 7;
+            const daysSinceUsed = context.dayNumber - usage.lastDay;
+            if (daysSinceUsed <= 1) score -= 45;
+            else if (daysSinceUsed <= 3) score -= 22;
+            else if (daysSinceUsed <= 7) score -= 8;
+        }
+
+        return score;
+    }
+
+    private matchesSlot(exercise: RankedExercise, slot: WorkoutSlot): boolean {
+        if (slot.role === 'warm-up') return this.isWarmUpCandidate(exercise);
+        if (slot.role === 'cool-off') return this.isCoolOffCandidate(exercise);
+        if (slot.role === 'mobility') return this.isMobilityType(exercise) || this.matchesMovement(exercise, ['mobility', 'stretch']);
+
+        const movementMatches = !slot.movements || slot.movements.some((movement) => this.matchesMovement(exercise, [movement]));
+        const typeMatches = !slot.workoutTypes || slot.workoutTypes.some((type) => this.matchesWorkoutType(exercise, type));
+
+        return movementMatches && typeMatches;
+    }
+
+    private matchesFallbackRole(exercise: RankedExercise, role: ExerciseRole): boolean {
+        if (role === 'warm-up') return this.isMobilityType(exercise);
+        if (role === 'cool-off') return this.isCoolOffCandidate(exercise) || this.isMobilityType(exercise);
+        if (role === 'conditioning') return this.isConditioningType(exercise) || this.parseTags(exercise.phaseTags).includes('Main exercise');
+        if (role === 'mobility') return this.isMobilityType(exercise);
+        return this.parseTags(exercise.phaseTags).includes('Main exercise') || this.isStrengthType(exercise);
+    }
+
+    private takeFallbackExercises(
         pool: RankedExercise[],
         count: number,
         used: Set<string>,
-        predicate?: (ex: RankedExercise) => boolean
-    ): RankedExercise[] {
-        const result: RankedExercise[] = [];
-        for (const ex of pool) {
-            if (result.length >= count) break;
-            if (used.has(ex.id)) continue;
-            if (predicate && !predicate(ex)) continue;
-            used.add(ex.id);
-            result.push(ex);
-        }
-        return result;
-    }
-
-    /**
-     * Build a strength day (Days 1, 2, 4)
-     */
-    private buildStrengthDay(
-        pool: RankedExercise[],
         profile: Profile,
-        dayType: DayType,
-        usedMainLowerPattern: string,
-        counts: DayExerciseCounts
-    ): { exercises: RankedExercise[]; mainLowerPattern: string } {
-        const result: RankedExercise[] = [];
-        const used = new Set<string>();
-        let mainLowerPattern = "";
-
-        // Warm-up exercises
-        const warmUps = this.takeUnique(pool, counts.warmUp, used, (ex) => this.isWarmUpCandidate(ex));
-        warmUps.forEach(ex => result.push({ ...ex, role: "warm-up" }));
-
-        const mainExercises: RankedExercise[] = [];
-
-        // Main lower body movement
-        const lowerPool = pool.filter(ex =>
-            ex.movementPattern === "Squat" ||
-            ex.movementPattern === "Hinge" ||
-            ex.movementPattern === "Lunge"
-        );
-
-        // Avoid repeating same pattern as previous strength day
-        let lowerMain = lowerPool.find(ex => ex.movementPattern !== usedMainLowerPattern) || lowerPool[0];
-
-        // Use starting ability mapping for squats
-        if (profile.startingAbilitySquats) {
-            const mappedLower = this.getSquatVariant(lowerPool, profile.startingAbilitySquats);
-            if (mappedLower) lowerMain = mappedLower;
-        }
-
-        if (lowerMain && used.has(lowerMain.id)) {
-            lowerMain = lowerPool.find(ex => ex.movementPattern !== usedMainLowerPattern && !used.has(ex.id)) ||
-                lowerPool.find(ex => !used.has(ex.id));
-        }
-
-        if (lowerMain && !used.has(lowerMain.id)) {
-            mainLowerPattern = lowerMain.movementPattern;
-            used.add(lowerMain.id);
-            mainExercises.push({ ...lowerMain, role: "main" });
-        }
-
-        // Push movement
-        const pushPool = pool.filter(ex => ex.movementPattern === "Push");
-        let pushMain = pushPool[0];
-
-        // Use starting ability mapping for push-ups
-        if (profile.startingAbilityPushups) {
-            const mappedPush = this.getPushVariant(pushPool, profile);
-            if (mappedPush) pushMain = mappedPush;
-        }
-
-        if (pushMain && used.has(pushMain.id)) {
-            pushMain = pushPool.find(ex => !used.has(ex.id));
-        }
-
-        if (pushMain && !used.has(pushMain.id)) {
-            used.add(pushMain.id);
-            mainExercises.push({ ...pushMain, role: "main" });
-        }
-
-        // Pull movement
-        const pullPool = pool.filter(ex => ex.movementPattern === "Pull");
-        const pullMain = pullPool.find(ex => !used.has(ex.id));
-        if (pullMain) {
-            used.add(pullMain.id);
-            mainExercises.push({ ...pullMain, role: "main" });
-        }
-
-        // Core movement
-        const corePool = pool.filter(ex => ex.movementPattern === "Core");
-        let coreMain = corePool[0];
-
-        // Use starting ability mapping for plank
-        if (profile.startingAbilityPlank) {
-            const mappedCore = this.getCoreVariant(corePool, profile.startingAbilityPlank);
-            if (mappedCore) coreMain = mappedCore;
-        }
-
-        if (coreMain && used.has(coreMain.id)) {
-            coreMain = corePool.find(ex => !used.has(ex.id));
-        }
-
-        if (coreMain && !used.has(coreMain.id)) {
-            used.add(coreMain.id);
-            mainExercises.push({ ...coreMain, role: "main" });
-        }
-
-        // Posture exercise for Day 4
-        if (dayType === "Strength Balanced Posture") {
-            const posturePool = pool.filter(ex =>
-                this.parseJson(ex.focusAreaTags).includes("Back and posture")
-            );
-            const postureMain = posturePool.find(ex => !used.has(ex.id));
-            if (postureMain) {
-                used.add(postureMain.id);
-                mainExercises.push({ ...postureMain, role: "accessory" });
-            }
-        }
-
-        const mainFillPool = pool.filter(ex =>
-            !this.isWarmUpCandidate(ex) &&
-            !this.isCoolOffCandidate(ex) &&
-            ex.workoutType !== "Mobility and recovery"
-        );
-        const remainingMain = counts.main - mainExercises.length;
-        if (remainingMain > 0) {
-            const extras = this.takeUnique(mainFillPool, remainingMain, used);
-            extras.forEach(ex => mainExercises.push({ ...ex, role: "main" }));
-        }
-
-        mainExercises.forEach(ex => result.push(ex));
-
-        // Cool off exercises
-        const coolOffs = this.takeUnique(pool, counts.stretch, used, (ex) => this.isCoolOffCandidate(ex));
-        coolOffs.forEach(ex => result.push({ ...ex, role: "cool-off" }));
-
-        return { exercises: result, mainLowerPattern };
-    }
-
-    /**
-     * Build a conditioning day (Day 3)
-     */
-    private buildConditioningDay(
-        pool: RankedExercise[],
-        counts: DayExerciseCounts
+        context: BuildContext,
     ): RankedExercise[] {
-        const result: RankedExercise[] = [];
-        const used = new Set<string>();
+        const fallbackSlot: WorkoutSlot = {
+            label: 'safe-fallback',
+            role: 'accessory',
+            movements: ['squat', 'hinge', 'push', 'pull', 'core', 'conditioning', 'mobility'],
+            workoutTypes: ['strength', 'conditioning', 'mobility'],
+        };
 
-        // Warm-up exercises
-        const warmUps = this.takeUnique(pool, counts.warmUp, used, (ex) => this.isWarmUpCandidate(ex));
-        warmUps.forEach(ex => result.push({ ...ex, role: "warm-up" }));
-
-        // Conditioning exercises
-        const condPool = pool.filter(ex => ex.workoutType === "Conditioning");
-
-        // Core block
-        const corePool = pool.filter(ex => ex.movementPattern === "Core");
-        const mainExercises: RankedExercise[] = [];
-        const coreCount = Math.min(counts.core, counts.main);
-        const coreExercises = this.takeUnique(corePool, coreCount, used);
-        coreExercises.forEach(ex => mainExercises.push({ ...ex, role: "main" }));
-
-        const condCount = Math.max(0, counts.main - mainExercises.length);
-        const condExercises = this.takeUnique(condPool, condCount, used);
-        condExercises.forEach(ex => mainExercises.push({ ...ex, role: "conditioning" }));
-
-        const remainingMain = counts.main - mainExercises.length;
-        if (remainingMain > 0) {
-            const mainFillPool = pool.filter(ex =>
-                !this.isWarmUpCandidate(ex) &&
-                !this.isCoolOffCandidate(ex) &&
-                ex.workoutType !== "Mobility and recovery"
-            );
-            const extras = this.takeUnique(mainFillPool, remainingMain, used);
-            extras.forEach(ex => mainExercises.push({ ...ex, role: "main" }));
-        }
-
-        mainExercises.forEach(ex => result.push(ex));
-
-        // Mobility block
-        const mobilityPool = pool.filter(ex =>
-            ex.workoutType === "Mobility and recovery"
-        );
-        const mobilityExercises = this.takeUnique(mobilityPool, counts.mobility, used);
-        mobilityExercises.forEach(ex => result.push({ ...ex, role: "mobility" }));
-
-        // Cool off
-        const coolOffCount = Math.max(0, counts.stretch - mobilityExercises.length);
-        const coolOffs = this.takeUnique(pool, coolOffCount, used, (ex) => this.isCoolOffCandidate(ex));
-        coolOffs.forEach(ex => result.push({ ...ex, role: "cool-off" }));
-
-        return result;
+        return pool
+            .filter((exercise) => !used.has(exercise.id))
+            .map((exercise) => ({
+                exercise,
+                score: this.scoreForSlot(exercise, fallbackSlot, profile, context),
+            }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, count)
+            .map(({ exercise }) => ({ ...exercise, role: this.isMobilityType(exercise) ? 'mobility' : 'accessory' }));
     }
 
-    /**
-     * Get prescription based on exercise type and experience
-     */
     private getPrescription(
-        ex: RankedExercise,
+        exercise: RankedExercise,
         profile: Profile,
-        week: number
-    ): { sets: number | null; reps: number | null; seconds: number | null; rest: number | null } {
-        const exp = profile.experienceLevel.toLowerCase();
-        const isCoreHold = ex.movementPattern === "Core" &&
-            (ex.name.toLowerCase().includes("plank") ||
-                ex.name.toLowerCase().includes("hold") ||
-                ex.name.toLowerCase().includes("dead bug"));
-        const isMobility = ex.workoutType === "Mobility and recovery" || ex.role === "warm-up" || ex.role === "cool-off" || ex.role === "mobility";
-        const isConditioning = ex.workoutType === "Conditioning" || ex.role === "conditioning";
+        week: number,
+        design: ProgramDesign,
+    ): { sets: number | null; reps: number | null; seconds: number | null; rest: number | null; note: string | null } {
+        const role = exercise.role || 'main';
+        const expRank = this.getUserExperienceRank(profile);
+        const lowRecovery = design.recoveryLevel === 'low';
+        const isCoreHold = this.isCoreHold(exercise);
+        const isMobility = role === 'warm-up' || role === 'cool-off' || role === 'mobility' || this.isMobilityType(exercise);
+        const isConditioning = role === 'conditioning' || this.isConditioningType(exercise);
 
-        let sets = 3, reps: number | null = 10, seconds: number | null = null, rest = 60;
-
-        // Default strength prescription by experience
-        if (exp.includes("beginner")) { sets = 2; reps = 8; rest = 60; }
-        else if (exp.includes("some")) { sets = 3; reps = 10; rest = 60; }
-        else if (exp.includes("interm")) { sets = 3; reps = 8; rest = 90; }
-        else if (exp.includes("advanc")) { sets = 4; reps = 8; rest = 120; }
-
-        // Core hold prescriptions
-        if (isCoreHold) {
-            reps = null;
-            if (exp.includes("beginner")) { sets = 2; seconds = 20; rest = 45; }
-            else if (exp.includes("some")) { sets = 3; seconds = 30; rest = 45; }
-            else if (exp.includes("interm")) { sets = 3; seconds = 45; rest = 60; }
-            else { sets = 4; seconds = 60; rest = 60; }
-        }
-
-        // Mobility/stretching prescriptions
         if (isMobility) {
-            sets = 1;
-            reps = null;
-            seconds = 45;
-            rest = 0;
+            const seconds = profile.timePerWorkout <= 15 ? 30 : role === 'cool-off' ? 45 : 40;
+            return { sets: 1, reps: null, seconds, rest: role === 'warm-up' ? 10 : 0, note: null };
         }
 
-        // Conditioning prescriptions (intervals)
         if (isConditioning) {
-            sets = 4;
-            reps = null;
-            const intensity = profile.intensityPreference;
-            if (intensity === "Easy") { seconds = 20; rest = 40; }
-            else if (intensity === "Moderate") { seconds = 30; rest = 30; }
-            else { seconds = 40; rest = 20; }
-        }
+            let sets = profile.timePerWorkout >= 60 ? 6 : profile.timePerWorkout >= 40 ? 5 : profile.timePerWorkout >= 25 ? 4 : 3;
+            let seconds = 30;
+            let rest = 30;
 
-        // Week progression
-        if (week === 2 && ex.role === "main" && profile.sleepBucket !== "Under 6 hours") {
-            sets += 1;
-        }
-        if (week === 3) {
-            if (reps) reps += 2;
-            if (seconds) seconds += 10;
-        }
-        if (week === 4) {
-            // Recovery week - slightly reduce
-            if (profile.intensityPreference === "Easy" || profile.sleepBucket === "Under 6 hours") {
-                if (sets > 2) sets -= 1;
+            if (profile.intensityPreference === 'Easy') {
+                seconds = 20;
+                rest = 40;
+            } else if (profile.intensityPreference === 'Hard') {
+                seconds = 40;
+                rest = 20;
             }
+
+            if (lowRecovery || expRank === 0) sets = Math.max(3, sets - 1);
+            if (week === 2 && !lowRecovery) sets += 1;
+            if (week === 3 && !lowRecovery) seconds += 5;
+            if (week === 4 && lowRecovery) sets = Math.max(3, sets - 1);
+
+            return { sets, reps: null, seconds, rest, note: 'Intervals: work for target seconds, then rest.' };
         }
 
-        return { sets, reps, seconds, rest };
+        if (isCoreHold) {
+            let sets = expRank <= 0 ? 2 : expRank === 1 ? 3 : 3;
+            let seconds = expRank <= 0 ? 20 : expRank === 1 ? 30 : expRank === 2 ? 40 : 50;
+            let rest = expRank >= 2 ? 60 : 45;
+
+            if (this.matchesMovement(exercise, ['core']) && profile.startingAbilityPlank) {
+                seconds = this.getStartingPlankSeconds(profile.startingAbilityPlank, seconds);
+            }
+
+            if (role === 'accessory') sets = Math.min(sets, 2);
+            if (week === 2 && !lowRecovery && role === 'main') sets += 1;
+            if (week === 3 && !lowRecovery) seconds += 10;
+            if (week === 4 && lowRecovery) sets = Math.max(2, sets - 1);
+
+            return { sets, reps: null, seconds, rest, note: null };
+        }
+
+        let sets = expRank <= 0 ? 2 : expRank === 1 ? 3 : expRank === 2 ? 3 : 4;
+        let reps = expRank <= 0 ? 8 : expRank === 1 ? 10 : 8;
+        let rest = expRank <= 1 ? 60 : expRank === 2 ? 75 : 90;
+
+        if (profile.goal === 'Build muscle') {
+            reps += expRank >= 2 ? 2 : 1;
+            rest += 15;
+        } else if (profile.goal === 'Get stronger') {
+            reps = Math.max(6, reps - 2);
+            rest += 30;
+        } else if (profile.goal === 'Lose body fat' || profile.goal === 'Improve stamina') {
+            reps += 2;
+            rest = Math.max(45, rest - 15);
+        }
+
+        if (role === 'accessory') {
+            sets = Math.min(sets, profile.timePerWorkout <= 25 ? 2 : 3);
+            reps = Math.max(reps, 10);
+        }
+
+        if (profile.timePerWorkout <= 15) sets = Math.min(sets, 2);
+        if (lowRecovery) sets = Math.max(2, sets - 1);
+
+        if (week === 2 && !lowRecovery && role === 'main' && profile.timePerWorkout >= 25) sets += 1;
+        if (week === 3 && !lowRecovery) reps += 2;
+        if (week === 4 && (lowRecovery || profile.intensityPreference === 'Easy')) sets = Math.max(2, sets - 1);
+
+        return { sets, reps, seconds: null, rest, note: null };
     }
 
-    /**
-     * Optional recovery days (Days 29-30)
-     */
-    private async buildOptionalRecoveryDays(planId: string, startDay: number, pool: Exercise[], profile: Profile) {
-        const mobilityPool = pool.filter(ex =>
-            ex.workoutType === "Mobility and recovery" ||
-            this.parseJson(ex.phaseTags).includes("Stretching")
-        );
+    private async buildOptionalRecoveryDays(
+        planId: string,
+        startDay: number,
+        pool: Exercise[],
+        profile: Profile,
+        history: Map<string, ExerciseUsage>,
+    ) {
+        const rankedPool = this.scoreExercises(pool, profile, 'Mobility Strength Recovery', this.designProgram(profile));
+        const recoveryPool = rankedPool.filter((exercise) => this.isMobilityType(exercise) || this.isCoolOffCandidate(exercise));
 
         for (let i = 0; i < 2; i++) {
+            const dayNumber = startDay + i;
             const day = await prisma.workoutDay.create({
                 data: {
                     planId,
-                    dayNumber: startDay + i,
+                    dayNumber,
                     weekNumber: 5,
-                    dayType: "Conditioning Core Mobility",
+                    dayType: 'Mobility Strength Recovery',
                     isOptional: true,
                     estimatedMinutes: 15,
                 },
             });
 
-            const selected = mobilityPool.slice(i * 5, (i + 1) * 5);
+            const selected = (recoveryPool.length > 0 ? recoveryPool : rankedPool)
+                .filter((exercise) => !history.has(exercise.id) || (history.get(exercise.id)?.lastDay ?? 0) < dayNumber - 2)
+                .slice(0, 5);
+
             for (let j = 0; j < selected.length; j++) {
+                const exercise = selected[j];
+                if (!exercise) continue;
+
                 await prisma.workoutExercise.create({
                     data: {
                         workoutDayId: day.id,
-                        exerciseId: selected[j].id,
-                        role: "mobility",
+                        exerciseId: exercise.id,
+                        role: 'mobility',
                         targetSets: 1,
                         targetSeconds: 45,
-                        targetRestSeconds: 15,
+                        targetRestSeconds: 0,
                         sortOrder: j,
                     },
                 });
             }
+
+            this.recordUsage(selected.map((exercise) => ({ ...exercise, role: 'mobility' })), dayNumber, history);
         }
     }
 
-    /**
-     * Starting ability mappings
-     */
-    private getPushVariant(pool: RankedExercise[], profile: Profile): RankedExercise | null {
-        const ability = profile.startingAbilityPushups;
-        if (!ability) return null;
-
-        if (ability === "0") {
-            return pool.find(ex => ex.name.toLowerCase().includes("wall push-up")) ||
-                pool.find(ex => ex.name.toLowerCase().includes("incline push-up")) ||
-                null;
+    private recordUsage(exercises: RankedExercise[], dayNumber: number, history: Map<string, ExerciseUsage>) {
+        for (const exercise of exercises) {
+            const previous = history.get(exercise.id);
+            history.set(exercise.id, {
+                count: (previous?.count ?? 0) + 1,
+                lastDay: dayNumber,
+            });
         }
-        if (ability === "1-5") {
-            return pool.find(ex => ex.name.toLowerCase().includes("incline push-up")) ||
-                pool.find(ex => ex.name.toLowerCase().includes("knee push-up")) ||
-                null;
-        }
-        if (ability === "6-15") {
-            return pool.find(ex => ex.name.toLowerCase().includes("standard push-up")) ||
-                pool.find(ex => ex.name.toLowerCase().includes("push-up") && !ex.name.toLowerCase().includes("decline")) ||
-                null;
-        }
-        if (ability === "16+") {
-            return pool.find(ex => ex.name.toLowerCase().includes("decline push-up")) ||
-                pool.find(ex => ex.name.toLowerCase().includes("standard push-up")) ||
-                null;
-        }
-        return null;
     }
 
-    private getSquatVariant(pool: RankedExercise[], ability: string): RankedExercise | null {
-        if (ability === "0-10") {
-            return pool.find(ex => ex.name.toLowerCase().includes("sit-to-stand")) ||
-                pool.find(ex => ex.name.toLowerCase().includes("chair")) ||
-                null;
-        }
-        if (ability === "11-25") {
-            return pool.find(ex => ex.name.toLowerCase().includes("bodyweight squat")) ||
-                pool.find(ex => ex.name.toLowerCase().includes("squat") && !ex.name.toLowerCase().includes("goblet")) ||
-                null;
-        }
-        if (ability === "26-50") {
-            return pool.find(ex => ex.name.toLowerCase().includes("goblet squat")) ||
-                pool.find(ex => ex.name.toLowerCase().includes("squat")) ||
-                null;
-        }
-        if (ability === "50+") {
-            return pool.find(ex => ex.name.toLowerCase().includes("goblet squat")) ||
-                pool.find(ex => ex.name.toLowerCase().includes("split")) ||
-                null;
-        }
-        return null;
+    private isWarmUpCandidate(exercise: Exercise): boolean {
+        return this.isMobilityType(exercise) ||
+            this.matchesMovement(exercise, ['mobility']) ||
+            this.isWarmUpConditioning(exercise);
     }
 
-    private getCoreVariant(pool: RankedExercise[], ability: string): RankedExercise | null {
-        if (ability === "under 20 seconds") {
-            return pool.find(ex => ex.name.toLowerCase().includes("knees")) ||
-                pool.find(ex => ex.name.toLowerCase().includes("dead bug")) ||
-                null;
-        }
-        if (ability === "20-45") {
-            return pool.find(ex => ex.name.toLowerCase().includes("front plank")) ||
-                pool.find(ex => ex.name.toLowerCase().includes("plank") && !ex.name.toLowerCase().includes("side")) ||
-                null;
-        }
-        if (ability === "45-90" || ability === "90+") {
-            return pool.find(ex => ex.name.toLowerCase().includes("side plank")) ||
-                pool.find(ex => ex.name.toLowerCase().includes("plank")) ||
-                null;
-        }
-        return null;
+    private isCoolOffCandidate(exercise: Exercise): boolean {
+        const phases = this.parseTags(exercise.phaseTags);
+        return phases.includes('Cool off') || phases.includes('Stretching') || this.matchesMovement(exercise, ['stretch']);
     }
 
-    /**
-     * Utility: Parse JSON string to array
-     */
-    private parseJson(value: string | null): string[] {
+    private matchesWorkoutType(exercise: Exercise, type: WorkoutTypeGroup): boolean {
+        if (type === 'strength') return this.isStrengthType(exercise);
+        if (type === 'conditioning') return this.isConditioningType(exercise);
+        return this.isMobilityType(exercise);
+    }
+
+    private isStrengthType(exercise: Exercise): boolean {
+        return exercise.workoutType.toLowerCase().includes('strength');
+    }
+
+    private isConditioningType(exercise: Exercise): boolean {
+        const type = exercise.workoutType.toLowerCase();
+        return type.includes('conditioning') || type.includes('cardio');
+    }
+
+    private isWarmUpConditioning(exercise: Exercise): boolean {
+        return this.isConditioningType(exercise) && exercise.impactLevel.toLowerCase() === 'low';
+    }
+
+    private isMobilityType(exercise: Exercise): boolean {
+        const type = exercise.workoutType.toLowerCase();
+        return type.includes('mobility') || type.includes('recovery');
+    }
+
+    private matchesMovement(exercise: Exercise, groups: MovementGroup[]): boolean {
+        const movement = exercise.movementPattern.toLowerCase();
+        const name = exercise.name.toLowerCase();
+        const phases = this.parseTags(exercise.phaseTags);
+        const focus = this.parseTags(exercise.focusAreaTags);
+
+        return groups.some((group) => {
+            if (group === 'squat') return movement.includes('squat');
+            if (group === 'hinge') return movement.includes('hinge') || name.includes('deadlift') || name.includes('bridge') || name.includes('swing');
+            if (group === 'lunge') return movement.includes('lunge') || movement.includes('step');
+            if (group === 'push') return movement.includes('push') || name.includes('press') || name.includes('dip');
+            if (group === 'pull') return movement.includes('pull') || name.includes('row') || name.includes('pull-up') || name.includes('chin-up');
+            if (group === 'core') return movement.includes('core') || focus.includes('Core');
+            if (group === 'conditioning') return this.isConditioningType(exercise);
+            if (group === 'mobility') return movement.includes('mobility') || this.isMobilityType(exercise);
+            if (group === 'stretch') return movement.includes('stretch') || phases.includes('Stretching');
+            if (group === 'carry') return movement.includes('carry');
+            if (group === 'posture') return movement.includes('posture') || focus.includes('Back and posture');
+            return false;
+        });
+    }
+
+    private getAbilityFitBonus(exercise: Exercise, slot: WorkoutSlot, profile: Profile): number {
+        const name = exercise.name.toLowerCase();
+        let bonus = 0;
+
+        if (slot.movements?.includes('push') && profile.startingAbilityPushups) {
+            const ability = profile.startingAbilityPushups;
+            if (ability === '0' && (name.includes('wall push-up') || name.includes('incline push-up'))) bonus += 35;
+            if (ability === '1-5' && (name.includes('incline push-up') || name.includes('knee push-up'))) bonus += 35;
+            if (ability === '6-15' && name.includes('standard push-up')) bonus += 35;
+            if (ability === '16+' && (name.includes('decline push-up') || name.includes('standard push-up'))) bonus += 30;
+        }
+
+        if (slot.movements?.some((movement) => movement === 'squat' || movement === 'lunge') && profile.startingAbilitySquats) {
+            const ability = profile.startingAbilitySquats;
+            if (ability === '0-10' && (name.includes('box squat') || name.includes('chair'))) bonus += 35;
+            if (ability === '11-25' && name.includes('bodyweight squat')) bonus += 35;
+            if (ability === '26-50' && (name.includes('goblet squat') || name.includes('tempo squat'))) bonus += 30;
+            if (ability === '50+' && (name.includes('goblet squat') || name.includes('bulgarian') || name.includes('split'))) bonus += 28;
+        }
+
+        if (slot.movements?.includes('core') && profile.startingAbilityPlank) {
+            const ability = profile.startingAbilityPlank;
+            if (ability === 'under 20 seconds' && (name.includes('knees') || name.includes('dead bug'))) bonus += 35;
+            if (ability === '20-45' && (name.includes('front plank') || name.includes('dead bug'))) bonus += 30;
+            if ((ability === '45-90' || ability === '90+') && (name.includes('side plank') || name.includes('front plank'))) bonus += 28;
+        }
+
+        return bonus;
+    }
+
+    private isCoreHold(exercise: Exercise): boolean {
+        const name = exercise.name.toLowerCase();
+        return this.matchesMovement(exercise, ['core']) && (
+            name.includes('plank') ||
+            name.includes('hold') ||
+            name.includes('hang') ||
+            name.includes('wall sit')
+        );
+    }
+
+    private getStartingPlankSeconds(ability: string, fallback: number): number {
+        if (ability === 'under 20 seconds') return Math.min(fallback, 20);
+        if (ability === '20-45') return Math.max(25, Math.min(fallback, 35));
+        if (ability === '45-90') return Math.max(40, fallback);
+        if (ability === '90+') return Math.max(50, fallback);
+        return fallback;
+    }
+
+    private getRecoveryLevel(profile: Profile): ProgramDesign['recoveryLevel'] {
+        if (profile.sleepBucket === 'Under 6 hours') return 'low';
+        if (profile.intensityPreference === 'Easy') return 'low';
+        if (profile.sleepBucket === '8+ hours' && profile.intensityPreference === 'Hard') return 'high';
+        return 'normal';
+    }
+
+    private getUserExperienceRank(profile: Profile): number {
+        return this.getDifficultyRank(profile.experienceLevel);
+    }
+
+    private getDifficultyRank(value: string): number {
+        const normalized = value.toLowerCase();
+        const rank = DIFFICULTY_ORDER.findIndex((difficulty) => normalized.includes(difficulty));
+        return rank >= 0 ? rank : 0;
+    }
+
+    private hasSetupFriction(exercise: Exercise): boolean {
+        const equipment = this.parseTags(exercise.equipmentTags);
+        return equipment.some((tag) => tag !== 'No equipment' && tag !== 'Resistance bands');
+    }
+
+    private parseTags(value: string | null): string[] {
         if (!value) return [];
+
         try {
             const parsed = JSON.parse(value);
-            return Array.isArray(parsed) ? parsed : [];
+            if (Array.isArray(parsed)) {
+                return parsed
+                    .flatMap((item) => String(item).split(';'))
+                    .map((item) => item.trim())
+                    .filter(Boolean);
+            }
         } catch {
-            return [];
+            // Fall through to loose parsing for legacy strings.
         }
+
+        return value
+            .split(/[;,]/)
+            .map((item) => item.trim())
+            .filter(Boolean);
+    }
+
+    private clamp(value: number, min: number, max: number): number {
+        return Math.min(max, Math.max(min, value));
     }
 }
