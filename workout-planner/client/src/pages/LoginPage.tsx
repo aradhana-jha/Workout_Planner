@@ -93,7 +93,7 @@ export function LoginPage() {
     const applySuccessfulAuth = (nextStep: 'dashboard' | 'onboarding', message?: string) => {
         setError('');
         setNotice(message || '');
-        if (message) {
+        if (nextStep === 'dashboard' && message) {
             sessionStorage.setItem(POST_AUTH_NOTICE_KEY, message);
         } else {
             sessionStorage.removeItem(POST_AUTH_NOTICE_KEY);

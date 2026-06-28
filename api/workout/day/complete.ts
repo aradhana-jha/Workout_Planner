@@ -25,17 +25,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!dayId) return res.status(400).json({ error: 'dayId is required' });
 
     try {
-        const updateResult = await prisma.workoutDay.updateMany({
+        const workoutDay = await prisma.workoutDay.findFirst({
             where: {
                 id: dayId as string,
                 plan: { userId: user.userId },
             },
-            data: { isCompleted: true, completedAt: new Date() }
+            include: {
+                exercises: {
+                    select: {
+                        targetSets: true,
+                        logs: {
+                            where: { isDone: true },
+                            select: { setNumber: true },
+                        },
+                    },
+                },
+            },
         });
 
-        if (updateResult.count === 0) {
+        if (!workoutDay) {
             return res.status(404).json({ error: 'Workout day not found' });
         }
+
+        const missingRequiredSets = workoutDay.exercises.some((exercise) => {
+            const requiredSets = exercise.targetSets ?? 1;
+            const completedSets = new Set(exercise.logs.map((log) => log.setNumber)).size;
+
+            return completedSets < requiredSets;
+        });
+
+        if (missingRequiredSets) {
+            return res.status(409).json({
+                error: 'incomplete_workout',
+                message: 'Complete all planned sets before marking this workout done.',
+            });
+        }
+
+        await prisma.workoutDay.update({
+            where: { id: workoutDay.id },
+            data: { isCompleted: true, completedAt: new Date() }
+        });
 
         return res.status(200).json({ message: 'Day completed' });
     } catch (error) {

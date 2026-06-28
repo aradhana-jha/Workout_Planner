@@ -71,6 +71,7 @@ export function WorkoutPage() {
     const [loading, setLoading] = useState(true);
     const [completing, setCompleting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [completionError, setCompletionError] = useState<string | null>(null);
     const [expandedExerciseId, setExpandedExerciseId] = useState<string | null>(null);
 
     useEffect(() => {
@@ -117,6 +118,7 @@ export function WorkoutPage() {
 
     const handleLogSet = async (workoutExerciseId: string, exerciseId: string, setNumber: number, reps: number, weight: number) => {
         try {
+            setCompletionError(null);
             const res = await api.post('/workout/day/log', {
                 dayId,
                 exerciseId,
@@ -179,12 +181,29 @@ export function WorkoutPage() {
     };
 
     const handleCompleteWorkout = async () => {
+        if (!workout) {
+            return;
+        }
+
+        const totalSets = workout.exercises.reduce((sum, item) => sum + item.targetSets, 0);
+        const completedSets = workout.exercises.reduce((sum, item) => sum + getCompletedSets(item), 0);
+
+        if (completedSets < totalSets) {
+            setCompletionError('Complete all planned sets before marking this workout done.');
+            return;
+        }
+
         setCompleting(true);
+        setCompletionError(null);
         try {
             await api.post('/workout/day/complete', { dayId });
             navigate('/dashboard');
-        } catch (completeError) {
+        } catch (completeError: any) {
             console.error('Failed to complete workout', completeError);
+            setCompletionError(
+                completeError?.response?.data?.message ||
+                'Unable to complete this workout right now.'
+            );
         } finally {
             setCompleting(false);
         }
@@ -252,6 +271,7 @@ export function WorkoutPage() {
     const totalSets = workout.exercises.reduce((sum, item) => sum + item.targetSets, 0);
     const completedSets = workout.exercises.reduce((sum, item) => sum + getCompletedSets(item), 0);
     const progressPercent = totalSets > 0 ? Math.round((completedSets / totalSets) * 100) : 0;
+    const canCompleteWorkout = completedSets >= totalSets;
 
     return (
         <div className="app-shell px-4 py-4">
@@ -416,13 +436,18 @@ export function WorkoutPage() {
                         <p className="mt-2 text-base font-semibold text-[#66758A]">
                             {completedSets} of {totalSets} sets logged across {workout.exercises.length} exercises.
                         </p>
+                        {completionError && (
+                            <p className="mt-3 rounded-[18px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+                                {completionError}
+                            </p>
+                        )}
                     </div>
                     <button
                         onClick={handleCompleteWorkout}
-                        disabled={completing}
+                        disabled={completing || !canCompleteWorkout}
                         className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#0B1220_0%,#10243B_55%,#17BDB2_130%)] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_32px_rgba(11,18,32,0.18)] transition hover:opacity-95 disabled:cursor-wait disabled:opacity-70"
                     >
-                        {completing ? 'Completing...' : 'Complete workout'}
+                        {completing ? 'Completing...' : canCompleteWorkout ? 'Complete workout' : 'Finish all sets'}
                         <ChevronRight className="h-4 w-4" />
                     </button>
                 </section>

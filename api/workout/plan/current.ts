@@ -21,18 +21,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-    const plan = await prisma.plan.findFirst({
-        where: { userId: user.userId, status: 'active' },
-        include: {
-            days: {
-                orderBy: { dayNumber: 'asc' },
-                select: {
-                    id: true, dayNumber: true, weekNumber: true, dayType: true,
-                    estimatedMinutes: true, isOptional: true, isCompleted: true, completedAt: true
-                }
+    const [plan, profile] = await Promise.all([
+        prisma.plan.findFirst({
+            where: { userId: user.userId, status: 'active' },
+            include: {
+                days: {
+                    orderBy: { dayNumber: 'asc' },
+                    select: {
+                        id: true, dayNumber: true, weekNumber: true, dayType: true,
+                        estimatedMinutes: true, isOptional: true, isCompleted: true, completedAt: true
+                    }
+                },
             }
-        }
-    });
+        }),
+        prisma.profile.findUnique({
+            where: { userId: user.userId },
+            select: { id: true },
+        }),
+    ]);
+
+    const profileExists = Boolean(profile);
 
     if (plan) {
         const transformedPlan = {
@@ -42,8 +50,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 title: day.dayType === "Rest" ? "Rest Day" : `${day.dayType} (${day.estimatedMinutes} min)`
             }))
         };
-        return res.status(200).json({ plan: transformedPlan });
+        return res.status(200).json({ plan: transformedPlan, profileExists });
     }
 
-    return res.status(200).json({ plan: null });
+    return res.status(200).json({ plan: null, profileExists });
 }

@@ -47,7 +47,7 @@ export function CreateAccountPage() {
 
         try {
             const response = await signup(email);
-            if (response.message) {
+            if (response.nextStep === 'dashboard' && response.message) {
                 sessionStorage.setItem('post_auth_notice', response.message);
             } else {
                 sessionStorage.removeItem('post_auth_notice');

@@ -308,6 +308,7 @@ export function OnboardingPage() {
             };
 
             await api.post('/profile', profileData);
+            sessionStorage.removeItem('post_auth_notice');
             navigate('/dashboard');
         } catch (error) {
             console.error('Failed to save profile', error);

@@ -24,6 +24,11 @@ import armsArt from '../assets/focus/arms.jpg';
 
 type DashboardTab = 'plan' | 'discover' | 'history';
 const POST_AUTH_NOTICE_KEY = 'post_auth_notice';
+const ONBOARDING_NOTICE_PATTERNS = [
+    'answer a few questions',
+    'continue onboarding',
+    'build your plan',
+];
 type FocusKey = 'full-body' | 'abs' | 'legs' | 'butt' | 'arms';
 
 interface Day {
@@ -180,6 +185,13 @@ function getCalendarCells(days: Day[]) {
             isCompleted: completedDates.has(toDateKey(date)),
         };
     });
+}
+
+function isStaleOnboardingNotice(message: string | null) {
+    if (!message) return false;
+    const normalized = message.toLowerCase();
+
+    return ONBOARDING_NOTICE_PATTERNS.some((pattern) => normalized.includes(pattern));
 }
 
 function PlanTab({
@@ -754,6 +766,7 @@ export function DashboardPage() {
     const logout = useAuthStore((state) => state.logout);
 
     const [plan, setPlan] = useState<Plan | null>(null);
+    const [profileExists, setProfileExists] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -782,6 +795,7 @@ export function DashboardPage() {
             try {
                 const res = await api.get('/workout/plan/current');
                 setPlan(res.data.plan);
+                setProfileExists(Boolean(res.data.profileExists));
                 setError(null);
             } catch (fetchError) {
                 console.error('Failed to fetch plan', fetchError);
@@ -866,23 +880,31 @@ export function DashboardPage() {
     }
 
     if (!plan) {
+        const title = profileExists
+            ? 'We could not find an active plan.'
+            : 'Start your first guided block.';
+        const description = profileExists
+            ? 'Your profile exists, but there is no active workout plan right now. Rebuild your plan to generate a fresh 30-day sequence.'
+            : 'Answer onboarding questions and the app will build a 30-day sequence around your goal, equipment, and current fitness level.';
+        const primaryLabel = profileExists ? 'Rebuild plan' : 'Create a plan';
+
         return (
             <div className="app-shell px-4 py-8">
                 <div className="mobile-shell">
                     <div className="surface-panel space-y-6 p-8 text-center">
-                        <p className="section-label">No active plan</p>
+                        <p className="section-label">{profileExists ? 'Plan unavailable' : 'No active plan'}</p>
                         <h1 className="text-3xl font-black tracking-tight text-[#0B1220]">
-                            Start your first guided block.
+                            {title}
                         </h1>
                         <p className="mx-auto max-w-xl text-base leading-7 text-[#66758A]">
-                            Answer onboarding questions and the app will build a 30-day sequence around your goal, equipment, and current fitness level.
+                            {description}
                         </p>
                         <div className="flex flex-col items-center justify-center gap-3">
                             <button
                                 onClick={() => navigate('/onboarding')}
                                 className="w-full rounded-full bg-[linear-gradient(135deg,#0B1220_0%,#10243B_55%,#17BDB2_130%)] px-6 py-3 text-sm font-bold uppercase tracking-[0.2em] text-white transition hover:opacity-95"
                             >
-                                Create a plan
+                                {primaryLabel}
                             </button>
                             <button
                                 onClick={handleLogout}
@@ -920,7 +942,7 @@ export function DashboardPage() {
                 </header>
 
                 <main className="space-y-4">
-                    {authNotice && (
+                    {authNotice && !isStaleOnboardingNotice(authNotice) && (
                         <section className="mobile-card border border-[#22C7B8]/18 bg-[rgba(232,251,248,0.98)] text-[#0E6D68]">
                             <p className="text-sm font-semibold leading-6">{authNotice}</p>
                         </section>

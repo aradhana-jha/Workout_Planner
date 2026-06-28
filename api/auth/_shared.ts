@@ -80,12 +80,27 @@ export function isAuthConfigurationError(error: unknown) {
 }
 
 export async function resolveNextStep(userId: string): Promise<AuthNextStep> {
+    const [profile, activePlan] = await Promise.all([
+        prisma.profile.findUnique({
+            where: { userId },
+            select: { id: true },
+        }),
+        prisma.plan.findFirst({
+            where: { userId, status: 'active' },
+            select: { id: true },
+        }),
+    ]);
+
+    return profile && activePlan ? 'dashboard' : 'onboarding';
+}
+
+export async function hasCompletedOnboarding(userId: string) {
     const profile = await prisma.profile.findUnique({
         where: { userId },
         select: { id: true },
     });
 
-    return profile ? 'dashboard' : 'onboarding';
+    return Boolean(profile);
 }
 
 export function buildAuthResponse(user: { id: string; email: string }, nextStep: AuthNextStep, message?: string) {
