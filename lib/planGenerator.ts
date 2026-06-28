@@ -85,6 +85,8 @@ interface BuildContext {
     dayType: DayType;
     design: ProgramDesign;
     history: Map<string, ExerciseUsage>;
+    familyHistory: Map<string, ExerciseUsage>;
+    dayFamilies: Map<string, number>;
 }
 
 const DIFFICULTY_ORDER = ['beginner', 'some experience', 'intermediate', 'advanced'];
@@ -133,6 +135,7 @@ export class PlanGenerator {
 
         try {
             const history = new Map<string, ExerciseUsage>();
+            const familyHistory = new Map<string, ExerciseUsage>();
 
             for (let week = 1; week <= 4; week++) {
                 for (let dayInWeek = 0; dayInWeek < 7; dayInWeek++) {
@@ -152,11 +155,11 @@ export class PlanGenerator {
                         continue;
                     }
 
-                    await this.buildDay(plan.id, dayNumber, week, dayType, allowedPool, profile, design, history);
+                    await this.buildDay(plan.id, dayNumber, week, dayType, allowedPool, profile, design, history, familyHistory);
                 }
             }
 
-            await this.buildOptionalRecoveryDays(plan.id, 29, allowedPool, profile, history);
+            await this.buildOptionalRecoveryDays(plan.id, 29, allowedPool, profile, history, familyHistory);
 
             await prisma.$transaction([
                 prisma.plan.updateMany({
@@ -372,13 +375,17 @@ export class PlanGenerator {
                 const maxRank = this.getDifficultyRank(exercise.difficultyMax);
                 const impact = exercise.impactLevel.toLowerCase();
 
+                if (this.isPremiumExercise(exercise)) score += 24;
+                if (this.isLegacyFallbackExercise(exercise)) score -= 120;
+
                 if ((goal === 'Build muscle' || goal === 'Get stronger') && this.isStrengthType(exercise)) score += 18;
                 if ((goal === 'Lose body fat' || goal === 'Improve stamina') && this.isConditioningType(exercise)) score += 18;
                 if (goal === 'Improve mobility' && this.isMobilityType(exercise)) score += 20;
                 if (goal === 'General fitness' && this.parseTags(exercise.phaseTags).includes('Main exercise')) score += 6;
 
                 if (style === 'Mostly strength training' && this.isStrengthType(exercise)) score += 12;
-                if (style === 'Mostly cardio' && this.isConditioningType(exercise)) score += 12;
+                if (style === 'Mostly strength training' && this.isConditioningType(exercise)) score -= 10;
+                if (style === 'Mostly cardio' && this.isConditioningType(exercise)) score += this.isBasicCardioFiller(exercise) ? -18 : 12;
                 if (style === 'Mix of both' && (this.isStrengthType(exercise) || this.isConditioningType(exercise))) score += 6;
 
                 for (const focus of focusAreas) {
@@ -408,6 +415,8 @@ export class PlanGenerator {
                 if (profile.timePerWorkout <= 25 && this.hasSetupFriction(exercise)) score -= 5;
 
                 score += this.getDayTypeBonus(exercise, dayType);
+                score += this.getProfileSpecificBonus(exercise, profile, dayType);
+                score -= this.getLowValueExercisePenalty(exercise, profile);
 
                 return { ...exercise, score };
             })
@@ -435,10 +444,11 @@ export class PlanGenerator {
         profile: Profile,
         design: ProgramDesign,
         history: Map<string, ExerciseUsage>,
+        familyHistory: Map<string, ExerciseUsage>,
     ) {
         const scoredPool = this.scoreExercises(pool, profile, dayType, design);
         const counts = this.getDayExerciseCounts(profile.timePerWorkout, dayType);
-        const context: BuildContext = { dayNumber, week, dayType, design, history };
+        const context: BuildContext = { dayNumber, week, dayType, design, history, familyHistory, dayFamilies: new Map() };
         const selectedExercises = this.buildWorkoutFromSlots(scoredPool, profile, counts, context);
         const minimumTotal = this.getMinimumExerciseTotal(counts);
 
@@ -479,7 +489,7 @@ export class PlanGenerator {
             });
         }
 
-        this.recordUsage(selectedExercises, dayNumber, history);
+        this.recordUsage(selectedExercises, dayNumber, history, familyHistory);
     }
 
     private getDayExerciseCounts(time: number, dayType: DayType): DayExerciseCounts {
@@ -496,6 +506,7 @@ export class PlanGenerator {
         context: BuildContext,
     ): RankedExercise[] {
         const used = new Set<string>();
+        const usedNames = new Set<string>();
         const selected: RankedExercise[] = [];
 
         const slots: WorkoutSlot[] = [
@@ -505,18 +516,22 @@ export class PlanGenerator {
         ];
 
         for (const slot of slots) {
-            const exercise = this.selectForSlot(pool, slot, used, profile, context);
+            const exercise = this.selectForSlot(pool, slot, used, usedNames, profile, context);
             if (!exercise) continue;
 
             used.add(exercise.id);
+            usedNames.add(this.getExerciseDisplayKey(exercise));
+            this.recordDayFamily(exercise, context);
             selected.push({ ...exercise, role: slot.role });
         }
 
         const minimumTotal = this.getMinimumExerciseTotal(counts);
         if (selected.length < minimumTotal) {
-            const fillers = this.takeFallbackExercises(pool, minimumTotal - selected.length, used, profile, context);
+            const fillers = this.takeFallbackExercises(pool, minimumTotal - selected.length, used, usedNames, profile, context);
             fillers.forEach((exercise) => {
                 used.add(exercise.id);
+                usedNames.add(this.getExerciseDisplayKey(exercise));
+                this.recordDayFamily(exercise, context);
                 selected.push(exercise);
             });
         }
@@ -532,6 +547,7 @@ export class PlanGenerator {
         if (pool.length === 0) return false;
 
         const history = new Map<string, ExerciseUsage>();
+        const familyHistory = new Map<string, ExerciseUsage>();
 
         for (let week = 1; week <= 4; week++) {
             for (let dayInWeek = 0; dayInWeek < 7; dayInWeek++) {
@@ -540,7 +556,7 @@ export class PlanGenerator {
 
                 const dayNumber = (week - 1) * 7 + dayInWeek + 1;
                 const counts = this.getDayExerciseCounts(profile.timePerWorkout, dayType);
-                const context: BuildContext = { dayNumber, week, dayType, design, history };
+                const context: BuildContext = { dayNumber, week, dayType, design, history, familyHistory, dayFamilies: new Map() };
                 const scoredPool = this.scoreExercises(pool, profile, dayType, design);
                 const selected = this.buildWorkoutFromSlots(scoredPool, profile, counts, context);
 
@@ -548,7 +564,7 @@ export class PlanGenerator {
                     return false;
                 }
 
-                this.recordUsage(selected, dayNumber, history);
+                this.recordUsage(selected, dayNumber, history, familyHistory);
             }
         }
 
@@ -556,12 +572,45 @@ export class PlanGenerator {
     }
 
     private getWarmUpSlots(count: number): WorkoutSlot[] {
-        return Array.from({ length: count }, (_, index) => ({
-            label: `warm-up-${index + 1}`,
-            role: 'warm-up' as ExerciseRole,
-            movements: index % 2 === 0 ? ['conditioning', 'mobility'] : ['mobility'],
-            workoutTypes: ['conditioning', 'mobility'],
-        }));
+        const templates: WorkoutSlot[] = [
+            {
+                label: 'warm-up-spine-hips',
+                role: 'warm-up',
+                movements: ['mobility'],
+                workoutTypes: ['mobility'],
+                focusBoosts: ['Back and posture', 'Glutes and legs'],
+            },
+            {
+                label: 'warm-up-activation',
+                role: 'warm-up',
+                movements: ['core', 'posture', 'hinge'],
+                workoutTypes: ['strength', 'mobility'],
+                focusBoosts: ['Core', 'Glutes and legs', 'Back and posture'],
+            },
+            {
+                label: 'warm-up-movement-prep',
+                role: 'warm-up',
+                movements: ['squat', 'lunge', 'push', 'pull', 'mobility'],
+                workoutTypes: ['strength', 'mobility'],
+                focusBoosts: ['Full body balance'],
+            },
+            {
+                label: 'warm-up-cardio-primer',
+                role: 'warm-up',
+                movements: ['conditioning'],
+                workoutTypes: ['conditioning'],
+                focusBoosts: ['Full body balance'],
+            },
+            {
+                label: 'warm-up-extra-mobility',
+                role: 'warm-up',
+                movements: ['mobility', 'posture'],
+                workoutTypes: ['mobility'],
+                focusBoosts: ['Back and posture'],
+            },
+        ];
+
+        return templates.slice(0, count);
     }
 
     private getCoolOffSlots(count: number): WorkoutSlot[] {
@@ -674,16 +723,18 @@ export class PlanGenerator {
         pool: RankedExercise[],
         slot: WorkoutSlot,
         used: Set<string>,
+        usedNames: Set<string>,
         profile: Profile,
         context: BuildContext,
     ): RankedExercise | null {
         const candidates = pool
             .filter((exercise) => !used.has(exercise.id))
+            .filter((exercise) => !usedNames.has(this.getExerciseDisplayKey(exercise)))
             .filter((exercise) => this.matchesSlot(exercise, slot));
 
         const rankedCandidates = candidates.length > 0
             ? candidates
-            : pool.filter((exercise) => !used.has(exercise.id) && this.matchesFallbackRole(exercise, slot.role));
+            : pool.filter((exercise) => !used.has(exercise.id) && !usedNames.has(this.getExerciseDisplayKey(exercise)) && this.matchesFallbackRole(exercise, slot.role));
 
         return this.pickBest(rankedCandidates, slot, profile, context);
     }
@@ -713,6 +764,9 @@ export class PlanGenerator {
         const focusTags = this.parseTags(exercise.focusAreaTags);
         const userFocus = this.parseTags(profile.focusAreas);
         const usage = context.history.get(exercise.id);
+        const family = this.getExerciseFamily(exercise);
+        const familyUsage = context.familyHistory.get(family);
+        const sameDayFamilyCount = context.dayFamilies.get(family) ?? 0;
 
         if (slot.movements?.some((movement) => this.matchesMovement(exercise, [movement]))) score += 30;
         if (slot.workoutTypes?.some((type) => this.matchesWorkoutType(exercise, type))) score += 18;
@@ -726,10 +780,13 @@ export class PlanGenerator {
         }
 
         score += this.getAbilityFitBonus(exercise, slot, profile);
+        score -= this.getSameDayFamilyPenalty(family, sameDayFamilyCount, slot);
+        score -= this.getLowValueExercisePenalty(exercise, profile, slot);
 
         if (slot.role === 'warm-up') {
-            if (this.isMobilityType(exercise)) score += 8;
-            if (this.isWarmUpConditioning(exercise)) score += 30;
+            if (this.isMobilityType(exercise)) score += 14;
+            if (this.isPilatesType(exercise) || this.matchesMovement(exercise, ['core', 'posture', 'hinge'])) score += 10;
+            if (this.isWarmUpConditioning(exercise)) score += this.isBasicCardioFiller(exercise) ? -45 : 12;
             if (slot.movements?.includes('conditioning') && this.isWarmUpConditioning(exercise)) score += 20;
             if (this.isCoolOffCandidate(exercise)) score -= 40;
             if (this.matchesMovement(exercise, ['stretch'])) score -= 12;
@@ -746,6 +803,14 @@ export class PlanGenerator {
             if (daysSinceUsed <= 1) score -= 45;
             else if (daysSinceUsed <= 3) score -= 22;
             else if (daysSinceUsed <= 7) score -= 8;
+        }
+
+        if (familyUsage) {
+            score -= Math.min(28, familyUsage.count * 3);
+            const daysSinceFamilyUsed = context.dayNumber - familyUsage.lastDay;
+            if (daysSinceFamilyUsed <= 1) score -= 30;
+            else if (daysSinceFamilyUsed <= 3) score -= 16;
+            else if (daysSinceFamilyUsed <= 7) score -= 6;
         }
 
         return score;
@@ -774,6 +839,7 @@ export class PlanGenerator {
         pool: RankedExercise[],
         count: number,
         used: Set<string>,
+        usedNames: Set<string>,
         profile: Profile,
         context: BuildContext,
     ): RankedExercise[] {
@@ -784,8 +850,12 @@ export class PlanGenerator {
             workoutTypes: ['strength', 'conditioning', 'mobility'],
         };
 
-        return pool
+        const nonLegacyPool = pool.filter((exercise) => !this.isLegacyFallbackExercise(exercise));
+        const fallbackPool = nonLegacyPool.length > 0 ? nonLegacyPool : pool;
+
+        return fallbackPool
             .filter((exercise) => !used.has(exercise.id))
+            .filter((exercise) => !usedNames.has(this.getExerciseDisplayKey(exercise)))
             .map((exercise) => ({
                 exercise,
                 score: this.scoreForSlot(exercise, fallbackSlot, profile, context),
@@ -887,6 +957,7 @@ export class PlanGenerator {
         pool: Exercise[],
         profile: Profile,
         history: Map<string, ExerciseUsage>,
+        familyHistory: Map<string, ExerciseUsage>,
     ) {
         const rankedPool = this.scoreExercises(pool, profile, 'Mobility Strength Recovery', this.designProgram(profile));
         const recoveryPool = rankedPool.filter((exercise) => this.isMobilityType(exercise) || this.isCoolOffCandidate(exercise));
@@ -925,7 +996,7 @@ export class PlanGenerator {
                 });
             }
 
-            this.recordUsage(selected.map((exercise) => ({ ...exercise, role: 'mobility' })), dayNumber, history);
+            this.recordUsage(selected.map((exercise) => ({ ...exercise, role: 'mobility' })), dayNumber, history, familyHistory);
         }
     }
 
@@ -950,20 +1021,47 @@ export class PlanGenerator {
         }
     }
 
-    private recordUsage(exercises: RankedExercise[], dayNumber: number, history: Map<string, ExerciseUsage>) {
+    private recordUsage(
+        exercises: RankedExercise[],
+        dayNumber: number,
+        history: Map<string, ExerciseUsage>,
+        familyHistory: Map<string, ExerciseUsage>,
+    ) {
         for (const exercise of exercises) {
             const previous = history.get(exercise.id);
             history.set(exercise.id, {
                 count: (previous?.count ?? 0) + 1,
                 lastDay: dayNumber,
             });
+
+            const family = this.getExerciseFamily(exercise);
+            const previousFamily = familyHistory.get(family);
+            familyHistory.set(family, {
+                count: (previousFamily?.count ?? 0) + 1,
+                lastDay: dayNumber,
+            });
         }
     }
 
+    private recordDayFamily(exercise: Exercise, context: BuildContext) {
+        const family = this.getExerciseFamily(exercise);
+        context.dayFamilies.set(family, (context.dayFamilies.get(family) ?? 0) + 1);
+    }
+
+    private getExerciseDisplayKey(exercise: Exercise): string {
+        return exercise.name
+            .toLowerCase()
+            .replace(/\s*\(fallback only\)\s*/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
     private isWarmUpCandidate(exercise: Exercise): boolean {
-        return this.isMobilityType(exercise) ||
+        const phases = this.parseTags(exercise.phaseTags);
+        return phases.includes('Warm up') ||
+            this.isMobilityType(exercise) ||
             this.matchesMovement(exercise, ['mobility']) ||
-            this.isWarmUpConditioning(exercise);
+            (this.isWarmUpConditioning(exercise) && !this.isBasicCardioFiller(exercise));
     }
 
     private isCoolOffCandidate(exercise: Exercise): boolean {
@@ -978,12 +1076,13 @@ export class PlanGenerator {
     }
 
     private isStrengthType(exercise: Exercise): boolean {
-        return exercise.workoutType.toLowerCase().includes('strength');
+        const type = exercise.workoutType.toLowerCase();
+        return type.includes('strength') || type.includes('pilates') || type.includes('core control');
     }
 
     private isConditioningType(exercise: Exercise): boolean {
         const type = exercise.workoutType.toLowerCase();
-        return type.includes('conditioning') || type.includes('cardio');
+        return !type.includes('legacy') && (type.includes('conditioning') || type.includes('cardio'));
     }
 
     private isWarmUpConditioning(exercise: Exercise): boolean {
@@ -992,7 +1091,18 @@ export class PlanGenerator {
 
     private isMobilityType(exercise: Exercise): boolean {
         const type = exercise.workoutType.toLowerCase();
-        return type.includes('mobility') || type.includes('recovery');
+        const movement = exercise.movementPattern.toLowerCase();
+        return type.includes('mobility') ||
+            type.includes('recovery') ||
+            movement.includes('mobility') ||
+            movement.includes('stretch');
+    }
+
+    private isPilatesType(exercise: Exercise): boolean {
+        const type = exercise.workoutType.toLowerCase();
+        const movement = exercise.movementPattern.toLowerCase();
+        const notes = (exercise.notes || '').toLowerCase();
+        return type.includes('pilates') || movement.includes('pilates') || notes.includes('modality:pilates');
     }
 
     private matchesMovement(exercise: Exercise, groups: MovementGroup[]): boolean {
@@ -1002,19 +1112,201 @@ export class PlanGenerator {
         const focus = this.parseTags(exercise.focusAreaTags);
 
         return groups.some((group) => {
-            if (group === 'squat') return movement.includes('squat');
-            if (group === 'hinge') return movement.includes('hinge') || name.includes('deadlift') || name.includes('bridge') || name.includes('swing');
-            if (group === 'lunge') return movement.includes('lunge') || movement.includes('step');
-            if (group === 'push') return movement.includes('push') || name.includes('press') || name.includes('dip');
-            if (group === 'pull') return movement.includes('pull') || name.includes('row') || name.includes('pull-up') || name.includes('chin-up');
-            if (group === 'core') return movement.includes('core') || focus.includes('Core');
+            if (group === 'squat') return movement.includes('squat') || movement.includes('knee-dominant');
+            if (group === 'hinge') return movement.includes('hinge') || movement.includes('glute') || movement.includes('posterior chain') || name.includes('deadlift') || name.includes('bridge') || name.includes('swing') || name.includes('hip thrust');
+            if (group === 'lunge') return movement.includes('lunge') || movement.includes('step') || movement.includes('split squat');
+            if (group === 'push') return movement.includes('push') || movement.includes('press') || name.includes('press') || name.includes('dip') || name.includes('push-up');
+            if (group === 'pull') return movement.includes('pull') || movement.includes('row') || movement.includes('posterior shoulder') || name.includes('row') || name.includes('pull-up') || name.includes('chin-up');
+            if (group === 'core') return movement.includes('core') || movement.includes('pilates') || movement.includes('anti-') || focus.includes('Core');
             if (group === 'conditioning') return this.isConditioningType(exercise);
             if (group === 'mobility') return movement.includes('mobility') || this.isMobilityType(exercise);
             if (group === 'stretch') return movement.includes('stretch') || phases.includes('Stretching');
             if (group === 'carry') return movement.includes('carry');
-            if (group === 'posture') return movement.includes('posture') || focus.includes('Back and posture');
+            if (group === 'posture') return movement.includes('posture') || movement.includes('thoracic') || movement.includes('posterior shoulder') || focus.includes('Back and posture');
             return false;
         });
+    }
+
+    private getProfileSpecificBonus(exercise: Exercise, profile: Profile, dayType: DayType): number {
+        const focusAreas = this.parseTags(profile.focusAreas);
+        const userEquipment = this.parseTags(profile.equipment);
+        const movementRestrictions = this.parseTags(profile.movementRestrictions);
+        const name = exercise.name.toLowerCase();
+        const movement = exercise.movementPattern.toLowerCase();
+        const equipment = this.parseTags(exercise.equipmentTags);
+        const expRank = this.getUserExperienceRank(profile);
+        let bonus = 0;
+
+        if (userEquipment.includes('No equipment') && equipment.includes('No equipment')) bonus += 6;
+        if (profile.timePerWorkout <= 25 && equipment.every((tag) => tag === 'No equipment')) bonus += 4;
+
+        if (focusAreas.includes('Core') && this.matchesMovement(exercise, ['core'])) bonus += this.isPilatesType(exercise) ? 22 : 14;
+        if (focusAreas.includes('Glutes and legs') && this.matchesMovement(exercise, ['squat', 'hinge', 'lunge'])) bonus += 16;
+        if (focusAreas.includes('Glutes and legs') && movement.includes('glute')) bonus += 18;
+        if (focusAreas.includes('Back and posture') && this.matchesMovement(exercise, ['pull', 'posture'])) bonus += 18;
+        if (focusAreas.includes('Chest and arms') && this.matchesMovement(exercise, ['push'])) bonus += 18;
+
+        if (profile.goal === 'Improve mobility') {
+            if (this.isMobilityType(exercise)) bonus += 18;
+            if (this.isPilatesType(exercise)) bonus += 12;
+            if (this.isConditioningType(exercise)) bonus -= 10;
+        }
+
+        if (profile.goal === 'Build muscle' || profile.goal === 'Get stronger') {
+            if (this.isLoadedStrengthExercise(exercise)) bonus += 16;
+            if (this.isPilatesType(exercise) && this.matchesMovement(exercise, ['core', 'hinge'])) bonus += 8;
+            if (this.isBasicCardioFiller(exercise)) bonus -= 35;
+        }
+
+        if (profile.goal === 'Lose body fat' || profile.goal === 'Improve stamina') {
+            if (this.isAthleticConditioningExercise(exercise)) bonus += 18;
+            if (this.isStrengthType(exercise) && dayType.includes('Strength')) bonus += 8;
+            if (this.isBasicCardioFiller(exercise)) bonus -= 28;
+        }
+
+        if (profile.workoutStylePreference === 'Mostly strength training') {
+            if (this.isLoadedStrengthExercise(exercise) || this.isPilatesType(exercise)) bonus += 10;
+            if (this.isBasicCardioFiller(exercise)) bonus -= 40;
+        }
+
+        if (profile.workoutStylePreference === 'Mostly cardio') {
+            if (this.isAthleticConditioningExercise(exercise)) bonus += 20;
+            if (this.isBasicCardioFiller(exercise)) bonus -= 30;
+        }
+
+        if (profile.intensityPreference === 'Easy') {
+            if (exercise.impactLevel.toLowerCase() === 'low') bonus += 8;
+            if (this.isPilatesType(exercise) || this.isMobilityType(exercise)) bonus += 6;
+            if (movement.includes('plyometric') || name.includes('hop') || name.includes('jump')) bonus -= 24;
+        }
+
+        if (profile.intensityPreference === 'Hard') {
+            if (this.isLoadedStrengthExercise(exercise) || this.isAthleticConditioningExercise(exercise)) bonus += 14;
+            if (expRank >= 2 && (name.includes('bulgarian') || name.includes('decline') || movement.includes('advanced'))) bonus += 10;
+            if (this.isBasicCardioFiller(exercise)) bonus -= 45;
+        }
+
+        if (profile.experienceLevel === 'beginner') {
+            if (name.includes('wall') || name.includes('incline') || name.includes('sit-to-stand') || name.includes('modified')) bonus += 10;
+            if (this.isPilatesType(exercise) && !movement.includes('advanced')) bonus += 6;
+        }
+
+        if (movementRestrictions.includes('Jumping is difficult') || this.parseTags(profile.preferenceExclusions).includes('Jumping')) {
+            if (exercise.impactLevel.toLowerCase() === 'low') bonus += 10;
+        }
+
+        if (movementRestrictions.includes('Push-ups are difficult') && name.includes('push-up')) {
+            if (name.includes('wall') || name.includes('incline') || name.includes('knee')) bonus += 16;
+        }
+
+        return bonus;
+    }
+
+    private getLowValueExercisePenalty(exercise: Exercise, profile: Profile, slot?: WorkoutSlot): number {
+        const name = exercise.name.toLowerCase();
+        let penalty = 0;
+
+        if (this.isLegacyFallbackExercise(exercise)) penalty += 120;
+        if (this.isBasicCardioFiller(exercise)) penalty += 70;
+
+        if (slot?.role === 'warm-up' && this.isBasicCardioFiller(exercise)) penalty += 45;
+        if (slot?.role === 'conditioning' && this.isBasicCardioFiller(exercise)) penalty += 35;
+
+        if (name.includes('walk') && name.includes('stair')) penalty += 80;
+        if (name.includes('jog in place') || name.includes('march in place')) penalty += 90;
+        if (name.includes('step jack')) penalty += 65;
+        if (profile.workoutStylePreference !== 'Mostly cardio' && this.isConditioningType(exercise) && this.isBasicCardioFiller(exercise)) penalty += 35;
+
+        return penalty;
+    }
+
+    private getSameDayFamilyPenalty(family: string, sameDayCount: number, slot: WorkoutSlot): number {
+        if (sameDayCount <= 0) return 0;
+        if (family === 'basic-cardio') return 220;
+        if (slot.role === 'warm-up') return 90 * sameDayCount;
+        if (slot.role === 'cool-off' && family.includes('stretch')) return 22 * sameDayCount;
+        if (family.includes('conditioning')) return 70 * sameDayCount;
+        if (family.includes('core') || family.includes('pilates')) return 34 * sameDayCount;
+        return 55 * sameDayCount;
+    }
+
+    private getExerciseFamily(exercise: Exercise): string {
+        const notesFamily = this.getFamilyFromNotes(exercise);
+        if (notesFamily) return notesFamily;
+
+        const name = exercise.name.toLowerCase();
+        const movement = exercise.movementPattern.toLowerCase();
+
+        if (this.isBasicCardioFiller(exercise)) return 'basic-cardio';
+        if (name.includes('mountain climber')) return movement.includes('rotation') ? 'mountain-climber-rotation' : 'mountain-climber-control';
+        if (name.includes('burpee')) return 'burpee';
+        if (name.includes('skater')) return 'skater-conditioning';
+        if (name.includes('plank') && name.includes('shoulder')) return 'plank-anti-rotation';
+        if (name.includes('side plank')) return 'core-lateral';
+        if (name.includes('plank')) return 'core-plank';
+        if (name.includes('dead bug')) return 'core-anti-extension';
+        if (name.includes('bird dog')) return 'core-anti-rotation';
+        if (movement.includes('pilates')) return 'pilates-control';
+        if (movement.includes('squat')) return name.includes('goblet') ? 'squat-loaded' : 'squat';
+        if (movement.includes('lunge') || movement.includes('step')) return 'lunge';
+        if (movement.includes('hinge') || name.includes('bridge') || name.includes('deadlift')) return 'hinge';
+        if (movement.includes('push') || name.includes('press') || name.includes('push-up')) return 'push';
+        if (movement.includes('pull') || movement.includes('row')) return 'pull';
+        if (movement.includes('stretch')) return `${movement.split(/\s+/).slice(0, 2).join('-')}-stretch`;
+        if (movement.includes('mobility')) return `${movement.split(/\s+/).slice(0, 2).join('-')}-mobility`;
+        if (this.isConditioningType(exercise)) return 'conditioning';
+        if (this.isMobilityType(exercise)) return 'mobility';
+        return exercise.id;
+    }
+
+    private getFamilyFromNotes(exercise: Exercise): string | null {
+        const notes = exercise.notes || '';
+        const match = notes.match(/family:([a-z0-9-]+)/i);
+        return match ? match[1].toLowerCase() : null;
+    }
+
+    private isPremiumExercise(exercise: Exercise): boolean {
+        return (exercise.notes || '').toLowerCase().includes('quality:premium') ||
+            (exercise.externalId || '').startsWith('CUR');
+    }
+
+    private isLegacyFallbackExercise(exercise: Exercise): boolean {
+        const notes = (exercise.notes || '').toLowerCase();
+        const type = exercise.workoutType.toLowerCase();
+        const name = exercise.name.toLowerCase();
+        return notes.includes('quality:legacy') || type.includes('legacy') || name.includes('fallback only');
+    }
+
+    private isBasicCardioFiller(exercise: Exercise): boolean {
+        const family = this.getFamilyFromNotes(exercise);
+        if (family === 'basic-cardio') return true;
+
+        const name = exercise.name.toLowerCase();
+        return name.includes('jog in place') ||
+            name.includes('march in place') ||
+            name.includes('stair walk') ||
+            name.includes('walk-jog') ||
+            name.includes('step jack') ||
+            name.includes('jumping jack') ||
+            name.includes('high knees');
+    }
+
+    private isLoadedStrengthExercise(exercise: Exercise): boolean {
+        const equipment = this.parseTags(exercise.equipmentTags);
+        const movement = exercise.movementPattern.toLowerCase();
+        return this.isStrengthType(exercise) &&
+            (equipment.includes('Dumbbells') ||
+                equipment.includes('Kettlebell') ||
+                equipment.includes('Resistance bands') ||
+                movement.includes('loaded'));
+    }
+
+    private isAthleticConditioningExercise(exercise: Exercise): boolean {
+        const movement = exercise.movementPattern.toLowerCase();
+        const notes = (exercise.notes || '').toLowerCase();
+        return this.isConditioningType(exercise) &&
+            !this.isBasicCardioFiller(exercise) &&
+            (movement.includes('conditioning') || notes.includes('modality:conditioning'));
     }
 
     private getAbilityFitBonus(exercise: Exercise, slot: WorkoutSlot, profile: Profile): number {

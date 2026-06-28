@@ -138,7 +138,7 @@ const MOCK_FOCUS_WORKOUTS: Record<string, MockFocusWorkout> = {
         label: 'Full body',
         summary: 'A balanced full-body session with warm-up, strength work, and a short cool-down.',
         exercises: [
-            { id: 'ff-w1', phase: 'warm-up', name: 'March in place', targetSets: 1, targetSeconds: 45, targetRestSeconds: 15, description: 'Raise body temperature and settle into the session.' },
+            { id: 'ff-w1', phase: 'warm-up', name: 'Worlds greatest stretch', targetSets: 1, targetReps: 6, targetRestSeconds: 15, description: 'Open the hips, spine, and shoulders before the session.' },
             { id: 'ff-w2', phase: 'warm-up', name: 'Arm circles', targetSets: 1, targetSeconds: 30, targetRestSeconds: 15, description: 'Loosen the shoulders before lifting.' },
             { id: 'ff-m1', phase: 'main', name: 'Bodyweight squats', targetSets: 3, targetReps: 12, targetRestSeconds: 35, description: 'Drive evenly through both feet and stay tall through the chest.' },
             { id: 'ff-m2', phase: 'main', name: 'Incline push-up', targetSets: 3, targetReps: 10, targetRestSeconds: 35, description: 'Keep the body line tight and lower under control.' },

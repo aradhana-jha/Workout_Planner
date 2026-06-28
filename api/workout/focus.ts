@@ -47,6 +47,62 @@ function parseStringArray(value: string | null | undefined) {
     }
 }
 
+function exerciseNotes(exercise: Exercise) {
+    return (exercise.notes ?? '').toLowerCase();
+}
+
+function isPremiumExercise(exercise: Exercise) {
+    return exerciseNotes(exercise).includes('quality:premium') || (exercise.externalId ?? '').startsWith('CUR');
+}
+
+function isLegacyFallbackExercise(exercise: Exercise) {
+    return exerciseNotes(exercise).includes('quality:legacy') ||
+        exercise.workoutType.toLowerCase().includes('legacy') ||
+        exercise.name.toLowerCase().includes('fallback only');
+}
+
+function isBasicCardioFiller(exercise: Exercise) {
+    const name = exercise.name.toLowerCase();
+    const notes = exerciseNotes(exercise);
+    return notes.includes('family:basic-cardio') ||
+        name.includes('jog in place') ||
+        name.includes('march in place') ||
+        name.includes('stair walk') ||
+        name.includes('walk-jog') ||
+        name.includes('step jack') ||
+        name.includes('jumping jack') ||
+        name.includes('high knees');
+}
+
+function isStrengthExercise(exercise: Exercise) {
+    const type = exercise.workoutType.toLowerCase();
+    return type.includes('strength') || type.includes('pilates') || type.includes('core control');
+}
+
+function isConditioningExercise(exercise: Exercise) {
+    const type = exercise.workoutType.toLowerCase();
+    return !type.includes('legacy') && (type.includes('conditioning') || type.includes('cardio'));
+}
+
+function isMobilityExercise(exercise: Exercise) {
+    const type = exercise.workoutType.toLowerCase();
+    const movement = exercise.movementPattern.toLowerCase();
+    return type.includes('mobility') || type.includes('recovery') || movement.includes('mobility') || movement.includes('stretch');
+}
+
+function getDisplayKey(exercise: Exercise) {
+    return exercise.name
+        .toLowerCase()
+        .replace(/\s*\(fallback only\)\s*/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function preferPremiumPool(candidates: Exercise[], minimumCount: number) {
+    const premium = candidates.filter((exercise) => isPremiumExercise(exercise));
+    return premium.length >= minimumCount ? premium : candidates;
+}
+
 function getDifficultyRank(level: string | null | undefined) {
     const normalized = (level ?? '').trim().toLowerCase();
     if (normalized === 'beginner') return 0;
@@ -117,6 +173,8 @@ function filterExercisesForProfile(exercises: Exercise[], profile: Profile) {
         const avoidFlags = parseStringArray(exercise.avoidModifyFlags);
         const exclusionFlags = parseStringArray(exercise.preferenceExclusionFlags);
 
+        if (isLegacyFallbackExercise(exercise) || isBasicCardioFiller(exercise)) return false;
+
         if (equipmentTags.length > 0) {
             const hasNoEquipment = equipmentTags.includes('No equipment');
             const hasMatchingEquipment = equipmentTags.some((tag) => userEquipment.includes(tag));
@@ -166,17 +224,21 @@ function matchesFocus(exercise: Exercise, focusKey: FocusKey) {
     const focusAreas = parseStringArray(exercise.focusAreaTags);
     const lowerName = exercise.name.toLowerCase();
     const lowerPattern = exercise.movementPattern.toLowerCase();
-    const isStrength = exercise.workoutType === 'Strength training';
 
-    if (focusKey === 'full-body') return exercise.workoutType !== 'Mobility and recovery';
+    if (focusKey === 'full-body') return !isMobilityExercise(exercise) && !isLegacyFallbackExercise(exercise);
     if (focusKey === 'abs') {
-        return focusAreas.includes('Core')
-            || lowerPattern.includes('core')
+        return lowerPattern.includes('core')
+            || lowerPattern.includes('pilates')
             || lowerName.includes('plank')
             || lowerName.includes('dead bug')
             || lowerName.includes('bird dog')
             || lowerName.includes('hollow')
-            || lowerName.includes('pallof');
+            || lowerName.includes('pallof')
+            || lowerName.includes('heel tap')
+            || lowerName.includes('reverse crunch')
+            || lowerName.includes('hundred')
+            || lowerName.includes('single-leg stretch')
+            || lowerName.includes('double-leg stretch');
     }
     if (focusKey === 'legs') {
         return focusAreas.includes('Glutes and legs')
@@ -197,7 +259,7 @@ function matchesFocus(exercise: Exercise, focusKey: FocusKey) {
                 || lowerName.includes('step-up')
             );
     }
-    return isStrength
+    return isStrengthExercise(exercise)
         && (
             focusAreas.includes('Chest and arms')
             || lowerPattern.includes('push')
@@ -208,10 +270,6 @@ function matchesFocus(exercise: Exercise, focusKey: FocusKey) {
             || lowerName.includes('pull-up')
             || lowerName.includes('chin-up')
         );
-}
-
-function isMobilityExercise(exercise: Exercise) {
-    return exercise.workoutType === 'Mobility and recovery';
 }
 
 function isStaticStretch(exercise: Exercise) {
@@ -268,27 +326,29 @@ function scoreFocusExercise(exercise: Exercise, profile: Profile, focusKey: Focu
     const lowerName = exercise.name.toLowerCase();
     const lowerPattern = exercise.movementPattern.toLowerCase();
 
-    if (exercise.workoutType === 'Strength training') score += 12;
+    if (isPremiumExercise(exercise)) score += 18;
+    if (isLegacyFallbackExercise(exercise) || isBasicCardioFiller(exercise)) score -= 120;
+    if (isStrengthExercise(exercise)) score += 12;
     if (focusKey === 'full-body') {
-        if (['squat', 'hinge', 'push', 'pull', 'lunge', 'core'].some((value) => lowerPattern.includes(value))) score += 16;
+        if (['squat', 'hinge', 'push', 'pull', 'lunge', 'core', 'glute', 'pilates'].some((value) => lowerPattern.includes(value))) score += 16;
         if (focusAreas.includes('Full body balance')) score += 12;
     }
-    if (focusKey === 'abs' && (focusAreas.includes('Core') || lowerPattern.includes('core'))) score += 24;
+    if (focusKey === 'abs' && (focusAreas.includes('Core') || lowerPattern.includes('core') || lowerPattern.includes('pilates'))) score += 24;
     if (focusKey === 'legs' && focusAreas.includes('Glutes and legs')) score += 24;
     if (focusKey === 'butt') {
         if (lowerName.includes('glute') || lowerName.includes('bridge') || lowerName.includes('thrust')) score += 28;
         if (lowerPattern.includes('hinge')) score += 12;
     }
     if (focusKey === 'arms' && focusAreas.includes('Chest and arms')) score += 22;
-    if ((profile.goal === 'Build muscle' || profile.goal === 'Get stronger') && exercise.workoutType === 'Strength training') score += 10;
-    if ((profile.goal === 'Improve stamina' || profile.goal === 'Lose body fat') && exercise.workoutType === 'Cardio conditioning') score += 6;
+    if ((profile.goal === 'Build muscle' || profile.goal === 'Get stronger') && isStrengthExercise(exercise)) score += 10;
+    if ((profile.goal === 'Improve stamina' || profile.goal === 'Lose body fat') && isConditioningExercise(exercise)) score += 6;
 
     const difficultyGap = getDifficultyRank(exercise.difficultyMax) - Math.min(getUserExperienceRank(profile.experienceLevel), 2);
     if (difficultyGap > 0) score -= difficultyGap * 8;
 
     if (profile.intensityPreference === 'Easy' && exercise.impactLevel === 'high') score -= 12;
-    if (profile.workoutStylePreference === 'Mostly cardio' && exercise.workoutType === 'Cardio conditioning') score += 10;
-    if (profile.workoutStylePreference === 'Mostly strength training' && exercise.workoutType === 'Strength training') score += 10;
+    if (profile.workoutStylePreference === 'Mostly cardio' && isConditioningExercise(exercise)) score += 10;
+    if (profile.workoutStylePreference === 'Mostly strength training' && isStrengthExercise(exercise)) score += 10;
     return score;
 }
 
@@ -342,7 +402,7 @@ function buildExerciseTarget(exercise: Exercise, profile: Profile, phase: FocusP
         return { targetSets: 1, targetReps: null, targetSeconds: seconds, targetRestSeconds: 15, targetLabel: `1 x ${seconds}s` };
     }
 
-    if (exercise.workoutType === 'Cardio conditioning') {
+    if (isConditioningExercise(exercise)) {
         const seconds = experienceRank <= 1 ? 30 : experienceRank === 2 ? 40 : 45;
         return {
             targetSets: Math.max(2, sets - 1),
@@ -397,9 +457,13 @@ function selectMainFocusExercises(exercises: Exercise[], profile: Profile, focus
         .filter((exercise) => matchesFocus(exercise, focusKey))
         .map((exercise) => ({ exercise, score: scoreFocusExercise(exercise, profile, focusKey) }))
         .sort((left, right) => right.score - left.score);
+    const rankedPool = preferPremiumPool(ranked.map((entry) => entry.exercise), limit);
+    const rankedDistinct = ranked
+        .filter((entry) => rankedPool.some((exercise) => exercise.id === entry.exercise.id))
+        .filter((entry, index, entries) => entries.findIndex((candidate) => getDisplayKey(candidate.exercise) === getDisplayKey(entry.exercise)) === index);
 
     if (focusKey !== 'full-body') {
-        return ranked.slice(0, limit).map((entry) => entry.exercise);
+        return rankedDistinct.slice(0, limit).map((entry) => entry.exercise);
     }
 
     const buckets = [
@@ -408,19 +472,19 @@ function selectMainFocusExercises(exercises: Exercise[], profile: Profile, focus
         (exercise: Exercise) => exercise.movementPattern.toLowerCase().includes('push'),
         (exercise: Exercise) => exercise.movementPattern.toLowerCase().includes('pull'),
         (exercise: Exercise) => exercise.movementPattern.toLowerCase().includes('core') || exercise.name.toLowerCase().includes('plank'),
-        (exercise: Exercise) => exercise.workoutType === 'Cardio conditioning',
+        (exercise: Exercise) => isConditioningExercise(exercise),
     ];
 
     const selected: Exercise[] = [];
     for (const matcher of buckets) {
-        const match = ranked.find((entry) => matcher(entry.exercise) && !selected.some((exercise) => exercise.id === entry.exercise.id));
+        const match = rankedDistinct.find((entry) => matcher(entry.exercise) && !selected.some((exercise) => getDisplayKey(exercise) === getDisplayKey(entry.exercise)));
         if (match) selected.push(match.exercise);
         if (selected.length >= limit) break;
     }
 
-    for (const entry of ranked) {
+    for (const entry of rankedDistinct) {
         if (selected.length >= limit) break;
-        if (!selected.some((exercise) => exercise.id === entry.exercise.id)) selected.push(entry.exercise);
+        if (!selected.some((exercise) => getDisplayKey(exercise) === getDisplayKey(entry.exercise))) selected.push(entry.exercise);
     }
 
     return selected;
@@ -433,12 +497,17 @@ function selectMobilityExercises(
     limit: number,
     excludedIds: Set<string>
 ) {
-    return exercises
+    const candidates = exercises
         .filter((exercise) => isMobilityExercise(exercise))
         .filter((exercise) => matchesMobilityForFocus(exercise, focusKey))
         .filter((exercise) => !excludedIds.has(exercise.id))
+        .filter((exercise) => !isLegacyFallbackExercise(exercise) && !isBasicCardioFiller(exercise));
+    const pool = preferPremiumPool(candidates, limit);
+
+    return pool
         .map((exercise) => ({ exercise, score: scoreMobilityExercise(exercise, focusKey, phase) }))
         .sort((left, right) => right.score - left.score)
+        .filter((entry, index, entries) => entries.findIndex((candidate) => getDisplayKey(candidate.exercise) === getDisplayKey(entry.exercise)) === index)
         .slice(0, limit)
         .map((entry) => entry.exercise);
 }

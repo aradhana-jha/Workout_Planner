@@ -33,7 +33,7 @@ export const MUSCLE_GAIN_PLAN: Record<number, DayPlan> = {
         day: 2,
         title: "Lower Body & Core",
         exercises: [
-            { id: 'd2-w1', name: 'March in place', sets: 1, reps: '60 seconds', type: 'warmup', muscleGroup: 'warmup' },
+            { id: 'd2-w1', name: '90/90 hip switches', sets: 1, reps: '8 reps/side', type: 'warmup', muscleGroup: 'warmup' },
             { id: 'd2-w2', name: 'Arm swings', sets: 1, reps: '30 seconds', type: 'warmup', muscleGroup: 'warmup' },
             { id: 'd2-w3', name: 'Hip circles', sets: 1, reps: '30 seconds', type: 'warmup', muscleGroup: 'warmup' },
             { id: 'd2-w4', name: 'Reverse lunges (bodyweight)', sets: 1, reps: '8 reps/leg', type: 'warmup', muscleGroup: 'legs' },
@@ -75,7 +75,7 @@ export const MUSCLE_GAIN_PLAN: Record<number, DayPlan> = {
         day: 5,
         title: "Lower Body Conditioning",
         exercises: [
-            { id: 'd5-w1', name: 'March in place', sets: 1, reps: '60 seconds', type: 'warmup', muscleGroup: 'warmup' },
+            { id: 'd5-w1', name: 'Lateral lunge reach', sets: 1, reps: '8 reps/side', type: 'warmup', muscleGroup: 'warmup' },
             { id: 'd5-w2', name: 'Arm swings', sets: 1, reps: '30 seconds', type: 'warmup', muscleGroup: 'warmup' },
             { id: 'd5-w3', name: 'Hip circles', sets: 1, reps: '30 seconds', type: 'warmup', muscleGroup: 'warmup' },
             { id: 'd5-w4', name: 'Torso twists (standing)', sets: 1, reps: '30 seconds', type: 'warmup', muscleGroup: 'warmup' },

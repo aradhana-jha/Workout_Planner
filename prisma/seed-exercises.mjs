@@ -1,10 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 import XLSX from 'xlsx';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const prisma = new PrismaClient();
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const libraryPath = path.resolve(currentDir, './exercise-library.json');
 const workbookPath = path.resolve(currentDir, '../home_exercise_library.xlsx');
 const dryRun = process.argv.includes('--dry-run');
 
@@ -14,6 +16,39 @@ function yes(value) {
 
 function toJsonArray(values) {
     return JSON.stringify(values.filter(Boolean));
+}
+
+function normalizeArray(value, fallback = []) {
+    if (Array.isArray(value)) return value.map((item) => String(item)).filter(Boolean);
+    if (typeof value === 'string') {
+        return value
+            .split(/[;,]/)
+            .map((item) => item.trim())
+            .filter(Boolean);
+    }
+    return fallback;
+}
+
+function normalizeExercise(exercise) {
+    return {
+        externalId: exercise.externalId ? String(exercise.externalId) : null,
+        name: exercise.name ? String(exercise.name) : 'Unknown Exercise',
+        description: exercise.description ? String(exercise.description) : null,
+        videoUrl: exercise.videoUrl ? String(exercise.videoUrl) : null,
+        difficultyMin: String(exercise.difficultyMin || 'beginner').toLowerCase(),
+        difficultyMax: String(exercise.difficultyMax || 'advanced').toLowerCase(),
+        equipmentTags: toJsonArray(normalizeArray(exercise.equipmentTags, ['No equipment'])),
+        workoutType: exercise.workoutType ? String(exercise.workoutType) : 'Strength training',
+        movementPattern: exercise.movementPattern ? String(exercise.movementPattern) : 'General',
+        focusAreaTags: toJsonArray(normalizeArray(exercise.focusAreaTags)),
+        impactLevel: String(exercise.impactLevel || 'low').toLowerCase(),
+        avoidModifyFlags: toJsonArray(normalizeArray(exercise.avoidModifyFlags)),
+        preferenceExclusionFlags: toJsonArray(normalizeArray(exercise.preferenceExclusionFlags)),
+        phaseTags: toJsonArray(normalizeArray(exercise.phaseTags, ['Main exercise'])),
+        easierVariationId: exercise.easierVariationId ? String(exercise.easierVariationId) : null,
+        harderVariationId: exercise.harderVariationId ? String(exercise.harderVariationId) : null,
+        notes: exercise.notes ? String(exercise.notes) : exercise.description ? String(exercise.description) : null,
+    };
 }
 
 function buildExercise(row) {
@@ -95,24 +130,33 @@ async function upsertExercise(exercise) {
 }
 
 async function main() {
-    const workbook = XLSX.readFile(workbookPath);
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet);
+    let rows;
+    let sourceName;
+
+    if (fs.existsSync(libraryPath)) {
+        rows = JSON.parse(fs.readFileSync(libraryPath, 'utf8')).map(normalizeExercise);
+        sourceName = path.basename(libraryPath);
+    } else {
+        const workbook = XLSX.readFile(workbookPath);
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(sheet).map(buildExercise);
+        sourceName = path.basename(workbookPath);
+    }
 
     if (rows.length === 0) {
-        throw new Error(`No exercises found in ${workbookPath}`);
+        throw new Error(`No exercises found in ${sourceName}`);
     }
 
     let count = 0;
     for (const row of rows) {
-        const exercise = buildExercise(row);
+        const exercise = row.externalId || row.equipmentTags ? row : buildExercise(row);
         if (!dryRun) {
             await upsertExercise(exercise);
         }
         count += 1;
     }
 
-    console.log(`${dryRun ? 'Validated' : 'Seeded'} ${count} exercises from ${path.basename(workbookPath)}`);
+    console.log(`${dryRun ? 'Validated' : 'Seeded'} ${count} exercises from ${sourceName}`);
 }
 
 main()
