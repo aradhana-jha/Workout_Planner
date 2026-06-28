@@ -1,14 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import {
     buildAuthResponse,
+    createUserByEmail,
     findUserByEmail,
-    hashPassword,
     isAuthConfigurationError,
-    normalizeEmail,
-    prisma,
     resolveNextStep,
-    validatePassword,
-    verifyPassword,
 } from './_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -25,28 +21,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        const { email, password } = req.body;
+        const { email } = req.body;
 
         if (!email) {
             return res.status(400).json({ error: 'Email is required' });
         }
 
-        if (!validatePassword(password)) {
-            return res.status(400).json({ error: 'Password must be at least 8 characters' });
-        }
-
         const existingUser = await findUserByEmail(email);
 
         if (existingUser) {
-            if (!existingUser.passwordHash) {
-                return res.status(409).json({ error: 'password_not_configured' });
-            }
-
-            const passwordMatches = await verifyPassword(password, existingUser.passwordHash);
-            if (!passwordMatches) {
-                return res.status(409).json({ error: 'account_already_exists' });
-            }
-
             const nextStep = await resolveNextStep(existingUser.id);
             const message = nextStep === 'dashboard'
                 ? 'Account already exists. We signed you in.'
@@ -55,12 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(200).json(buildAuthResponse(existingUser, nextStep, message));
         }
 
-        const user = await prisma.user.create({
-            data: {
-                email: normalizeEmail(email),
-                passwordHash: await hashPassword(password),
-            },
-        });
+        const user = await createUserByEmail(email);
 
         return res.status(200).json(
             buildAuthResponse(user, 'onboarding', 'Account created. Continue onboarding to build your plan.'),

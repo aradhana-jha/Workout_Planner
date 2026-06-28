@@ -1,7 +1,5 @@
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
-import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
-import { promisify } from 'node:util';
 import type { VercelRequest } from '@vercel/node';
 
 declare global {
@@ -17,11 +15,6 @@ if (process.env.NODE_ENV !== 'production') {
 export const prisma = prismaClient;
 export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
-
-const scrypt = promisify(scryptCallback);
-const PASSWORD_HASH_PREFIX = 'scrypt';
-const PASSWORD_KEY_LENGTH = 64;
-const MIN_PASSWORD_LENGTH = 8;
 
 type OAuthStatePayload = {
     redirectTo: string;
@@ -84,29 +77,6 @@ export function verifyAuthToken(req: VercelRequest): { userId: string } | null {
 
 export function isAuthConfigurationError(error: unknown) {
     return error instanceof Error && error.message.includes('JWT_SECRET');
-}
-
-export function validatePassword(password: unknown) {
-    return typeof password === 'string' && password.length >= MIN_PASSWORD_LENGTH;
-}
-
-export async function hashPassword(password: string) {
-    const salt = randomBytes(16).toString('hex');
-    const derivedKey = (await scrypt(password, salt, PASSWORD_KEY_LENGTH)) as Buffer;
-
-    return `${PASSWORD_HASH_PREFIX}:${salt}:${derivedKey.toString('hex')}`;
-}
-
-export async function verifyPassword(password: string, passwordHash: string | null | undefined) {
-    if (!passwordHash) return false;
-
-    const [prefix, salt, key] = passwordHash.split(':');
-    if (prefix !== PASSWORD_HASH_PREFIX || !salt || !key) return false;
-
-    const storedKey = Buffer.from(key, 'hex');
-    const derivedKey = (await scrypt(password, salt, storedKey.length)) as Buffer;
-
-    return storedKey.length === derivedKey.length && timingSafeEqual(storedKey, derivedKey);
 }
 
 export async function resolveNextStep(userId: string): Promise<AuthNextStep> {

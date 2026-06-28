@@ -2,13 +2,9 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '../generated/client';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
-import { promisify } from 'node:util';
 
 const prisma = new PrismaClient();
 const router = Router();
-const scrypt = promisify(scryptCallback);
-const PASSWORD_KEY_LENGTH = 64;
 
 function getJwtSecret() {
     const secret = process.env.JWT_SECRET;
@@ -19,43 +15,20 @@ function getJwtSecret() {
     return secret;
 }
 
-async function hashPassword(password: string) {
-    const salt = randomBytes(16).toString('hex');
-    const derivedKey = (await scrypt(password, salt, PASSWORD_KEY_LENGTH)) as Buffer;
-
-    return `scrypt:${salt}:${derivedKey.toString('hex')}`;
-}
-
-async function verifyPassword(password: string, passwordHash: string | null | undefined) {
-    if (!passwordHash) return false;
-
-    const [prefix, salt, key] = passwordHash.split(':');
-    if (prefix !== 'scrypt' || !salt || !key) return false;
-
-    const storedKey = Buffer.from(key, 'hex');
-    const derivedKey = (await scrypt(password, salt, storedKey.length)) as Buffer;
-
-    return storedKey.length === derivedKey.length && timingSafeEqual(storedKey, derivedKey);
-}
-
 // Schema for Login
 const loginSchema = z.object({
     email: z.string().email(),
-    password: z.string().min(8),
 });
 
 // Login Route
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
     try {
-        const { email, password } = loginSchema.parse(req.body);
+        const { email } = loginSchema.parse(req.body);
 
         // Find or Create User
         let user = await prisma.user.findUnique({ where: { email } });
         if (!user) {
-            user = await prisma.user.create({ data: { email, passwordHash: await hashPassword(password) } });
-        } else if (!await verifyPassword(password, user.passwordHash)) {
-            res.status(401).json({ error: 'invalid_credentials' });
-            return;
+            user = await prisma.user.create({ data: { email } });
         }
 
         // Generate Token

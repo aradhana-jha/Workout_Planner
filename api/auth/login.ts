@@ -1,11 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import {
     buildAuthResponse,
+    createUserByEmail,
     findUserByEmail,
     isAuthConfigurationError,
     resolveNextStep,
-    validatePassword,
-    verifyPassword,
 } from './_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -23,34 +22,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        const { email, password } = req.body;
+        const { email } = req.body;
 
         if (!email) {
             return res.status(400).json({ error: 'Email is required' });
         }
 
-        if (!validatePassword(password)) {
-            return res.status(400).json({ error: 'Password must be at least 8 characters' });
-        }
-
-        const user = await findUserByEmail(email);
-
-        if (!user) {
-            return res.status(401).json({ error: 'invalid_credentials' });
-        }
-
-        if (!user.passwordHash) {
-            return res.status(403).json({ error: 'password_not_configured' });
-        }
-
-        const passwordMatches = await verifyPassword(password, user.passwordHash);
-        if (!passwordMatches) {
-            return res.status(401).json({ error: 'invalid_credentials' });
-        }
+        const user = await findUserByEmail(email) ?? await createUserByEmail(email);
 
         const nextStep = await resolveNextStep(user.id);
+        const message = nextStep === 'onboarding'
+            ? 'Welcome. Answer a few questions so we can build your plan.'
+            : undefined;
 
-        return res.status(200).json(buildAuthResponse(user, nextStep));
+        return res.status(200).json(buildAuthResponse(user, nextStep, message));
     } catch (error) {
         console.error('Login error:', error);
         if (isAuthConfigurationError(error)) {
