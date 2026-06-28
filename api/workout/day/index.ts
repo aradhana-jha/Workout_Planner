@@ -1,19 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
-
-function verifyToken(req: VercelRequest): { userId: string } | null {
-    const auth = req.headers.authorization;
-    if (!auth || !auth.startsWith('Bearer ')) return null;
-    try {
-        return jwt.verify(auth.slice(7), JWT_SECRET) as { userId: string };
-    } catch {
-        return null;
-    }
-}
+import { isAuthConfigurationError, prisma, verifyAuthToken } from '../../auth/_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -23,14 +9,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-    const user = verifyToken(req);
+    let user;
+    try {
+        user = verifyAuthToken(req);
+    } catch (error) {
+        if (isAuthConfigurationError(error)) {
+            return res.status(500).json({ error: 'server_auth_not_configured' });
+        }
+        throw error;
+    }
+
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
     const dayId = Array.isArray(req.query.dayId) ? req.query.dayId[0] : req.query.dayId;
     if (!dayId) return res.status(400).json({ error: 'dayId is required' });
 
-    const workoutDay = await prisma.workoutDay.findUnique({
-        where: { id: dayId as string },
+    const workoutDay = await prisma.workoutDay.findFirst({
+        where: {
+            id: dayId as string,
+            plan: { userId: user.userId },
+        },
         include: {
             exercises: {
                 orderBy: { sortOrder: 'asc' },

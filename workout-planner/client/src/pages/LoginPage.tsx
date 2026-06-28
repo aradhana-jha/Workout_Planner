@@ -47,6 +47,12 @@ function parseAuthMessage(error: unknown) {
     switch (errorCode) {
         case 'account_not_found':
             return 'No account found for this email. Use Create account to start your plan.';
+        case 'invalid_credentials':
+            return 'Email or password is incorrect.';
+        case 'password_not_configured':
+            return 'This account was created before password login. Create a new account or contact support to secure it.';
+        case 'server_auth_not_configured':
+            return 'Secure login is not configured on the server. Add JWT_SECRET before using email login.';
         case 'google_not_configured':
             return 'Google sign-in is not configured yet. Add the Google client ID and secret first.';
         case 'access_denied':
@@ -64,6 +70,7 @@ function getAuthErrorMessage(code: string) {
 
 export function LoginPage() {
     const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [notice, setNotice] = useState('');
     const [loadingIntent, setLoadingIntent] = useState<AuthIntent | null>(null);
@@ -106,7 +113,7 @@ export function LoginPage() {
         setNotice('');
 
         try {
-            const response = await login(email);
+            const response = await login(email, password);
             applySuccessfulAuth(response.nextStep, response.message);
         } catch (authError) {
             setError(parseAuthMessage(authError));
@@ -129,7 +136,7 @@ export function LoginPage() {
 
         if (DEMO_MODE_ENABLED) {
             try {
-                const response = await signup(DEMO_GOOGLE_EMAIL);
+                const response = await signup(DEMO_GOOGLE_EMAIL, 'demo-password');
                 applySuccessfulAuth(response.nextStep, response.message);
             } catch (authError) {
                 setError(parseAuthMessage(authError));
@@ -197,6 +204,24 @@ export function LoginPage() {
                                         inputMode="email"
                                         placeholder="Email"
                                         required
+                                        className="w-full bg-transparent text-[0.88rem] text-[#F5F8FC] outline-none placeholder:text-[#95A3B9]"
+                                    />
+                                </label>
+
+                                <label
+                                    htmlFor="login-password"
+                                    className="flex min-h-[46px] w-full items-center gap-3 rounded-[16px] border border-white/14 bg-[rgba(30,45,71,0.46)] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition focus-within:border-cyan-300/55 focus-within:ring-2 focus-within:ring-cyan-300/20"
+                                >
+                                    <LockKeyhole className="h-4.5 w-4.5 text-[#D7E0EA]" strokeWidth={1.8} />
+                                    <input
+                                        id="login-password"
+                                        type="password"
+                                        value={password}
+                                        onChange={(event) => setPassword(event.target.value)}
+                                        autoComplete="current-password"
+                                        placeholder="Password"
+                                        required
+                                        minLength={8}
                                         className="w-full bg-transparent text-[0.88rem] text-[#F5F8FC] outline-none placeholder:text-[#95A3B9]"
                                     />
                                 </label>

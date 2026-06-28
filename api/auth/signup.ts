@@ -1,9 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import {
     buildAuthResponse,
-    createUserByEmail,
     findUserByEmail,
+    hashPassword,
+    isAuthConfigurationError,
+    normalizeEmail,
+    prisma,
     resolveNextStep,
+    validatePassword,
+    verifyPassword,
 } from './_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -20,30 +25,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        const { email } = req.body;
+        const { email, password } = req.body;
 
         if (!email) {
             return res.status(400).json({ error: 'Email is required' });
         }
 
+        if (!validatePassword(password)) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters' });
+        }
+
         const existingUser = await findUserByEmail(email);
 
         if (existingUser) {
-            const hasProfile = (await resolveNextStep(existingUser.id)) === 'dashboard';
-            const message = hasProfile
-                ? 'Account already exists. We opened the questionnaire so you can update your plan.'
+            if (!existingUser.passwordHash) {
+                return res.status(409).json({ error: 'password_not_configured' });
+            }
+
+            const passwordMatches = await verifyPassword(password, existingUser.passwordHash);
+            if (!passwordMatches) {
+                return res.status(409).json({ error: 'account_already_exists' });
+            }
+
+            const nextStep = await resolveNextStep(existingUser.id);
+            const message = nextStep === 'dashboard'
+                ? 'Account already exists. We signed you in.'
                 : 'Account already exists. Continue onboarding to build your plan.';
 
-            return res.status(200).json(buildAuthResponse(existingUser, 'onboarding', message));
+            return res.status(200).json(buildAuthResponse(existingUser, nextStep, message));
         }
 
-        const user = await createUserByEmail(email);
+        const user = await prisma.user.create({
+            data: {
+                email: normalizeEmail(email),
+                passwordHash: await hashPassword(password),
+            },
+        });
 
         return res.status(200).json(
             buildAuthResponse(user, 'onboarding', 'Account created. Continue onboarding to build your plan.'),
         );
     } catch (error) {
         console.error('Signup error:', error);
+        if (isAuthConfigurationError(error)) {
+            return res.status(500).json({ error: 'server_auth_not_configured' });
+        }
         return res.status(500).json({ error: 'Internal server error' });
     }
 }

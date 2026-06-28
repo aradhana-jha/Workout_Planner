@@ -1,20 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
-
-// Helper to verify JWT
-function verifyToken(req: VercelRequest): { userId: string } | null {
-    const auth = req.headers.authorization;
-    if (!auth || !auth.startsWith('Bearer ')) return null;
-    try {
-        return jwt.verify(auth.slice(7), JWT_SECRET) as { userId: string };
-    } catch {
-        return null;
-    }
-}
+import { isAuthConfigurationError, prisma, verifyAuthToken } from '../auth/_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -23,7 +8,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
-    const user = verifyToken(req);
+    let user;
+    try {
+        user = verifyAuthToken(req);
+    } catch (error) {
+        if (isAuthConfigurationError(error)) {
+            return res.status(500).json({ error: 'server_auth_not_configured' });
+        }
+        throw error;
+    }
+
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
     if (req.method === 'GET') {
@@ -56,12 +50,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }
             });
 
-            // Mark old plans as replaced
-            await prisma.plan.updateMany({
-                where: { userId: user.userId, status: 'active' },
-                data: { status: 'replaced' }
-            });
-
             // Import plan generator and generate plan
             const { PlanGenerator } = await import('../../lib/planGenerator');
             const generator = new PlanGenerator();
@@ -70,6 +58,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(200).json({ profile, planId: plan?.id, message: 'Plan generated!' });
         } catch (error) {
             console.error('Profile error:', error);
+            if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'PLAN_COVERAGE') {
+                return res.status(422).json({
+                    error: 'plan_generation_insufficient_exercises',
+                    message: 'We could not build a complete safe plan from the current exercise library and selected constraints.',
+                });
+            }
             return res.status(500).json({ error: 'Error saving profile' });
         }
     }

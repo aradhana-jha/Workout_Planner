@@ -18,8 +18,8 @@ type AuthResponse = {
 interface AuthState {
     user: User | null;
     token: string | null;
-    login: (email: string) => Promise<AuthResponse>;
-    signup: (email: string) => Promise<AuthResponse>;
+    login: (email: string, password: string) => Promise<AuthResponse>;
+    signup: (email: string, password: string) => Promise<AuthResponse>;
     logout: () => void;
     checkAuth: () => void;
 }
@@ -33,16 +33,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     user: JSON.parse(localStorage.getItem('user') || 'null'),
     token: localStorage.getItem('token'),
 
-    login: async (email: string) => {
-        const res = await api.post('/auth/login', { email });
+    login: async (email: string, password: string) => {
+        const res = await api.post('/auth/login', { email, password });
         const payload = res.data as AuthResponse;
         persistAuthState(payload);
         set({ token: payload.token, user: payload.user });
         return payload;
     },
 
-    signup: async (email: string) => {
-        const res = await api.post('/auth/signup', { email });
+    signup: async (email: string, password: string) => {
+        const res = await api.post('/auth/signup', { email, password });
         const payload = res.data as AuthResponse;
         persistAuthState(payload);
         set({ token: payload.token, user: payload.user });

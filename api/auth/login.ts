@@ -1,5 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { buildAuthResponse, findUserByEmail, resolveNextStep } from './_shared';
+import {
+    buildAuthResponse,
+    findUserByEmail,
+    isAuthConfigurationError,
+    resolveNextStep,
+    validatePassword,
+    verifyPassword,
+} from './_shared';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Set CORS headers
@@ -16,16 +23,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        const { email } = req.body;
+        const { email, password } = req.body;
 
         if (!email) {
             return res.status(400).json({ error: 'Email is required' });
         }
 
+        if (!validatePassword(password)) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters' });
+        }
+
         const user = await findUserByEmail(email);
 
         if (!user) {
-            return res.status(404).json({ error: 'account_not_found' });
+            return res.status(401).json({ error: 'invalid_credentials' });
+        }
+
+        if (!user.passwordHash) {
+            return res.status(403).json({ error: 'password_not_configured' });
+        }
+
+        const passwordMatches = await verifyPassword(password, user.passwordHash);
+        if (!passwordMatches) {
+            return res.status(401).json({ error: 'invalid_credentials' });
         }
 
         const nextStep = await resolveNextStep(user.id);
@@ -33,6 +53,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).json(buildAuthResponse(user, nextStep));
     } catch (error) {
         console.error('Login error:', error);
+        if (isAuthConfigurationError(error)) {
+            return res.status(500).json({ error: 'server_auth_not_configured' });
+        }
         return res.status(500).json({ error: 'Internal server error' });
     }
 }

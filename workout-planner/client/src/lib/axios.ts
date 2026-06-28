@@ -310,10 +310,11 @@ if (DEMO_MODE_ENABLED) {
             }
 
             if (url.includes('/workout/') && !url.includes('/complete') && method === 'get') {
+                const dayIdFromParams = error.config?.params?.dayId;
                 const dayIdFromQuery = url.includes('?')
                     ? new URL(url, 'http://local').searchParams.get('dayId')
                     : null;
-                const dayId = dayIdFromQuery || url.split('/').pop();
+                const dayId = dayIdFromParams || dayIdFromQuery || url.split('/').pop();
                 const dayIndex = parseInt(dayId?.replace('day-', '') || '1', 10);
 
                 let cycleDay = dayIndex % 7;

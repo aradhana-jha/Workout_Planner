@@ -89,6 +89,15 @@ interface BuildContext {
 
 const DIFFICULTY_ORDER = ['beginner', 'some experience', 'intermediate', 'advanced'];
 
+export class PlanGenerationCoverageError extends Error {
+    code = 'PLAN_COVERAGE';
+
+    constructor(message: string) {
+        super(message);
+        this.name = 'PlanGenerationCoverageError';
+    }
+}
+
 export class PlanGenerator {
     async generate(userId: string, profile: Profile) {
         console.log(`[PlanGenerator] Starting plan generation for user ${userId}`);
@@ -96,49 +105,73 @@ export class PlanGenerator {
         const allExercises = await prisma.exercise.findMany();
         console.log(`[PlanGenerator] Loaded ${allExercises.length} exercises from database`);
 
-        const allowedPool = this.filterExercises(allExercises, profile);
-        console.log(`[PlanGenerator] After filtering: ${allowedPool.length} exercises allowed`);
-
-        if (allowedPool.length < 10) {
-            console.warn(`[PlanGenerator] Warning: Only ${allowedPool.length} exercises available after filtering`);
-        }
-
         const design = this.designProgram(profile);
         console.log(`[PlanGenerator] Program design: ${design.daysPerWeek} days/week`);
+
+        const strictPool = this.filterExercises(allExercises, profile, { respectPreferenceExclusions: true });
+        const safetyPool = this.filterExercises(allExercises, profile, { respectPreferenceExclusions: false });
+        let allowedPool = strictPool;
+
+        console.log(`[PlanGenerator] After strict filtering: ${strictPool.length} exercises allowed`);
+
+        if (!this.canBuildCompleteProgram(strictPool, profile, design)) {
+            console.warn('[PlanGenerator] Strict pool is underfilled; relaxing preference-only exclusions');
+            allowedPool = safetyPool;
+        }
+
+        if (!this.canBuildCompleteProgram(allowedPool, profile, design)) {
+            throw new PlanGenerationCoverageError('Insufficient safe exercise coverage for the selected constraints');
+        }
 
         const plan = await prisma.plan.create({
             data: {
                 userId,
                 startDate: new Date(),
-                status: 'active',
+                status: 'generating',
             },
         });
 
-        const history = new Map<string, ExerciseUsage>();
+        try {
+            const history = new Map<string, ExerciseUsage>();
 
-        for (let week = 1; week <= 4; week++) {
-            for (let dayInWeek = 0; dayInWeek < 7; dayInWeek++) {
-                const dayType = design.schedule[dayInWeek] ?? 'Rest';
-                const dayNumber = (week - 1) * 7 + dayInWeek + 1;
+            for (let week = 1; week <= 4; week++) {
+                for (let dayInWeek = 0; dayInWeek < 7; dayInWeek++) {
+                    const dayType = design.schedule[dayInWeek] ?? 'Rest';
+                    const dayNumber = (week - 1) * 7 + dayInWeek + 1;
 
-                if (dayType === 'Rest') {
-                    await prisma.workoutDay.create({
-                        data: {
-                            planId: plan.id,
-                            dayNumber,
-                            weekNumber: week,
-                            dayType: 'Rest',
-                            estimatedMinutes: 0,
-                        },
-                    });
-                    continue;
+                    if (dayType === 'Rest') {
+                        await prisma.workoutDay.create({
+                            data: {
+                                planId: plan.id,
+                                dayNumber,
+                                weekNumber: week,
+                                dayType: 'Rest',
+                                estimatedMinutes: 0,
+                            },
+                        });
+                        continue;
+                    }
+
+                    await this.buildDay(plan.id, dayNumber, week, dayType, allowedPool, profile, design, history);
                 }
-
-                await this.buildDay(plan.id, dayNumber, week, dayType, allowedPool, profile, design, history);
             }
-        }
 
-        await this.buildOptionalRecoveryDays(plan.id, 29, allowedPool, profile, history);
+            await this.buildOptionalRecoveryDays(plan.id, 29, allowedPool, profile, history);
+
+            await prisma.$transaction([
+                prisma.plan.updateMany({
+                    where: { userId, status: 'active' },
+                    data: { status: 'replaced' },
+                }),
+                prisma.plan.update({
+                    where: { id: plan.id },
+                    data: { status: 'active' },
+                }),
+            ]);
+        } catch (error) {
+            await this.cleanupPartialPlan(plan.id);
+            throw error;
+        }
 
         return prisma.plan.findUnique({
             where: { id: plan.id },
@@ -249,7 +282,11 @@ export class PlanGenerator {
         return this.clamp(Math.round(days), 2, 5);
     }
 
-    private filterExercises(exercises: Exercise[], profile: Profile): Exercise[] {
+    private filterExercises(
+        exercises: Exercise[],
+        profile: Profile,
+        options: { respectPreferenceExclusions: boolean },
+    ): Exercise[] {
         const userEquipment = this.parseTags(profile.equipment);
         const painAreas = this.parseTags(profile.painAreas);
         const movementRestrictions = this.parseTags(profile.movementRestrictions);
@@ -306,7 +343,7 @@ export class PlanGenerator {
                 }
             }
 
-            if (!preferenceExclusions.includes('None')) {
+            if (options.respectPreferenceExclusions && !preferenceExclusions.includes('None')) {
                 for (const exclusion of preferenceExclusions) {
                     if (exclusionFlags.includes(exclusion)) return false;
                     if (exclusion === 'Running' && (name.includes('run') || name.includes('jog'))) return false;
@@ -403,6 +440,13 @@ export class PlanGenerator {
         const counts = this.getDayExerciseCounts(profile.timePerWorkout, dayType);
         const context: BuildContext = { dayNumber, week, dayType, design, history };
         const selectedExercises = this.buildWorkoutFromSlots(scoredPool, profile, counts, context);
+        const minimumTotal = this.getMinimumExerciseTotal(counts);
+
+        if (selectedExercises.length < minimumTotal) {
+            throw new PlanGenerationCoverageError(
+                `Only ${selectedExercises.length} exercises available for day ${dayNumber}; expected at least ${minimumTotal}`,
+            );
+        }
 
         const workoutDay = await prisma.workoutDay.create({
             data: {
@@ -468,7 +512,7 @@ export class PlanGenerator {
             selected.push({ ...exercise, role: slot.role });
         }
 
-        const minimumTotal = counts.warmUp + Math.max(3, counts.main - 1) + counts.stretch;
+        const minimumTotal = this.getMinimumExerciseTotal(counts);
         if (selected.length < minimumTotal) {
             const fillers = this.takeFallbackExercises(pool, minimumTotal - selected.length, used, profile, context);
             fillers.forEach((exercise) => {
@@ -478,6 +522,37 @@ export class PlanGenerator {
         }
 
         return selected;
+    }
+
+    private getMinimumExerciseTotal(counts: DayExerciseCounts) {
+        return counts.warmUp + Math.max(3, counts.main - 1) + counts.stretch;
+    }
+
+    private canBuildCompleteProgram(pool: Exercise[], profile: Profile, design: ProgramDesign) {
+        if (pool.length === 0) return false;
+
+        const history = new Map<string, ExerciseUsage>();
+
+        for (let week = 1; week <= 4; week++) {
+            for (let dayInWeek = 0; dayInWeek < 7; dayInWeek++) {
+                const dayType = design.schedule[dayInWeek] ?? 'Rest';
+                if (dayType === 'Rest') continue;
+
+                const dayNumber = (week - 1) * 7 + dayInWeek + 1;
+                const counts = this.getDayExerciseCounts(profile.timePerWorkout, dayType);
+                const context: BuildContext = { dayNumber, week, dayType, design, history };
+                const scoredPool = this.scoreExercises(pool, profile, dayType, design);
+                const selected = this.buildWorkoutFromSlots(scoredPool, profile, counts, context);
+
+                if (selected.length < this.getMinimumExerciseTotal(counts)) {
+                    return false;
+                }
+
+                this.recordUsage(selected, dayNumber, history);
+            }
+        }
+
+        return true;
     }
 
     private getWarmUpSlots(count: number): WorkoutSlot[] {
@@ -851,6 +926,27 @@ export class PlanGenerator {
             }
 
             this.recordUsage(selected.map((exercise) => ({ ...exercise, role: 'mobility' })), dayNumber, history);
+        }
+    }
+
+    private async cleanupPartialPlan(planId: string) {
+        try {
+            await prisma.exerciseLog.deleteMany({
+                where: {
+                    workoutExercise: {
+                        workoutDay: { planId },
+                    },
+                },
+            });
+            await prisma.workoutExercise.deleteMany({
+                where: {
+                    workoutDay: { planId },
+                },
+            });
+            await prisma.workoutDay.deleteMany({ where: { planId } });
+            await prisma.plan.delete({ where: { id: planId } });
+        } catch (cleanupError) {
+            console.error(`[PlanGenerator] Failed to clean up partial plan ${planId}`, cleanupError);
         }
     }
 

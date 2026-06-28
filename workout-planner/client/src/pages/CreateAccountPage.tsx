@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowLeft, ArrowRight, Mail } from 'lucide-react';
+import { ArrowLeft, ArrowRight, LockKeyhole, Mail } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import loginReferenceImage from '../assets/login/login-reference-nomenu.png';
@@ -14,7 +14,18 @@ function parseAuthMessage(error: unknown) {
         ? (error as { response?: { data?: { error?: string } } }).response?.data?.error
         : '';
 
-    return errorCode || 'Something went wrong. Please try again.';
+    switch (errorCode) {
+        case 'account_already_exists':
+            return 'An account already exists for this email. Use the matching password to sign in.';
+        case 'invalid_credentials':
+            return 'Email or password is incorrect.';
+        case 'password_not_configured':
+            return 'This account was created before password login. Create a new account or contact support to secure it.';
+        case 'server_auth_not_configured':
+            return 'Secure account creation is not configured on the server. Add JWT_SECRET first.';
+        default:
+            return errorCode || 'Something went wrong. Please try again.';
+    }
 }
 
 export function CreateAccountPage() {
@@ -23,6 +34,7 @@ export function CreateAccountPage() {
     const signup = useAuthStore((state) => state.signup);
     const initialEmail = useMemo(() => new URLSearchParams(location.search).get('email') || '', [location.search]);
     const [email, setEmail] = useState(initialEmail);
+    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [notice, setNotice] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,18 +48,24 @@ export function CreateAccountPage() {
             return;
         }
 
+        if (password.length < 8) {
+            setNotice('');
+            setError('Password must be at least 8 characters.');
+            return;
+        }
+
         setIsSubmitting(true);
         setError('');
         setNotice('');
 
         try {
-            const response = await signup(email);
+            const response = await signup(email, password);
             if (response.message) {
                 sessionStorage.setItem('post_auth_notice', response.message);
             } else {
                 sessionStorage.removeItem('post_auth_notice');
             }
-            navigate('/onboarding');
+            navigate(response.nextStep === 'dashboard' ? '/dashboard' : '/onboarding');
         } catch (authError) {
             setError(parseAuthMessage(authError));
         } finally {
@@ -76,7 +94,7 @@ export function CreateAccountPage() {
                                     Let&apos;s build your plan.
                                 </h1>
                                 <p className="text-sm leading-5 text-[#CBD5E3]">
-                                    Start with your email, then answer a few questions so the app can create your workout plan.
+                                    Start with secure account details, then answer a few questions so the app can create your workout plan.
                                 </p>
                             </div>
                         </div>
@@ -98,7 +116,7 @@ export function CreateAccountPage() {
                                     Create your account
                                 </h2>
                                 <p className="text-[0.88rem] leading-5 text-[#94A5BE]">
-                                    Enter your email to continue to the questionnaire.
+                                    Enter your email and password to continue to the questionnaire.
                                 </p>
                             </div>
 
@@ -130,6 +148,24 @@ export function CreateAccountPage() {
                                         inputMode="email"
                                         placeholder="Email"
                                         required
+                                        className="w-full bg-transparent text-[0.95rem] text-[#F5F8FC] outline-none placeholder:text-[#95A3B9]"
+                                    />
+                                </label>
+
+                                <label
+                                    htmlFor="create-account-password"
+                                    className="flex min-h-[52px] w-full items-center gap-3 rounded-[18px] border border-white/12 bg-[rgba(30,45,71,0.74)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition focus-within:border-cyan-300/55 focus-within:ring-2 focus-within:ring-cyan-300/20"
+                                >
+                                    <LockKeyhole className="h-5 w-5 text-[#D7E0EA]" strokeWidth={1.8} />
+                                    <input
+                                        id="create-account-password"
+                                        type="password"
+                                        value={password}
+                                        onChange={(event) => setPassword(event.target.value)}
+                                        autoComplete="new-password"
+                                        placeholder="Create password"
+                                        required
+                                        minLength={8}
                                         className="w-full bg-transparent text-[0.95rem] text-[#F5F8FC] outline-none placeholder:text-[#95A3B9]"
                                     />
                                 </label>
