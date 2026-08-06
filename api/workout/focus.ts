@@ -1,28 +1,29 @@
 import type { Exercise, Profile } from '@prisma/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { isAuthConfigurationError, prisma, verifyAuthToken } from '../auth/_shared';
+import { getExerciseVideoUrl } from './_exerciseMedia';
 
 type FocusKey = 'full-body' | 'abs' | 'legs' | 'butt' | 'arms';
 
 const FOCUS_CONFIG: Record<FocusKey, { label: string; summary: string }> = {
     'full-body': {
-        label: 'Full Body Workout',
-        summary: 'Balanced work across lower body, upper body, and core.',
+        label: 'Full Body + Cardio',
+        summary: 'Low-impact conditioning with lower body, upper body, and core work.',
     },
     abs: {
-        label: 'Abs Workout',
-        summary: 'Core strength, bracing, and controlled trunk work.',
+        label: 'Waist + Core',
+        summary: 'Pilates-style core strength, bracing, and controlled trunk work.',
     },
     legs: {
-        label: 'Legs Workout',
-        summary: 'Squat, hinge, lunge, and step-based lower-body work.',
+        label: 'Glutes + Thighs',
+        summary: 'Squat, lunge, and step-based lower-body work.',
     },
     butt: {
-        label: 'Butt Workout',
-        summary: 'Glute-focused strength through bridges, thrusts, and hinges.',
+        label: 'Glutes + Hamstrings',
+        summary: 'Posterior-chain strength through bridges, thrusts, and hinges.',
     },
     arms: {
-        label: 'Arms Workout',
+        label: 'Arms + Chest',
         summary: 'Upper-body push and pull work targeting chest, back, and arms.',
     },
 };
@@ -124,7 +125,7 @@ function getSetCount(profile: Profile) {
     const rank = getUserExperienceRank(profile.experienceLevel);
     if (rank <= 0) return 2;
     if (rank === 1) return 3;
-    return 4;
+    return 3;
 }
 
 function getRestSeconds(profile: Profile) {
@@ -227,7 +228,8 @@ function matchesFocus(exercise: Exercise, focusKey: FocusKey) {
 
     if (focusKey === 'full-body') return !isMobilityExercise(exercise) && !isLegacyFallbackExercise(exercise);
     if (focusKey === 'abs') {
-        return lowerPattern.includes('core')
+        return focusAreas.some((tag) => ['Waist', 'Core', 'Pilates'].includes(tag))
+            || lowerPattern.includes('core')
             || lowerPattern.includes('pilates')
             || lowerName.includes('plank')
             || lowerName.includes('dead bug')
@@ -241,12 +243,12 @@ function matchesFocus(exercise: Exercise, focusKey: FocusKey) {
             || lowerName.includes('double-leg stretch');
     }
     if (focusKey === 'legs') {
-        return focusAreas.includes('Glutes and legs')
+        return focusAreas.some((tag) => ['Glutes', 'Thighs', 'Legs', 'Glutes and legs'].includes(tag))
             || ['squat', 'lunge', 'hinge'].some((value) => lowerPattern.includes(value))
             || lowerPattern.includes('step');
     }
     if (focusKey === 'butt') {
-        return focusAreas.includes('Glutes and legs')
+        return focusAreas.some((tag) => ['Glutes', 'Hamstrings', 'Glutes and legs'].includes(tag))
             && (
                 lowerName.includes('glute')
                 || lowerName.includes('bridge')
@@ -261,7 +263,7 @@ function matchesFocus(exercise: Exercise, focusKey: FocusKey) {
     }
     return isStrengthExercise(exercise)
         && (
-            focusAreas.includes('Chest and arms')
+            focusAreas.some((tag) => ['Chest', 'Arms', 'Upper Body', 'Chest and arms'].includes(tag))
             || lowerPattern.includes('push')
             || lowerPattern.includes('pull')
             || lowerName.includes('press')
@@ -287,7 +289,7 @@ function matchesMobilityForFocus(exercise: Exercise, focusKey: FocusKey) {
     }
 
     if (focusKey === 'abs') {
-        return focusAreas.includes('Core')
+        return focusAreas.some((tag) => ['Waist', 'Core', 'Pilates'].includes(tag))
             || lowerPattern.includes('core')
             || lowerName.includes('thoracic')
             || lowerName.includes('open book')
@@ -296,7 +298,7 @@ function matchesMobilityForFocus(exercise: Exercise, focusKey: FocusKey) {
     }
 
     if (focusKey === 'legs') {
-        return focusAreas.includes('Glutes and legs')
+        return focusAreas.some((tag) => ['Glutes', 'Thighs', 'Legs', 'Glutes and legs'].includes(tag))
             || lowerName.includes('hip')
             || lowerName.includes('hamstring')
             || lowerName.includes('ankle')
@@ -305,14 +307,14 @@ function matchesMobilityForFocus(exercise: Exercise, focusKey: FocusKey) {
     }
 
     if (focusKey === 'butt') {
-        return focusAreas.includes('Glutes and legs')
+        return focusAreas.some((tag) => ['Glutes', 'Hamstrings', 'Glutes and legs'].includes(tag))
             || lowerName.includes('glute')
             || lowerName.includes('hip')
             || lowerName.includes('hamstring')
             || lowerName.includes('figure four');
     }
 
-    return focusAreas.includes('Chest and arms')
+    return focusAreas.some((tag) => ['Chest', 'Arms', 'Upper Body', 'Chest and arms'].includes(tag))
         || lowerName.includes('shoulder')
         || lowerName.includes('chest')
         || lowerName.includes('lat')
@@ -331,24 +333,23 @@ function scoreFocusExercise(exercise: Exercise, profile: Profile, focusKey: Focu
     if (isStrengthExercise(exercise)) score += 12;
     if (focusKey === 'full-body') {
         if (['squat', 'hinge', 'push', 'pull', 'lunge', 'core', 'glute', 'pilates'].some((value) => lowerPattern.includes(value))) score += 16;
-        if (focusAreas.includes('Full body balance')) score += 12;
+        if (focusAreas.some((tag) => ['Full Body', 'Cardio', 'Full body balance'].includes(tag))) score += 12;
     }
-    if (focusKey === 'abs' && (focusAreas.includes('Core') || lowerPattern.includes('core') || lowerPattern.includes('pilates'))) score += 24;
-    if (focusKey === 'legs' && focusAreas.includes('Glutes and legs')) score += 24;
+    if (focusKey === 'abs' && (focusAreas.some((tag) => ['Waist', 'Core', 'Pilates'].includes(tag)) || lowerPattern.includes('core') || lowerPattern.includes('pilates'))) score += 24;
+    if (focusKey === 'legs' && focusAreas.some((tag) => ['Glutes', 'Thighs', 'Legs', 'Glutes and legs'].includes(tag))) score += 24;
     if (focusKey === 'butt') {
         if (lowerName.includes('glute') || lowerName.includes('bridge') || lowerName.includes('thrust')) score += 28;
+        if (focusAreas.includes('Hamstrings')) score += 12;
         if (lowerPattern.includes('hinge')) score += 12;
     }
-    if (focusKey === 'arms' && focusAreas.includes('Chest and arms')) score += 22;
-    if ((profile.goal === 'Build muscle' || profile.goal === 'Get stronger') && isStrengthExercise(exercise)) score += 10;
-    if ((profile.goal === 'Improve stamina' || profile.goal === 'Lose body fat') && isConditioningExercise(exercise)) score += 6;
+    if (focusKey === 'arms' && focusAreas.some((tag) => ['Chest', 'Arms', 'Upper Body', 'Chest and arms'].includes(tag))) score += 22;
+    if ((profile.goal === 'Build muscle' || profile.goal === 'Weight gain' || profile.goal === 'Build strength') && isStrengthExercise(exercise)) score += 10;
+    if (profile.goal === 'Weight loss' && isConditioningExercise(exercise)) score += 6;
 
     const difficultyGap = getDifficultyRank(exercise.difficultyMax) - Math.min(getUserExperienceRank(profile.experienceLevel), 2);
     if (difficultyGap > 0) score -= difficultyGap * 8;
 
     if (profile.intensityPreference === 'Easy' && exercise.impactLevel === 'high') score -= 12;
-    if (profile.workoutStylePreference === 'Mostly cardio' && isConditioningExercise(exercise)) score += 10;
-    if (profile.workoutStylePreference === 'Mostly strength training' && isStrengthExercise(exercise)) score += 10;
     return score;
 }
 
@@ -446,7 +447,7 @@ function transformSuggestedExercise(exercise: Exercise, profile: Profile, phase:
         name: exercise.name,
         muscleGroup: titleCase(focusAreas[0] ?? exercise.movementPattern ?? 'Full body'),
         difficulty: difficultyMin === difficultyMax ? difficultyMin : `${difficultyMin} - ${difficultyMax}`,
-        videoUrl: exercise.videoUrl,
+        videoUrl: getExerciseVideoUrl(exercise),
         description: exercise.description ?? exercise.notes ?? '',
         ...target,
     };

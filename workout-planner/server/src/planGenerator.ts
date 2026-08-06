@@ -630,7 +630,7 @@ export class PlanGenerator {
             }
         }
 
-        return { sets, reps, seconds, rest };
+        return { sets: Math.min(3, sets), reps, seconds, rest };
     }
 
     /**

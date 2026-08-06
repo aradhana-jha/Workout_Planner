@@ -46,6 +46,7 @@ model Exercise {
   name                     String
   description              String?
   videoUrl                 String?
+  isActive                 Boolean  @default(true)
   
   difficultyMin            String
   difficultyMax            String

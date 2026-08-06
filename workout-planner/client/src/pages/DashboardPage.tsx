@@ -70,11 +70,11 @@ interface FocusWorkout {
 }
 
 const FOCUS_OPTIONS: Array<{ key: FocusKey; label: string; blurb: string; image: string; imagePosition?: string }> = [
-    { key: 'full-body', label: 'Full body', blurb: 'Balanced daily training', image: fullBodyArt, imagePosition: 'center top' },
-    { key: 'abs', label: 'Abs', blurb: 'Core and trunk control', image: absArt, imagePosition: 'center top' },
-    { key: 'legs', label: 'Legs', blurb: 'Lower body power', image: legsArt, imagePosition: 'center top' },
-    { key: 'butt', label: 'Butt', blurb: 'Glute-focused work', image: buttArt, imagePosition: 'center top' },
-    { key: 'arms', label: 'Arms', blurb: 'Push and pull upper body', image: armsArt, imagePosition: 'center top' },
+    { key: 'full-body', label: 'Full body + cardio', blurb: 'Low-impact conditioning', image: fullBodyArt, imagePosition: 'center top' },
+    { key: 'abs', label: 'Waist + core', blurb: 'Pilates-style trunk control', image: absArt, imagePosition: 'center top' },
+    { key: 'legs', label: 'Glutes + thighs', blurb: 'Lower-body shape and strength', image: legsArt, imagePosition: 'center top' },
+    { key: 'butt', label: 'Glutes + hamstrings', blurb: 'Posterior-chain strength', image: buttArt, imagePosition: 'center top' },
+    { key: 'arms', label: 'Arms + chest', blurb: 'Push and pull upper body', image: armsArt, imagePosition: 'center top' },
 ];
 
 const FOCUS_PHASE_META: Record<FocusWorkoutExercise['phase'], { label: string; description: string }> = {

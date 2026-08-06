@@ -8,6 +8,9 @@
         "db:migrate": "npx prisma migrate deploy --schema=./prisma/schema.prisma",
         "db:seed": "node prisma/seed-exercises.mjs",
         "db:deploy": "npm run db:migrate && npm run db:seed",
+        "media:audit": "node scripts/video/audit_exercise_media.mjs",
+        "media:audit:strict": "node scripts/video/audit_exercise_media.mjs --strict",
+        "recommendation:audit": "node scripts/recommendation/audit_library.mjs",
         "postinstall": "npx prisma generate --schema=./prisma/schema.prisma"
     },
     "dependencies": {

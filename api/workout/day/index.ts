@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { isAuthConfigurationError, prisma, verifyAuthToken } from '../../auth/_shared';
+import { withExerciseVideoUrl } from '../_exerciseMedia';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -43,7 +44,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (workoutDay) {
         const transformedDay = {
             ...workoutDay,
-            title: workoutDay.dayType === 'Rest' ? 'Rest Day' : `Day ${workoutDay.dayNumber}: ${workoutDay.dayType}`
+            title: workoutDay.dayType === 'Rest' ? 'Rest Day' : `Day ${workoutDay.dayNumber}: ${workoutDay.dayType}`,
+            exercises: workoutDay.exercises.map((workoutExercise) => ({
+                ...workoutExercise,
+                exercise: withExerciseVideoUrl(workoutExercise.exercise),
+            })),
         };
         return res.status(200).json({ workoutDay: transformedDay });
     }

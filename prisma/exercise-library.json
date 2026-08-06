@@ -5,13 +5,23 @@
     "description": "Move slowly between spinal flexion and extension while breathing through the ribs.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Dynamic mobility spine",
-    "focusAreaTags": ["Back and posture", "Full body balance"],
+    "focusAreaTags": [
+      "Back and posture",
+      "Full body balance",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up", "Cool off"],
-    "notes": "quality:premium; family:spine-mobility; modality:mobility"
+    "phaseTags": [
+      "Warm up",
+      "Cool off"
+    ],
+    "notes": "quality:premium; family:spine-mobility; modality:mobility; body:mobility",
+    "videoUrl": "/exercise-videos/cat-cow-spinal-flow.mp4"
   },
   {
     "externalId": "CUR002",
@@ -19,13 +29,23 @@
     "description": "Rotate both knees side to side from a seated 90/90 position, keeping the torso tall.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Dynamic mobility hips",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up", "Cool off"],
-    "notes": "quality:premium; family:hip-mobility; modality:mobility"
+    "phaseTags": [
+      "Warm up",
+      "Cool off"
+    ],
+    "notes": "quality:premium; family:hip-mobility; modality:mobility; body:mobility",
+    "videoUrl": "/exercise-videos/90-90-hip-switches.mp4"
   },
   {
     "externalId": "CUR003",
@@ -33,13 +53,23 @@
     "description": "Step into a long lunge, reach one hand to the floor, then rotate the chest open.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Dynamic mobility hips thoracic",
-    "focusAreaTags": ["Glutes and legs", "Back and posture", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Back and posture",
+      "Full body balance",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up"],
-    "notes": "quality:premium; family:lunge-mobility; modality:mobility"
+    "phaseTags": [
+      "Warm up"
+    ],
+    "notes": "quality:premium; family:lunge-mobility; modality:mobility; body:mobility",
+    "videoUrl": "/exercise-videos/worlds-greatest-stretch.mp4"
   },
   {
     "externalId": "CUR004",
@@ -47,13 +77,25 @@
     "description": "Fold forward, walk the hands to a plank, pause, then walk back with control.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Dynamic mobility hinge core",
-    "focusAreaTags": ["Core", "Full body balance", "Back and posture"],
+    "focusAreaTags": [
+      "Core",
+      "Full body balance",
+      "Back and posture",
+      "Hamstrings",
+      "Waist",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up"],
-    "notes": "quality:premium; family:walkout; modality:mobility"
+    "phaseTags": [
+      "Warm up"
+    ],
+    "notes": "quality:premium; family:walkout; modality:mobility; body:hamstrings; body:waist-core; body:mobility; split:waist-core",
+    "videoUrl": "/exercise-videos/inchworm-walkout.mp4"
   },
   {
     "externalId": "CUR005",
@@ -61,13 +103,23 @@
     "description": "Lie on one side and rotate the top arm open without forcing the lower back.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Dynamic mobility thoracic rotation",
-    "focusAreaTags": ["Back and posture", "Full body balance"],
+    "focusAreaTags": [
+      "Back and posture",
+      "Full body balance",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up", "Cool off"],
-    "notes": "quality:premium; family:thoracic-rotation; modality:mobility"
+    "phaseTags": [
+      "Warm up",
+      "Cool off"
+    ],
+    "notes": "quality:premium; family:thoracic-rotation; modality:mobility; body:mobility",
+    "videoUrl": "/exercise-videos/thoracic-open-book-rotation.mp4"
   },
   {
     "externalId": "CUR006",
@@ -75,13 +127,22 @@
     "description": "Drive the knee over the toes while keeping the heel down and the arch controlled.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Dynamic mobility ankle",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up"],
-    "notes": "quality:premium; family:ankle-mobility; modality:mobility"
+    "phaseTags": [
+      "Warm up"
+    ],
+    "notes": "quality:premium; family:ankle-mobility; modality:mobility; body:mobility",
+    "videoUrl": "/exercise-videos/ankle-rocks.mp4"
   },
   {
     "externalId": "CUR007",
@@ -89,13 +150,25 @@
     "description": "Slide the forearms upward on a wall while keeping ribs down and shoulder blades smooth.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Posture shoulder mobility",
-    "focusAreaTags": ["Back and posture", "Chest and arms"],
+    "focusAreaTags": [
+      "Back and posture",
+      "Chest and arms",
+      "Upper Body",
+      "Back",
+      "Posture",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up"],
-    "notes": "quality:premium; family:shoulder-mobility; modality:mobility"
+    "phaseTags": [
+      "Warm up"
+    ],
+    "notes": "quality:premium; family:shoulder-mobility; modality:mobility; body:back-posture; body:mobility",
+    "videoUrl": "/exercise-videos/scapular-wall-slides.mp4"
   },
   {
     "externalId": "CUR008",
@@ -103,13 +176,25 @@
     "description": "Draw a slow controlled circle with one arm while keeping the ribs stacked.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Posture shoulder mobility",
-    "focusAreaTags": ["Back and posture", "Chest and arms"],
+    "focusAreaTags": [
+      "Back and posture",
+      "Chest and arms",
+      "Upper Body",
+      "Back",
+      "Posture",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up"],
-    "notes": "quality:premium; family:shoulder-cars; modality:mobility"
+    "phaseTags": [
+      "Warm up"
+    ],
+    "notes": "quality:premium; family:shoulder-cars; modality:mobility; body:back-posture; body:mobility",
+    "videoUrl": "/exercise-videos/shoulder-cars.mp4"
   },
   {
     "externalId": "CUR009",
@@ -117,14 +202,28 @@
     "description": "Hold the toes, sit into a squat, gently pry the knees open, then lift the hips.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Dynamic mobility squat hinge",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Legs",
+      "Thighs",
+      "Hamstrings",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up"],
-    "avoidModifyFlags": ["Knees"],
-    "notes": "quality:premium; family:squat-mobility; modality:mobility"
+    "phaseTags": [
+      "Warm up"
+    ],
+    "avoidModifyFlags": [
+      "Knees"
+    ],
+    "notes": "quality:premium; family:squat-mobility; modality:mobility; body:thighs; body:hamstrings; body:mobility",
+    "videoUrl": "/exercise-videos/squat-to-stand-prying-stretch.mp4"
   },
   {
     "externalId": "CUR010",
@@ -132,14 +231,27 @@
     "description": "Step wide, sit one hip back, and reach across the body to open the inner thigh.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Dynamic mobility lateral lunge",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Legs",
+      "Thighs",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up"],
-    "avoidModifyFlags": ["Knees"],
-    "notes": "quality:premium; family:lateral-lunge-mobility; modality:mobility"
+    "phaseTags": [
+      "Warm up"
+    ],
+    "avoidModifyFlags": [
+      "Knees"
+    ],
+    "notes": "quality:premium; family:lateral-lunge-mobility; modality:mobility; body:thighs; body:mobility",
+    "videoUrl": "/exercise-videos/lateral-lunge-reach.mp4"
   },
   {
     "externalId": "CUR011",
@@ -147,13 +259,24 @@
     "description": "Brace the ribs down and alternate opposite arm and leg reaches without arching the back.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core anti-extension",
-    "focusAreaTags": ["Core", "Full body balance"],
+    "focusAreaTags": [
+      "Core",
+      "Full body balance",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up", "Main exercise"],
-    "notes": "quality:premium; family:core-anti-extension; modality:pilates"
+    "phaseTags": [
+      "Warm up",
+      "Main exercise"
+    ],
+    "videoUrl": "/exercise-videos/dead-bug-activation.mp4",
+    "notes": "quality:premium; family:core-anti-extension; modality:pilates; body:waist-core; split:waist-core"
   },
   {
     "externalId": "CUR012",
@@ -161,13 +284,28 @@
     "description": "Reach opposite arm and leg long while keeping hips level and the spine quiet.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core anti-rotation posture",
-    "focusAreaTags": ["Core", "Back and posture", "Full body balance"],
+    "focusAreaTags": [
+      "Core",
+      "Back and posture",
+      "Full body balance",
+      "Upper Body",
+      "Back",
+      "Posture",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up", "Main exercise"],
-    "notes": "quality:premium; family:core-anti-rotation; modality:pilates"
+    "phaseTags": [
+      "Warm up",
+      "Main exercise"
+    ],
+    "videoUrl": "/exercise-videos/bird-dog-reach.mp4",
+    "notes": "quality:premium; family:core-anti-rotation; modality:pilates; body:back-posture; body:waist-core; split:waist-core"
   },
   {
     "externalId": "CUR013",
@@ -175,13 +313,26 @@
     "description": "Hold a bridge and alternate small knee lifts without letting the pelvis drop.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Hinge glute core",
-    "focusAreaTags": ["Glutes and legs", "Core"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Core",
+      "Glutes",
+      "Hamstrings",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up", "Main exercise"],
-    "notes": "quality:premium; family:glute-bridge-core; modality:pilates"
+    "phaseTags": [
+      "Warm up",
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:glute-bridge-core; modality:pilates; body:glutes; body:hamstrings; body:waist-core; split:glutes-hamstrings; split:waist-core",
+    "videoUrl": "/exercise-videos/glute-bridge-march-activation.mp4"
   },
   {
     "externalId": "CUR014",
@@ -189,13 +340,24 @@
     "description": "Stand from a chair with control, lightly touch down, and repeat without collapsing the knees inward.",
     "difficultyMin": "beginner",
     "difficultyMax": "beginner",
-    "equipmentTags": ["No equipment", "Bench"],
+    "equipmentTags": [
+      "No equipment",
+      "Bench"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Squat regression",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Legs",
+      "Thighs"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:squat-regression; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:squat-regression; modality:strength; body:thighs",
+    "videoUrl": "/exercise-videos/sit-to-stand-squat.mp4"
   },
   {
     "externalId": "CUR015",
@@ -203,13 +365,23 @@
     "description": "Lower for three seconds, pause briefly, then stand tall with even pressure through the feet.",
     "difficultyMin": "beginner",
     "difficultyMax": "intermediate",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Squat knee-dominant",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Legs",
+      "Thighs"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:squat-tempo; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "videoUrl": "/exercise-videos/tempo-bodyweight-squat.mp4",
+    "notes": "quality:premium; family:squat-tempo; modality:strength; body:thighs"
   },
   {
     "externalId": "CUR016",
@@ -217,13 +389,24 @@
     "description": "Hold one dumbbell at the chest and squat with a tall torso and controlled knee tracking.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["Dumbbells", "Kettlebell"],
+    "equipmentTags": [
+      "Dumbbells",
+      "Kettlebell"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Squat loaded",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Legs",
+      "Thighs"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:squat-loaded; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:squat-loaded; modality:strength; body:thighs",
+    "videoUrl": "/exercise-videos/goblet-squat.mp4"
   },
   {
     "externalId": "CUR017",
@@ -231,13 +414,22 @@
     "description": "Hold a strong seated position against the wall with knees comfortable and ribs stacked.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Squat isometric",
-    "focusAreaTags": ["Glutes and legs"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Legs",
+      "Thighs"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:squat-isometric; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:squat-isometric; modality:strength; body:thighs",
+    "videoUrl": "/exercise-videos/wall-sit.mp4"
   },
   {
     "externalId": "CUR018",
@@ -245,14 +437,27 @@
     "description": "Step backward into a lunge, keep the front foot rooted, and drive through the front leg to stand.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Dumbbells"],
+    "equipmentTags": [
+      "No equipment",
+      "Dumbbells"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Lunge reverse",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Legs",
+      "Thighs"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Knees"],
-    "notes": "quality:premium; family:reverse-lunge; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Knees"
+    ],
+    "videoUrl": "/exercise-videos/reverse-lunge.mp4",
+    "notes": "quality:premium; family:reverse-lunge; modality:strength; body:thighs"
   },
   {
     "externalId": "CUR019",
@@ -260,14 +465,27 @@
     "description": "Stay in a staggered stance and lower straight down with control before pressing back up.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Dumbbells"],
+    "equipmentTags": [
+      "No equipment",
+      "Dumbbells"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Lunge static",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Legs",
+      "Thighs"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Knees"],
-    "notes": "quality:premium; family:split-squat; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Knees"
+    ],
+    "notes": "quality:premium; family:split-squat; modality:strength; body:thighs",
+    "videoUrl": "/exercise-videos/split-squat.mp4"
   },
   {
     "externalId": "CUR020",
@@ -275,14 +493,27 @@
     "description": "Step to the side, sit the hips back, keep the other leg long, and return with control.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Dumbbells"],
+    "equipmentTags": [
+      "No equipment",
+      "Dumbbells"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Lunge lateral",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Legs",
+      "Thighs"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Knees"],
-    "notes": "quality:premium; family:lateral-lunge; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Knees"
+    ],
+    "notes": "quality:premium; family:lateral-lunge; modality:strength; body:thighs",
+    "videoUrl": "/exercise-videos/lateral-lunge.mp4"
   },
   {
     "externalId": "CUR021",
@@ -290,14 +521,28 @@
     "description": "Step onto a stable low surface, stand tall, and lower under control without pushing off the back leg.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Bench", "Dumbbells"],
+    "equipmentTags": [
+      "No equipment",
+      "Bench",
+      "Dumbbells"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Lunge step",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Legs",
+      "Thighs"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Knees"],
-    "notes": "quality:premium; family:step-up; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Knees"
+    ],
+    "notes": "quality:premium; family:step-up; modality:strength; body:thighs",
+    "videoUrl": "/exercise-videos/low-step-up.mp4"
   },
   {
     "externalId": "CUR022",
@@ -305,14 +550,28 @@
     "description": "Elevate the rear foot and lower into a split squat while keeping the front knee controlled.",
     "difficultyMin": "intermediate",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Bench", "Dumbbells"],
+    "equipmentTags": [
+      "No equipment",
+      "Bench",
+      "Dumbbells"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Lunge rear-foot-elevated",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Legs",
+      "Thighs"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Knees"],
-    "notes": "quality:premium; family:bulgarian-split-squat; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Knees"
+    ],
+    "notes": "quality:premium; family:bulgarian-split-squat; modality:strength; body:thighs",
+    "videoUrl": "/exercise-videos/bulgarian-split-squat.mp4"
   },
   {
     "externalId": "CUR023",
@@ -320,13 +579,23 @@
     "description": "Push the hips back with a long spine, then squeeze the glutes to stand.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Hinge patterning",
-    "focusAreaTags": ["Glutes and legs", "Back and posture"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Back and posture",
+      "Hamstrings"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Warm up", "Main exercise"],
-    "notes": "quality:premium; family:hinge-pattern; modality:strength"
+    "phaseTags": [
+      "Warm up",
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:hinge-pattern; modality:strength; body:hamstrings",
+    "videoUrl": "/exercise-videos/hip-hinge-drill.mp4"
   },
   {
     "externalId": "CUR024",
@@ -334,13 +603,24 @@
     "description": "Press through the heels and lift the hips until the ribs, hips, and knees form one line.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Resistance bands"],
+    "equipmentTags": [
+      "No equipment",
+      "Resistance bands"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Hinge glute bridge",
-    "focusAreaTags": ["Glutes and legs", "Core"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Core",
+      "Glutes",
+      "Hamstrings"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:glute-bridge; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "videoUrl": "/exercise-videos/glute-bridge-v2.mp4",
+    "notes": "quality:premium; family:glute-bridge; modality:strength; body:glutes; body:hamstrings; split:glutes-hamstrings; split:waist-core"
   },
   {
     "externalId": "CUR025",
@@ -348,13 +628,23 @@
     "description": "Lift one leg and bridge through the planted heel without rotating the pelvis.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Hinge single-leg glute bridge",
-    "focusAreaTags": ["Glutes and legs", "Core"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Core",
+      "Glutes",
+      "Hamstrings"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:single-leg-glute-bridge; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:single-leg-glute-bridge; modality:strength; body:glutes; body:hamstrings; split:glutes-hamstrings; split:waist-core",
+    "videoUrl": "/exercise-videos/single-leg-glute-bridge.mp4"
   },
   {
     "externalId": "CUR026",
@@ -362,13 +652,24 @@
     "description": "Rest upper back on a bench or couch and drive the hips up with a strong glute squeeze.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["Bench", "Dumbbells", "No equipment"],
+    "equipmentTags": [
+      "Bench",
+      "Dumbbells",
+      "No equipment"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Hinge hip thrust",
-    "focusAreaTags": ["Glutes and legs"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Glutes",
+      "Hamstrings"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:hip-thrust; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "videoUrl": "/exercise-videos/hip-thrust.mp4",
+    "notes": "quality:premium; family:hip-thrust; modality:strength; body:glutes; body:hamstrings; split:glutes-hamstrings"
   },
   {
     "externalId": "CUR027",
@@ -376,14 +677,25 @@
     "description": "Hold dumbbells, hinge at the hips, keep the weights close, and stand by squeezing the glutes.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["Dumbbells"],
+    "equipmentTags": [
+      "Dumbbells"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Hinge loaded",
-    "focusAreaTags": ["Glutes and legs", "Back and posture"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Back and posture",
+      "Hamstrings"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Lower back"],
-    "notes": "quality:premium; family:loaded-hinge; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Lower back"
+    ],
+    "notes": "quality:premium; family:loaded-hinge; modality:strength; body:hamstrings",
+    "videoUrl": "/exercise-videos/dumbbell-romanian-deadlift.mp4"
   },
   {
     "externalId": "CUR028",
@@ -391,13 +703,22 @@
     "description": "Start in a bridge and take small heel steps away and back while keeping hips lifted.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Hinge hamstring",
-    "focusAreaTags": ["Glutes and legs", "Core"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Core",
+      "Hamstrings"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:hamstring-bridge; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:hamstring-bridge; modality:strength; body:hamstrings; split:waist-core",
+    "videoUrl": "/exercise-videos/hamstring-walkout.mp4"
   },
   {
     "externalId": "CUR029",
@@ -405,13 +726,22 @@
     "description": "Rise onto the balls of the feet, pause, and lower slowly with balance.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Dumbbells"],
+    "equipmentTags": [
+      "No equipment",
+      "Dumbbells"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Lower leg calf",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:calf-raise; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:calf-raise; modality:strength",
+    "videoUrl": "/exercise-videos/standing-calf-raise.mp4"
   },
   {
     "externalId": "CUR030",
@@ -419,13 +749,18 @@
     "description": "Press away from a wall with a straight line from head to heel.",
     "difficultyMin": "beginner",
     "difficultyMax": "beginner",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Push horizontal regression",
-    "focusAreaTags": ["Chest and arms", "Core"],
+    "focusAreaTags": ["Chest and arms", "Core", "Upper Body", "Chest", "Arms"],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:push-horizontal-regression; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:push-horizontal-regression; modality:strength; body:chest; split:waist-core; split:arms-chest",
+    "videoUrl": "/exercise-videos/wall-push-up.mp4"
   },
   {
     "externalId": "CUR031",
@@ -433,13 +768,19 @@
     "description": "Place hands on a bench or couch and perform a push-up with full-body tension.",
     "difficultyMin": "beginner",
     "difficultyMax": "intermediate",
-    "equipmentTags": ["No equipment", "Bench"],
+    "equipmentTags": [
+      "No equipment",
+      "Bench"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Push horizontal",
-    "focusAreaTags": ["Chest and arms", "Core"],
+    "focusAreaTags": ["Chest and arms", "Core", "Upper Body", "Chest", "Arms"],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:push-horizontal-incline; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:push-horizontal-incline; modality:strength; body:chest; split:waist-core; split:arms-chest",
+    "videoUrl": "/exercise-videos/incline-push-up.mp4"
   },
   {
     "externalId": "CUR032",
@@ -447,13 +788,18 @@
     "description": "Lower the chest under control from the knees, keeping hips and ribs stacked.",
     "difficultyMin": "beginner",
     "difficultyMax": "intermediate",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Push horizontal",
-    "focusAreaTags": ["Chest and arms", "Core"],
+    "focusAreaTags": ["Chest and arms", "Core", "Upper Body", "Chest", "Arms"],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:push-horizontal-knee; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:push-horizontal-knee; modality:strength; body:chest; split:waist-core; split:arms-chest",
+    "videoUrl": "/exercise-videos/knee-push-up.mp4"
   },
   {
     "externalId": "CUR033",
@@ -461,13 +807,18 @@
     "description": "Lower with elbows angled slightly back and press up while maintaining a rigid plank.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Push horizontal",
-    "focusAreaTags": ["Chest and arms", "Core"],
+    "focusAreaTags": ["Chest and arms", "Core", "Upper Body", "Chest", "Arms"],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:push-horizontal-standard; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "videoUrl": "/exercise-videos/standard-push-up.mp4",
+    "notes": "quality:premium; family:push-horizontal-standard; modality:strength; body:chest; split:waist-core; split:arms-chest"
   },
   {
     "externalId": "CUR034",
@@ -475,13 +826,19 @@
     "description": "Elevate the feet and perform a controlled push-up with shoulders away from ears.",
     "difficultyMin": "intermediate",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Bench"],
+    "equipmentTags": [
+      "No equipment",
+      "Bench"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Push horizontal advanced",
-    "focusAreaTags": ["Chest and arms", "Core"],
+    "focusAreaTags": ["Chest and arms", "Core", "Upper Body", "Chest", "Arms"],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:push-horizontal-decline; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:push-horizontal-decline; modality:strength; body:chest; split:waist-core; split:arms-chest",
+    "videoUrl": "/exercise-videos/decline-push-up.mp4"
   },
   {
     "externalId": "CUR035",
@@ -489,13 +846,23 @@
     "description": "Press dumbbells from the floor, pause lightly at the triceps, and keep wrists stacked.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["Dumbbells"],
+    "equipmentTags": [
+      "Dumbbells"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Push horizontal loaded",
-    "focusAreaTags": ["Chest and arms"],
+    "focusAreaTags": [
+      "Chest and arms",
+      "Upper Body",
+      "Chest",
+      "Arms"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:floor-press; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:floor-press; modality:strength; body:chest; body:arms; split:arms-chest",
+    "videoUrl": "/exercise-videos/dumbbell-floor-press.mp4"
   },
   {
     "externalId": "CUR036",
@@ -503,14 +870,21 @@
     "description": "Hike the hips high and press the head toward the floor to train shoulders.",
     "difficultyMin": "intermediate",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Push vertical",
-    "focusAreaTags": ["Chest and arms", "Back and posture"],
+    "focusAreaTags": ["Chest and arms", "Back and posture", "Upper Body", "Chest", "Arms"],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Shoulders"],
-    "notes": "quality:premium; family:push-vertical-bodyweight; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Shoulders"
+    ],
+    "notes": "quality:premium; family:push-vertical-bodyweight; modality:strength; body:chest; split:arms-chest",
+    "videoUrl": "/exercise-videos/pike-push-up.mp4"
   },
   {
     "externalId": "CUR037",
@@ -518,14 +892,27 @@
     "description": "Press one dumbbell overhead from a half-kneeling stance while keeping ribs down.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["Dumbbells"],
+    "equipmentTags": [
+      "Dumbbells"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Push vertical loaded",
-    "focusAreaTags": ["Chest and arms", "Core"],
+    "focusAreaTags": [
+      "Chest and arms",
+      "Core",
+      "Upper Body",
+      "Chest",
+      "Arms"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Shoulders"],
-    "notes": "quality:premium; family:push-vertical-loaded; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Shoulders"
+    ],
+    "notes": "quality:premium; family:push-vertical-loaded; modality:strength; body:chest; body:arms; split:waist-core; split:arms-chest",
+    "videoUrl": "/exercise-videos/half-kneeling-dumbbell-press.mp4"
   },
   {
     "externalId": "CUR038",
@@ -533,13 +920,23 @@
     "description": "Anchor a band behind you and press forward with controlled shoulder blades.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["Resistance bands"],
+    "equipmentTags": [
+      "Resistance bands"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Push horizontal band",
-    "focusAreaTags": ["Chest and arms"],
+    "focusAreaTags": [
+      "Chest and arms",
+      "Upper Body",
+      "Chest",
+      "Arms"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:band-chest-press; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:band-chest-press; modality:strength; body:chest; body:arms; split:arms-chest",
+    "videoUrl": "/exercise-videos/band-chest-press.mp4"
   },
   {
     "externalId": "CUR039",
@@ -547,13 +944,18 @@
     "description": "Keep hands slightly narrower and elbows close to bias triceps without shrugging.",
     "difficultyMin": "intermediate",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Push triceps",
-    "focusAreaTags": ["Chest and arms", "Core"],
+    "focusAreaTags": ["Chest and arms", "Core", "Upper Body", "Chest", "Arms"],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:push-triceps; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:push-triceps; modality:strength; body:chest; split:waist-core; split:arms-chest",
+    "videoUrl": "/exercise-videos/close-grip-push-up.mp4"
   },
   {
     "externalId": "CUR040",
@@ -561,13 +963,18 @@
     "description": "Pull a band toward the ribs and squeeze shoulder blades without leaning back.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["Resistance bands"],
+    "equipmentTags": [
+      "Resistance bands"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Pull horizontal band posture",
-    "focusAreaTags": ["Back and posture", "Chest and arms"],
+    "focusAreaTags": ["Back and posture", "Chest and arms", "Upper Body", "Back", "Posture", "Arms"],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:band-row; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:band-row; modality:strength; body:back-posture",
+    "videoUrl": "/exercise-videos/band-row.mp4"
   },
   {
     "externalId": "CUR041",
@@ -575,14 +982,22 @@
     "description": "Hinge with one hand supported and pull the dumbbell toward the hip.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["Dumbbells", "Bench"],
+    "equipmentTags": [
+      "Dumbbells",
+      "Bench"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Pull horizontal loaded",
-    "focusAreaTags": ["Back and posture", "Core"],
+    "focusAreaTags": ["Back and posture", "Core", "Upper Body", "Back", "Posture", "Arms"],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Lower back"],
-    "notes": "quality:premium; family:db-row; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Lower back"
+    ],
+    "notes": "quality:premium; family:db-row; modality:strength; body:back-posture; split:waist-core",
+    "videoUrl": "/exercise-videos/one-arm-dumbbell-row.mp4"
   },
   {
     "externalId": "CUR042",
@@ -590,13 +1005,19 @@
     "description": "Lie face down and sweep the arms slowly from hips to overhead with thumbs up.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Pull posture posterior shoulder",
-    "focusAreaTags": ["Back and posture"],
+    "focusAreaTags": ["Back and posture", "Upper Body", "Back", "Posture", "Arms"],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise", "Warm up"],
-    "notes": "quality:premium; family:posterior-shoulder; modality:strength"
+    "phaseTags": [
+      "Main exercise",
+      "Warm up"
+    ],
+    "notes": "quality:premium; family:posterior-shoulder; modality:strength; body:back-posture",
+    "videoUrl": "/exercise-videos/reverse-snow-angel.mp4"
   },
   {
     "externalId": "CUR043",
@@ -604,13 +1025,20 @@
     "description": "Lift the arms into Y, T, and W shapes while keeping neck long and ribs grounded.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Dumbbells"],
+    "equipmentTags": [
+      "No equipment",
+      "Dumbbells"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Pull posture posterior shoulder",
-    "focusAreaTags": ["Back and posture"],
+    "focusAreaTags": ["Back and posture", "Upper Body", "Back", "Posture", "Arms"],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise", "Warm up"],
-    "notes": "quality:premium; family:ytw-posture; modality:strength"
+    "phaseTags": [
+      "Main exercise",
+      "Warm up"
+    ],
+    "notes": "quality:premium; family:ytw-posture; modality:strength; body:back-posture",
+    "videoUrl": "/exercise-videos/prone-y-t-w-raise.mp4"
   },
   {
     "externalId": "CUR044",
@@ -618,13 +1046,18 @@
     "description": "Pull the band toward the face with elbows high and shoulder blades moving smoothly.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["Resistance bands"],
+    "equipmentTags": [
+      "Resistance bands"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Pull posture shoulder external rotation",
-    "focusAreaTags": ["Back and posture", "Chest and arms"],
+    "focusAreaTags": ["Back and posture", "Chest and arms", "Upper Body", "Back", "Posture", "Arms"],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:face-pull; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:face-pull; modality:strength; body:back-posture",
+    "videoUrl": "/exercise-videos/band-face-pull.mp4"
   },
   {
     "externalId": "CUR045",
@@ -632,13 +1065,26 @@
     "description": "Pull a light band apart at chest height while keeping ribs down and shoulders relaxed.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["Resistance bands"],
+    "equipmentTags": [
+      "Resistance bands"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Pull posture horizontal abduction",
-    "focusAreaTags": ["Back and posture", "Chest and arms"],
+    "focusAreaTags": [
+      "Back and posture",
+      "Chest and arms",
+      "Upper Body",
+      "Back",
+      "Posture",
+      "Arms"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise", "Warm up"],
-    "notes": "quality:premium; family:band-pull-apart; modality:strength"
+    "phaseTags": [
+      "Main exercise",
+      "Warm up"
+    ],
+    "notes": "quality:premium; family:band-pull-apart; modality:strength; body:back-posture; body:arms; split:arms-chest",
+    "videoUrl": "/exercise-videos/band-pull-apart.mp4"
   },
   {
     "externalId": "CUR046",
@@ -646,14 +1092,27 @@
     "description": "Lift the chest slightly with palms turned out and hold a long neck posture.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Strength training",
     "movementPattern": "Posture spinal extension",
-    "focusAreaTags": ["Back and posture", "Core"],
+    "focusAreaTags": [
+      "Back and posture",
+      "Core",
+      "Upper Body",
+      "Back",
+      "Posture"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Lower back"],
-    "notes": "quality:premium; family:spinal-posture; modality:strength"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Lower back"
+    ],
+    "notes": "quality:premium; family:spinal-posture; modality:strength; body:back-posture; split:waist-core",
+    "videoUrl": "/exercise-videos/prone-cobra-hold.mp4"
   },
   {
     "externalId": "CUR047",
@@ -661,13 +1120,22 @@
     "description": "Hold a curled upper-back position and pulse the arms while breathing in controlled counts.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core Pilates anti-extension",
-    "focusAreaTags": ["Core"],
+    "focusAreaTags": [
+      "Core",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:pilates-hundred; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:pilates-hundred; modality:pilates; body:waist-core; split:waist-core",
+    "videoUrl": "/exercise-videos/pilates-hundred.mp4"
   },
   {
     "externalId": "CUR048",
@@ -675,13 +1143,22 @@
     "description": "Curl up and alternate pulling one knee in while the other leg reaches long.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core Pilates anti-extension",
-    "focusAreaTags": ["Core"],
+    "focusAreaTags": [
+      "Core",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:pilates-single-leg-stretch; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:pilates-single-leg-stretch; modality:pilates; body:waist-core; split:waist-core",
+    "videoUrl": "/exercise-videos/pilates-single-leg-stretch.mp4"
   },
   {
     "externalId": "CUR049",
@@ -689,13 +1166,22 @@
     "description": "Reach arms and legs away from center, then circle arms back to the shins with control.",
     "difficultyMin": "intermediate",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core Pilates anti-extension",
-    "focusAreaTags": ["Core"],
+    "focusAreaTags": [
+      "Core",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:pilates-double-leg-stretch; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:pilates-double-leg-stretch; modality:pilates; body:waist-core; split:waist-core",
+    "videoUrl": "/exercise-videos/pilates-double-leg-stretch.mp4"
   },
   {
     "externalId": "CUR050",
@@ -703,14 +1189,26 @@
     "description": "Roll down and up one vertebra at a time with knees bent as needed.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core Pilates spinal articulation",
-    "focusAreaTags": ["Core", "Back and posture"],
+    "focusAreaTags": [
+      "Core",
+      "Back and posture",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Lower back"],
-    "notes": "quality:premium; family:pilates-roll-up; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Lower back"
+    ],
+    "notes": "quality:premium; family:pilates-roll-up; modality:pilates; body:waist-core; split:waist-core",
+    "videoUrl": "/exercise-videos/modified-pilates-roll-up.mp4"
   },
   {
     "externalId": "CUR051",
@@ -718,14 +1216,28 @@
     "description": "Lie prone and alternate small arm and leg lifts while keeping the neck long.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core posterior chain Pilates",
-    "focusAreaTags": ["Core", "Back and posture", "Glutes and legs"],
+    "focusAreaTags": [
+      "Core",
+      "Back and posture",
+      "Glutes and legs",
+      "Hamstrings",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Lower back"],
-    "notes": "quality:premium; family:pilates-swimming; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Lower back"
+    ],
+    "notes": "quality:premium; family:pilates-swimming; modality:pilates; body:hamstrings; body:waist-core; split:waist-core",
+    "videoUrl": "/exercise-videos/pilates-swimming.mp4"
   },
   {
     "externalId": "CUR052",
@@ -733,13 +1245,25 @@
     "description": "Sit tall and articulate the spine forward over the legs without collapsing.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Mobility Pilates spine",
-    "focusAreaTags": ["Core", "Back and posture"],
+    "focusAreaTags": [
+      "Core",
+      "Back and posture",
+      "Waist",
+      "Pilates",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise", "Cool off"],
-    "notes": "quality:premium; family:pilates-spine-stretch; modality:pilates"
+    "phaseTags": [
+      "Main exercise",
+      "Cool off"
+    ],
+    "notes": "quality:premium; family:pilates-spine-stretch; modality:pilates; body:waist-core; body:mobility; split:waist-core",
+    "videoUrl": "/exercise-videos/pilates-spine-stretch-forward.mp4"
   },
   {
     "externalId": "CUR053",
@@ -747,13 +1271,23 @@
     "description": "Sit tall, rotate through the ribs, and reach toward the opposite foot with control.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core Pilates rotation",
-    "focusAreaTags": ["Core", "Back and posture"],
+    "focusAreaTags": [
+      "Core",
+      "Back and posture",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:pilates-rotation; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:pilates-rotation; modality:pilates; body:waist-core; split:waist-core",
+    "videoUrl": "/exercise-videos/pilates-saw.mp4"
   },
   {
     "externalId": "CUR054",
@@ -761,13 +1295,23 @@
     "description": "Hold a straight line from head to heels while pressing the floor away.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core anti-extension hold",
-    "focusAreaTags": ["Core", "Full body balance"],
+    "focusAreaTags": [
+      "Core",
+      "Full body balance",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:core-plank; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "videoUrl": "/exercise-videos/forearm-plank.mp4",
+    "notes": "quality:premium; family:core-plank; modality:pilates; body:waist-core; split:waist-core"
   },
   {
     "externalId": "CUR055",
@@ -775,13 +1319,23 @@
     "description": "Stack the shoulders and hips, press the floor away, and hold a long side-body line.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core lateral hold",
-    "focusAreaTags": ["Core", "Full body balance"],
+    "focusAreaTags": [
+      "Core",
+      "Full body balance",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:core-lateral; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "videoUrl": "/exercise-videos/side-plank.mp4",
+    "notes": "quality:premium; family:core-lateral; modality:pilates; body:waist-core; split:waist-core"
   },
   {
     "externalId": "CUR056",
@@ -789,14 +1343,25 @@
     "description": "Curl the ribs down and hold a tucked hollow position with low back controlled.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core anti-extension hold",
-    "focusAreaTags": ["Core"],
+    "focusAreaTags": [
+      "Core",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Lower back"],
-    "notes": "quality:premium; family:hollow-body; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Lower back"
+    ],
+    "notes": "quality:premium; family:hollow-body; modality:pilates; body:waist-core; split:waist-core",
+    "videoUrl": "/exercise-videos/hollow-body-tuck.mp4"
   },
   {
     "externalId": "CUR057",
@@ -804,13 +1369,23 @@
     "description": "Hover knees just off the floor with a flat back and steady breathing.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core quadruped anti-extension",
-    "focusAreaTags": ["Core", "Full body balance"],
+    "focusAreaTags": [
+      "Core",
+      "Full body balance",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:bear-hover; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:bear-hover; modality:pilates; body:waist-core; split:waist-core",
+    "videoUrl": "/exercise-videos/bear-hover.mp4"
   },
   {
     "externalId": "CUR058",
@@ -818,13 +1393,18 @@
     "description": "From a high plank, tap opposite shoulder while minimizing hip rotation.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core anti-rotation push",
-    "focusAreaTags": ["Core", "Chest and arms"],
+    "focusAreaTags": ["Core", "Chest and arms", "Upper Body", "Chest", "Waist", "Pilates", "Arms"],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:plank-anti-rotation; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:plank-anti-rotation; modality:pilates; body:chest; body:waist-core; split:waist-core; split:arms-chest",
+    "videoUrl": "/exercise-videos/plank-shoulder-tap.mp4"
   },
   {
     "externalId": "CUR059",
@@ -832,13 +1412,26 @@
     "description": "Press a band straight out from the chest and resist rotation.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["Resistance bands"],
+    "equipmentTags": [
+      "Resistance bands"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core anti-rotation",
-    "focusAreaTags": ["Core", "Full body balance"],
+    "focusAreaTags": [
+      "Core",
+      "Full body balance",
+      "Upper Body",
+      "Chest",
+      "Arms",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:pallof-press; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:pallof-press; modality:pilates; body:chest; body:arms; body:waist-core; split:waist-core; split:arms-chest",
+    "videoUrl": "/exercise-videos/pallof-press.mp4"
   },
   {
     "externalId": "CUR060",
@@ -846,13 +1439,22 @@
     "description": "Lie on your back with knees over hips and tap one heel at a time while ribs stay down.",
     "difficultyMin": "beginner",
     "difficultyMax": "intermediate",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core anti-extension",
-    "focusAreaTags": ["Core"],
+    "focusAreaTags": [
+      "Core",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:heel-taps; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:heel-taps; modality:pilates; body:waist-core; split:waist-core",
+    "videoUrl": "/exercise-videos/heel-taps.mp4"
   },
   {
     "externalId": "CUR061",
@@ -860,13 +1462,22 @@
     "description": "Curl the pelvis off the floor using the lower abdominals rather than momentum.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Core flexion",
-    "focusAreaTags": ["Core"],
+    "focusAreaTags": [
+      "Core",
+      "Waist",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:reverse-crunch; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:reverse-crunch; modality:pilates; body:waist-core; split:waist-core",
+    "videoUrl": "/exercise-videos/reverse-crunch.mp4"
   },
   {
     "externalId": "CUR062",
@@ -874,13 +1485,24 @@
     "description": "Stack hips and lift the top leg without rolling the pelvis backward.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Resistance bands"],
+    "equipmentTags": [
+      "No equipment",
+      "Resistance bands"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Glute isolation hip abduction",
-    "focusAreaTags": ["Glutes and legs", "Core"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Core",
+      "Glutes",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:side-lying-glute; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:side-lying-glute; modality:pilates; body:glutes; split:waist-core",
+    "videoUrl": "/exercise-videos/side-lying-leg-raises.mp4"
   },
   {
     "externalId": "CUR063",
@@ -888,13 +1510,24 @@
     "description": "Keep feet together and rotate the top knee open while hips stay stacked.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Resistance bands"],
+    "equipmentTags": [
+      "No equipment",
+      "Resistance bands"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Glute isolation hip external rotation",
-    "focusAreaTags": ["Glutes and legs"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Glutes",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise", "Warm up"],
-    "notes": "quality:premium; family:clamshell; modality:pilates"
+    "phaseTags": [
+      "Main exercise",
+      "Warm up"
+    ],
+    "notes": "quality:premium; family:clamshell; modality:pilates; body:glutes",
+    "videoUrl": "/exercise-videos/clamshell.mp4"
   },
   {
     "externalId": "CUR064",
@@ -902,13 +1535,24 @@
     "description": "From hands and knees, lift one knee out to the side without twisting the torso.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Resistance bands"],
+    "equipmentTags": [
+      "No equipment",
+      "Resistance bands"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Glute isolation quadruped",
-    "focusAreaTags": ["Glutes and legs", "Core"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Core",
+      "Glutes",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:fire-hydrant; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:fire-hydrant; modality:pilates; body:glutes; split:waist-core",
+    "videoUrl": "/exercise-videos/fire-hydrant.mp4"
   },
   {
     "externalId": "CUR065",
@@ -916,13 +1560,24 @@
     "description": "Drive one heel toward the ceiling from all fours while keeping hips square.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Resistance bands"],
+    "equipmentTags": [
+      "No equipment",
+      "Resistance bands"
+    ],
     "workoutType": "Pilates and core control",
     "movementPattern": "Glute isolation hip extension",
-    "focusAreaTags": ["Glutes and legs", "Core"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Core",
+      "Glutes",
+      "Pilates"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:donkey-kick; modality:pilates"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:donkey-kick; modality:pilates; body:glutes; split:waist-core",
+    "videoUrl": "/exercise-videos/donkey-kick.mp4"
   },
   {
     "externalId": "CUR066",
@@ -930,14 +1585,24 @@
     "description": "Step side to side with a soft athletic stance and reach the opposite arm across.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Cardio conditioning",
     "movementPattern": "Conditioning lateral athletic",
-    "focusAreaTags": ["Full body balance", "Glutes and legs"],
+    "focusAreaTags": [
+      "Full body balance",
+      "Glutes and legs",
+      "Full Body",
+      "Cardio"
+    ],
     "impactLevel": "low",
     "preferenceExclusionFlags": [],
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:lateral-conditioning; modality:conditioning"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:lateral-conditioning; modality:conditioning; body:full-body-cardio; split:full-body-cardio",
+    "videoUrl": "/exercise-videos/low-impact-skater-step.mp4"
   },
   {
     "externalId": "CUR067",
@@ -945,13 +1610,23 @@
     "description": "Shuffle two steps each direction and reach toward the outside foot with control.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Cardio conditioning",
     "movementPattern": "Conditioning lateral athletic",
-    "focusAreaTags": ["Full body balance", "Glutes and legs"],
+    "focusAreaTags": [
+      "Full body balance",
+      "Glutes and legs",
+      "Full Body",
+      "Cardio"
+    ],
     "impactLevel": "medium",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:lateral-shuffle; modality:conditioning"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:lateral-shuffle; modality:conditioning; body:full-body-cardio; split:full-body-cardio",
+    "videoUrl": "/exercise-videos/lateral-shuffle-reach.mp4"
   },
   {
     "externalId": "CUR068",
@@ -959,14 +1634,28 @@
     "description": "Squat with control, stand tall, and finish with a strong calf raise instead of a jump.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Cardio conditioning",
     "movementPattern": "Conditioning squat low-impact",
-    "focusAreaTags": ["Full body balance", "Glutes and legs"],
+    "focusAreaTags": [
+      "Full body balance",
+      "Glutes and legs",
+      "Legs",
+      "Thighs",
+      "Full Body",
+      "Cardio"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Knees"],
-    "notes": "quality:premium; family:squat-conditioning; modality:conditioning"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Knees"
+    ],
+    "notes": "quality:premium; family:squat-conditioning; modality:conditioning; body:thighs; body:full-body-cardio; split:full-body-cardio",
+    "videoUrl": "/exercise-videos/squat-to-calf-raise.mp4"
   },
   {
     "externalId": "CUR069",
@@ -974,14 +1663,27 @@
     "description": "Drive one knee at a time toward the chest from plank without bouncing the hips.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Cardio conditioning",
     "movementPattern": "Conditioning core plank",
-    "focusAreaTags": ["Core", "Full body balance"],
+    "focusAreaTags": [
+      "Core",
+      "Full body balance",
+      "Waist",
+      "Full Body",
+      "Cardio"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Wrists"],
-    "notes": "quality:premium; family:mountain-climber-control; modality:conditioning"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Wrists"
+    ],
+    "notes": "quality:premium; family:mountain-climber-control; modality:conditioning; body:waist-core; body:full-body-cardio; split:waist-core; split:full-body-cardio",
+    "videoUrl": "/exercise-videos/slow-mountain-climber.mp4"
   },
   {
     "externalId": "CUR070",
@@ -989,14 +1691,27 @@
     "description": "Drive each knee toward the opposite elbow from plank while keeping shoulders stacked.",
     "difficultyMin": "intermediate",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Cardio conditioning",
     "movementPattern": "Conditioning core rotation",
-    "focusAreaTags": ["Core", "Full body balance"],
+    "focusAreaTags": [
+      "Core",
+      "Full body balance",
+      "Waist",
+      "Full Body",
+      "Cardio"
+    ],
     "impactLevel": "medium",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Wrists"],
-    "notes": "quality:premium; family:mountain-climber-rotation; modality:conditioning"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Wrists"
+    ],
+    "notes": "quality:premium; family:mountain-climber-rotation; modality:conditioning; body:waist-core; body:full-body-cardio; split:waist-core; split:full-body-cardio",
+    "videoUrl": "/exercise-videos/cross-body-mountain-climber.mp4"
   },
   {
     "externalId": "CUR071",
@@ -1004,14 +1719,28 @@
     "description": "Crawl forward or in place with knees hovering low and opposite hand and foot moving together.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Cardio conditioning",
     "movementPattern": "Conditioning crawl core",
-    "focusAreaTags": ["Core", "Full body balance", "Chest and arms"],
+    "focusAreaTags": [
+      "Core",
+      "Full body balance",
+      "Chest and arms",
+      "Waist",
+      "Full Body",
+      "Cardio"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Wrists"],
-    "notes": "quality:premium; family:crawl-conditioning; modality:conditioning"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Wrists"
+    ],
+    "notes": "quality:premium; family:crawl-conditioning; modality:conditioning; body:waist-core; body:full-body-cardio; split:waist-core; split:full-body-cardio",
+    "videoUrl": "/exercise-videos/bear-crawl.mp4"
   },
   {
     "externalId": "CUR072",
@@ -1019,13 +1748,26 @@
     "description": "Walk hands into plank, pause, then walk hands back and stand tall.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Cardio conditioning",
     "movementPattern": "Conditioning walkout core hinge",
-    "focusAreaTags": ["Core", "Full body balance", "Back and posture"],
+    "focusAreaTags": [
+      "Core",
+      "Full body balance",
+      "Back and posture",
+      "Hamstrings",
+      "Waist",
+      "Full Body",
+      "Cardio"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:walkout-conditioning; modality:conditioning"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:walkout-conditioning; modality:conditioning; body:hamstrings; body:waist-core; body:full-body-cardio; split:waist-core; split:full-body-cardio",
+    "videoUrl": "/exercise-videos/inchworm-to-plank.mp4"
   },
   {
     "externalId": "CUR073",
@@ -1033,14 +1775,26 @@
     "description": "Step back to plank one foot at a time, step forward, and stand without a jump.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Cardio conditioning",
     "movementPattern": "Conditioning burpee regression",
-    "focusAreaTags": ["Full body balance", "Core"],
+    "focusAreaTags": [
+      "Full body balance",
+      "Core",
+      "Full Body",
+      "Cardio"
+    ],
     "impactLevel": "low",
-    "preferenceExclusionFlags": ["Burpees"],
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:burpee-regression; modality:conditioning"
+    "preferenceExclusionFlags": [
+      "Burpees"
+    ],
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:burpee-regression; modality:conditioning; body:full-body-cardio; split:waist-core; split:full-body-cardio",
+    "videoUrl": "/exercise-videos/step-back-burpee.mp4"
   },
   {
     "externalId": "CUR074",
@@ -1048,14 +1802,29 @@
     "description": "Step or hop feet back to plank, return to squat, and stand with strong posture.",
     "difficultyMin": "intermediate",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Cardio conditioning",
     "movementPattern": "Conditioning burpee",
-    "focusAreaTags": ["Full body balance", "Core"],
+    "focusAreaTags": [
+      "Full body balance",
+      "Core",
+      "Legs",
+      "Thighs",
+      "Full Body",
+      "Cardio"
+    ],
     "impactLevel": "medium",
-    "preferenceExclusionFlags": ["Burpees", "Jumping"],
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:squat-thrust; modality:conditioning"
+    "preferenceExclusionFlags": [
+      "Burpees",
+      "Jumping"
+    ],
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:squat-thrust; modality:conditioning; body:thighs; body:full-body-cardio; split:waist-core; split:full-body-cardio",
+    "videoUrl": "/exercise-videos/squat-thrust.mp4"
   },
   {
     "externalId": "CUR075",
@@ -1063,14 +1832,29 @@
     "description": "Step back into a reverse lunge and drive the knee forward to balance at the top.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Dumbbells"],
+    "equipmentTags": [
+      "No equipment",
+      "Dumbbells"
+    ],
     "workoutType": "Cardio conditioning",
     "movementPattern": "Conditioning lunge balance",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Legs",
+      "Thighs",
+      "Full Body",
+      "Cardio"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Knees"],
-    "notes": "quality:premium; family:lunge-conditioning; modality:conditioning"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Knees"
+    ],
+    "notes": "quality:premium; family:lunge-conditioning; modality:conditioning; body:thighs; body:full-body-cardio; split:full-body-cardio",
+    "videoUrl": "/exercise-videos/reverse-lunge-to-knee-drive.mp4"
   },
   {
     "externalId": "CUR076",
@@ -1078,15 +1862,30 @@
     "description": "From plank, hop or step feet wide and back while keeping shoulders stacked.",
     "difficultyMin": "intermediate",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Cardio conditioning",
     "movementPattern": "Conditioning plank jumping",
-    "focusAreaTags": ["Core", "Full body balance"],
+    "focusAreaTags": [
+      "Core",
+      "Full body balance",
+      "Waist",
+      "Full Body",
+      "Cardio"
+    ],
     "impactLevel": "high",
-    "preferenceExclusionFlags": ["Jumping"],
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Wrists"],
-    "notes": "quality:premium; family:plank-jack; modality:conditioning"
+    "preferenceExclusionFlags": [
+      "Jumping"
+    ],
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Wrists"
+    ],
+    "notes": "quality:premium; family:plank-jack; modality:conditioning; body:waist-core; body:full-body-cardio; split:waist-core; split:full-body-cardio",
+    "videoUrl": "/exercise-videos/plank-jack.mp4"
   },
   {
     "externalId": "CUR077",
@@ -1094,13 +1893,24 @@
     "description": "Throw controlled jab-cross-hook combinations from an athletic stance with trunk rotation.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Cardio conditioning",
     "movementPattern": "Conditioning boxing rotation",
-    "focusAreaTags": ["Full body balance", "Core", "Chest and arms"],
+    "focusAreaTags": [
+      "Full body balance",
+      "Core",
+      "Chest and arms",
+      "Full Body",
+      "Cardio"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Main exercise"],
-    "notes": "quality:premium; family:boxing-rotation; modality:conditioning"
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "notes": "quality:premium; family:boxing-rotation; modality:conditioning; body:full-body-cardio; split:waist-core; split:full-body-cardio",
+    "videoUrl": "/exercise-videos/boxing-cross-body-combo.mp4"
   },
   {
     "externalId": "CUR078",
@@ -1108,15 +1918,30 @@
     "description": "Hop laterally from one foot to the other and stick each landing with balance.",
     "difficultyMin": "intermediate",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Cardio conditioning",
     "movementPattern": "Conditioning plyometric lateral",
-    "focusAreaTags": ["Glutes and legs", "Full body balance"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Full body balance",
+      "Full Body",
+      "Cardio"
+    ],
     "impactLevel": "high",
-    "preferenceExclusionFlags": ["Jumping"],
-    "phaseTags": ["Main exercise"],
-    "avoidModifyFlags": ["Knees", "Ankles"],
-    "notes": "quality:premium; family:skater-hop; modality:conditioning"
+    "preferenceExclusionFlags": [
+      "Jumping"
+    ],
+    "phaseTags": [
+      "Main exercise"
+    ],
+    "avoidModifyFlags": [
+      "Knees",
+      "Ankles"
+    ],
+    "notes": "quality:premium; family:skater-hop; modality:conditioning; body:full-body-cardio; split:full-body-cardio",
+    "videoUrl": "/exercise-videos/skater-hop.mp4"
   },
   {
     "externalId": "CUR079",
@@ -1124,13 +1949,22 @@
     "description": "Sit hips toward heels and walk hands to each side to stretch the lats and ribs.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Stretch lat spine",
-    "focusAreaTags": ["Back and posture"],
+    "focusAreaTags": [
+      "Back and posture",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Cool off", "Stretching"],
-    "notes": "quality:premium; family:lat-stretch; modality:stretch"
+    "phaseTags": [
+      "Cool off",
+      "Stretching"
+    ],
+    "notes": "quality:premium; family:lat-stretch; modality:stretch; body:mobility",
+    "videoUrl": "/exercise-videos/child-pose-lat-reach.mp4"
   },
   {
     "externalId": "CUR080",
@@ -1138,13 +1972,22 @@
     "description": "Tuck the pelvis slightly and shift forward until the front of the rear hip stretches.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Stretch hip flexor",
-    "focusAreaTags": ["Glutes and legs"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Cool off", "Stretching"],
-    "notes": "quality:premium; family:hip-flexor-stretch; modality:stretch"
+    "phaseTags": [
+      "Cool off",
+      "Stretching"
+    ],
+    "notes": "quality:premium; family:hip-flexor-stretch; modality:stretch; body:mobility",
+    "videoUrl": "/exercise-videos/hip-flexor-lunge-stretch.mp4"
   },
   {
     "externalId": "CUR081",
@@ -1152,13 +1995,23 @@
     "description": "Cross one ankle over the opposite thigh and gently draw the legs toward the chest.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Stretch glute hip",
-    "focusAreaTags": ["Glutes and legs"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Glutes",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Cool off", "Stretching"],
-    "notes": "quality:premium; family:glute-stretch; modality:stretch"
+    "phaseTags": [
+      "Cool off",
+      "Stretching"
+    ],
+    "videoUrl": "/exercise-videos/figure-four-glute-stretch.mp4",
+    "notes": "quality:premium; family:glute-stretch; modality:stretch; body:glutes; body:mobility"
   },
   {
     "externalId": "CUR082",
@@ -1166,14 +2019,26 @@
     "description": "Place the rear foot on a couch or wall and hold a tall half-kneeling quad stretch.",
     "difficultyMin": "some experience",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Bench"],
+    "equipmentTags": [
+      "No equipment",
+      "Bench"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Stretch quad hip flexor",
-    "focusAreaTags": ["Glutes and legs"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Cool off", "Stretching"],
-    "avoidModifyFlags": ["Knees"],
-    "notes": "quality:premium; family:quad-stretch; modality:stretch"
+    "phaseTags": [
+      "Cool off",
+      "Stretching"
+    ],
+    "avoidModifyFlags": [
+      "Knees"
+    ],
+    "notes": "quality:premium; family:quad-stretch; modality:stretch; body:mobility",
+    "videoUrl": "/exercise-videos/couch-stretch.mp4"
   },
   {
     "externalId": "CUR083",
@@ -1181,13 +2046,24 @@
     "description": "Lie on your back and use a towel or band to stretch one hamstring without locking the knee.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Resistance bands"],
+    "equipmentTags": [
+      "No equipment",
+      "Resistance bands"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Stretch hamstring",
-    "focusAreaTags": ["Glutes and legs"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Hamstrings",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Cool off", "Stretching"],
-    "notes": "quality:premium; family:hamstring-stretch; modality:stretch"
+    "phaseTags": [
+      "Cool off",
+      "Stretching"
+    ],
+    "notes": "quality:premium; family:hamstring-stretch; modality:stretch; body:hamstrings; body:mobility",
+    "videoUrl": "/exercise-videos/hamstring-strap-stretch.mp4"
   },
   {
     "externalId": "CUR084",
@@ -1195,13 +2071,22 @@
     "description": "Press the rear heel down against the floor while leaning into a wall.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Stretch calf ankle",
-    "focusAreaTags": ["Glutes and legs"],
+    "focusAreaTags": [
+      "Glutes and legs",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Cool off", "Stretching"],
-    "notes": "quality:premium; family:calf-stretch; modality:stretch"
+    "phaseTags": [
+      "Cool off",
+      "Stretching"
+    ],
+    "notes": "quality:premium; family:calf-stretch; modality:stretch; body:mobility",
+    "videoUrl": "/exercise-videos/standing-calf-stretch.mp4"
   },
   {
     "externalId": "CUR085",
@@ -1209,14 +2094,26 @@
     "description": "Place forearm on a doorway and rotate gently away until the chest opens.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Stretch chest shoulder",
-    "focusAreaTags": ["Chest and arms", "Back and posture"],
+    "focusAreaTags": [
+      "Chest and arms",
+      "Back and posture",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Cool off", "Stretching"],
-    "avoidModifyFlags": ["Shoulders"],
-    "notes": "quality:premium; family:pec-stretch; modality:stretch"
+    "phaseTags": [
+      "Cool off",
+      "Stretching"
+    ],
+    "avoidModifyFlags": [
+      "Shoulders"
+    ],
+    "notes": "quality:premium; family:pec-stretch; modality:stretch; body:mobility",
+    "videoUrl": "/exercise-videos/doorway-pec-stretch.mp4"
   },
   {
     "externalId": "CUR086",
@@ -1224,13 +2121,22 @@
     "description": "From all fours, slide one arm under the body and rotate gently through the upper back.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Stretch thoracic shoulder",
-    "focusAreaTags": ["Back and posture"],
+    "focusAreaTags": [
+      "Back and posture",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Cool off", "Stretching"],
-    "notes": "quality:premium; family:thread-needle; modality:stretch"
+    "phaseTags": [
+      "Cool off",
+      "Stretching"
+    ],
+    "notes": "quality:premium; family:thread-needle; modality:stretch; body:mobility",
+    "videoUrl": "/exercise-videos/thread-the-needle-stretch.mp4"
   },
   {
     "externalId": "CUR087",
@@ -1238,14 +2144,26 @@
     "description": "Drop bent knees to one side and breathe into the rib cage without forcing the low back.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Stretch rotation spine",
-    "focusAreaTags": ["Back and posture", "Core"],
+    "focusAreaTags": [
+      "Back and posture",
+      "Core",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Cool off", "Stretching"],
-    "avoidModifyFlags": ["Lower back"],
-    "notes": "quality:premium; family:supine-twist; modality:stretch"
+    "phaseTags": [
+      "Cool off",
+      "Stretching"
+    ],
+    "avoidModifyFlags": [
+      "Lower back"
+    ],
+    "notes": "quality:premium; family:supine-twist; modality:stretch; body:mobility; split:waist-core",
+    "videoUrl": "/exercise-videos/supine-twist.mp4"
   },
   {
     "externalId": "CUR088",
@@ -1253,13 +2171,24 @@
     "description": "Lie with feet elevated, breathe slowly through the nose, and let the ribs settle down.",
     "difficultyMin": "beginner",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment", "Bench"],
+    "equipmentTags": [
+      "No equipment",
+      "Bench"
+    ],
     "workoutType": "Mobility and recovery",
     "movementPattern": "Recovery breathing",
-    "focusAreaTags": ["Core", "Full body balance"],
+    "focusAreaTags": [
+      "Core",
+      "Full body balance",
+      "Mobility"
+    ],
     "impactLevel": "low",
-    "phaseTags": ["Cool off", "Stretching"],
-    "notes": "quality:premium; family:breathing-reset; modality:recovery"
+    "phaseTags": [
+      "Cool off",
+      "Stretching"
+    ],
+    "notes": "quality:premium; family:breathing-reset; modality:recovery; body:mobility; split:waist-core",
+    "videoUrl": "/exercise-videos/90-90-breathing-reset.mp4"
   },
   {
     "externalId": "EX061",
@@ -1267,13 +2196,18 @@
     "description": "Basic fallback movement only. Prefer curated mobility or conditioning patterns when available.",
     "difficultyMin": "advanced",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Legacy fallback",
     "movementPattern": "Legacy basic cardio",
-    "focusAreaTags": ["Full body balance"],
+    "focusAreaTags": [
+      "Full body balance"
+    ],
     "impactLevel": "low",
     "phaseTags": [],
-    "notes": "quality:legacy; family:basic-cardio; modality:fallback"
+    "notes": "quality:legacy; family:basic-cardio; modality:fallback",
+    "videoUrl": "/exercise-videos/march-in-place.mp4"
   },
   {
     "externalId": "EX062",
@@ -1281,13 +2215,18 @@
     "description": "Basic fallback movement only. Prefer curated low-impact conditioning patterns when available.",
     "difficultyMin": "advanced",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Legacy fallback",
     "movementPattern": "Legacy basic cardio",
-    "focusAreaTags": ["Full body balance"],
+    "focusAreaTags": [
+      "Full body balance"
+    ],
     "impactLevel": "low",
     "phaseTags": [],
-    "notes": "quality:legacy; family:basic-cardio; modality:fallback"
+    "notes": "quality:legacy; family:basic-cardio; modality:fallback",
+    "videoUrl": "/exercise-videos/step-jacks.mp4"
   },
   {
     "externalId": "EX064",
@@ -1295,13 +2234,18 @@
     "description": "Legacy fallback movement only. Use boxing cross-body combo for normal plans.",
     "difficultyMin": "advanced",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Legacy fallback",
     "movementPattern": "Legacy basic cardio",
-    "focusAreaTags": ["Full body balance"],
+    "focusAreaTags": [
+      "Full body balance"
+    ],
     "impactLevel": "low",
     "phaseTags": [],
-    "notes": "quality:legacy; family:basic-cardio; modality:fallback"
+    "notes": "quality:legacy; family:basic-cardio; modality:fallback",
+    "videoUrl": "/exercise-videos/shadow-boxing.mp4"
   },
   {
     "externalId": "EX065",
@@ -1309,13 +2253,18 @@
     "description": "Basic fallback movement only. Prefer curated strength, mobility, or conditioning patterns when available.",
     "difficultyMin": "advanced",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Legacy fallback",
     "movementPattern": "Legacy basic cardio",
-    "focusAreaTags": ["Full body balance"],
+    "focusAreaTags": [
+      "Full body balance"
+    ],
     "impactLevel": "low",
     "phaseTags": [],
-    "notes": "quality:legacy; family:basic-cardio; modality:fallback"
+    "notes": "quality:legacy; family:basic-cardio; modality:fallback",
+    "videoUrl": "/exercise-videos/stair-walk.mp4"
   },
   {
     "externalId": "EX074",
@@ -1323,14 +2272,21 @@
     "description": "Basic fallback movement only. Prefer curated conditioning patterns when available.",
     "difficultyMin": "advanced",
     "difficultyMax": "advanced",
-    "equipmentTags": ["No equipment"],
+    "equipmentTags": [
+      "No equipment"
+    ],
     "workoutType": "Legacy fallback",
     "movementPattern": "Legacy basic cardio",
-    "focusAreaTags": ["Full body balance"],
+    "focusAreaTags": [
+      "Full body balance"
+    ],
     "impactLevel": "low",
-    "preferenceExclusionFlags": ["Running"],
+    "preferenceExclusionFlags": [
+      "Running"
+    ],
     "phaseTags": [],
-    "notes": "quality:legacy; family:basic-cardio; modality:fallback"
+    "notes": "quality:legacy; family:basic-cardio; modality:fallback",
+    "videoUrl": "/exercise-videos/jog-in-place.mp4"
   },
   {
     "externalId": "EX075",
@@ -1338,13 +2294,20 @@
     "description": "Machine fallback only. Prefer curated at-home conditioning patterns unless a treadmill is selected.",
     "difficultyMin": "advanced",
     "difficultyMax": "advanced",
-    "equipmentTags": ["Cardio machine"],
+    "equipmentTags": [
+      "Treadmill"
+    ],
     "workoutType": "Legacy fallback",
     "movementPattern": "Legacy basic cardio",
-    "focusAreaTags": ["Full body balance"],
+    "focusAreaTags": [
+      "Full body balance"
+    ],
     "impactLevel": "medium",
-    "preferenceExclusionFlags": ["Running"],
+    "preferenceExclusionFlags": [
+      "Running"
+    ],
     "phaseTags": [],
-    "notes": "quality:legacy; family:basic-cardio; modality:fallback"
+    "notes": "quality:legacy; family:basic-cardio; modality:fallback",
+    "videoUrl": "/exercise-videos/treadmill-walk-jog-intervals.mp4"
   }
 ]

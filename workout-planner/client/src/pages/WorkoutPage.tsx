@@ -27,7 +27,7 @@ interface WorkoutExercise {
     exerciseId: string;
     exercise: Exercise;
     targetSets: number;
-    targetReps: number | null;
+    targetReps: number | string | null;
     targetSeconds?: number | null;
     targetRestSeconds?: number | null;
     logs: ExerciseLog[];
@@ -51,7 +51,8 @@ function isExerciseComplete(item: WorkoutExercise) {
 
 function getSetTargetLabel(item: WorkoutExercise) {
     if (item.targetReps != null) {
-        return `${item.targetReps} reps`;
+        const target = String(item.targetReps);
+        return target.toLowerCase().includes('rep') ? target : `${target} reps`;
     }
 
     if (item.targetSeconds != null) {
@@ -393,7 +394,15 @@ export function WorkoutPage() {
                                                 </div>
 
                                                 <button
-                                                    onClick={() => handleLogSet(exercise.id, exercise.exerciseId, setNumber, exercise.targetReps ?? 0, 0)}
+                                                    onClick={() => handleLogSet(
+                                                        exercise.id,
+                                                        exercise.exerciseId,
+                                                        setNumber,
+                                                        typeof exercise.targetReps === 'number'
+                                                            ? exercise.targetReps
+                                                            : Number.parseInt(exercise.targetReps || '0', 10) || 0,
+                                                        0,
+                                                    )}
                                                     className={clsx(
                                                         'inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-[0.16em] transition',
                                                         isDone

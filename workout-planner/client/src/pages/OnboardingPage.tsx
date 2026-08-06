@@ -10,12 +10,10 @@ const QUESTIONS = [
         title: 'What is your main goal for the next 30 days?',
         type: 'single',
         options: [
-            'Lose body fat',
-            'Build muscle',
+            'Build muscle and shape',
             'Get stronger',
-            'Improve stamina',
-            'Improve mobility',
-            'General fitness'
+            'Lose body fat and improve conditioning',
+            'Improve fitness and energy'
         ]
     },
     {
@@ -29,8 +27,10 @@ const QUESTIONS = [
             'Dumbbells',
             'Kettlebell',
             'Barbell and weight plates',
+            'Bench',
             'Pull-up bar',
-            'Bench'
+            'Treadmill',
+            'Full gym access'
         ]
     },
     {
@@ -61,7 +61,6 @@ const QUESTIONS = [
         subtitle: 'This sets your workout days and rest days. Pick what you can repeat consistently.',
         type: 'single',
         options: [
-            { label: '2 days per week', value: '2 days per week' },
             { label: '3 days per week', value: '3 days per week' },
             { label: '4 days per week', value: '4 days per week' },
             { label: '5 days per week', value: '5 days per week' }
@@ -83,46 +82,6 @@ const QUESTIONS = [
         ]
     },
     {
-        id: 'movementRestrictions',
-        title: 'Are any of these difficult or not possible for you right now?',
-        subtitle: 'Choose all that apply',
-        type: 'multi',
-        options: [
-            'None',
-            'Squatting down is difficult',
-            'Lunges are difficult',
-            'Push-ups are difficult',
-            'Pull-ups are difficult',
-            'Jumping is difficult',
-            'Running is difficult'
-        ]
-    },
-    {
-        id: 'workoutStylePreference',
-        title: 'What kind of workouts do you enjoy more?',
-        type: 'single',
-        options: [
-            'Mostly strength training',
-            'Mostly cardio',
-            'Mix of both',
-            'Decide for me'
-        ]
-    },
-    {
-        id: 'focusAreas',
-        title: 'Which areas do you want to focus on?',
-        subtitle: 'Choose up to 2',
-        type: 'multi',
-        maxSelect: 2,
-        options: [
-            'Core',
-            'Glutes and legs',
-            'Chest and arms',
-            'Back and posture',
-            'Full body balance'
-        ]
-    },
-    {
         id: 'intensityPreference',
         title: 'How hard do you want workouts to feel most days?',
         type: 'single',
@@ -130,54 +89,6 @@ const QUESTIONS = [
             { label: 'Easy (I want to build the habit first)', value: 'Easy' },
             { label: 'Moderate (challenging but doable)', value: 'Moderate' },
             { label: 'Hard (I like intense workouts)', value: 'Hard' }
-        ]
-    },
-    {
-        id: 'startingAbility',
-        title: 'Quick ability check (optional)',
-        subtitle: 'This helps us pick the right starting exercises for you',
-        type: 'ability',
-        abilities: [
-            {
-                id: 'startingAbilityPushups',
-                label: 'Push-ups you can do:',
-                options: ['0', '1-5', '6-15', '16+']
-            },
-            {
-                id: 'startingAbilitySquats',
-                label: 'Bodyweight squats:',
-                options: ['0-10', '11-25', '26-50', '50+']
-            },
-            {
-                id: 'startingAbilityPlank',
-                label: 'Plank hold:',
-                options: ['under 20 seconds', '20-45', '45-90', '90+']
-            }
-        ]
-    },
-    {
-        id: 'sleepBucket',
-        title: 'How is your sleep most nights?',
-        type: 'single',
-        options: [
-            'Under 6 hours',
-            '6-7 hours',
-            '7-8 hours',
-            '8+ hours'
-        ]
-    },
-    {
-        id: 'preferenceExclusions',
-        title: 'Anything you strongly dislike or want to avoid?',
-        subtitle: 'Choose all that apply',
-        type: 'multi',
-        options: [
-            'None',
-            'Running',
-            'Jumping',
-            'Burpees',
-            'Long workouts',
-            'Heavy lifting'
         ]
     }
 ];
@@ -190,14 +101,7 @@ interface FormData {
     recentConsistency: string;
     painAreas: string[];
     movementRestrictions: string[];
-    workoutStylePreference: string;
-    focusAreas: string[];
     intensityPreference: string;
-    startingAbilityPushups: string;
-    startingAbilitySquats: string;
-    startingAbilityPlank: string;
-    sleepBucket: string;
-    preferenceExclusions: string[];
 }
 
 export function OnboardingPage() {
@@ -212,14 +116,7 @@ export function OnboardingPage() {
         recentConsistency: '',
         painAreas: [],
         movementRestrictions: [],
-        workoutStylePreference: '',
-        focusAreas: [],
         intensityPreference: '',
-        startingAbilityPushups: '',
-        startingAbilitySquats: '',
-        startingAbilityPlank: '',
-        sleepBucket: '',
-        preferenceExclusions: []
     });
 
     const currentQuestion = QUESTIONS[currentStep];
@@ -233,6 +130,24 @@ export function OnboardingPage() {
     const handleMultiSelect = (questionId: string, value: string, maxSelect?: number) => {
         setFormData(prev => {
             const current = prev[questionId as keyof FormData] as string[];
+
+            if (questionId === 'equipment') {
+                if (value === 'No equipment') {
+                    return { ...prev, equipment: current.includes(value) ? [] : [value] };
+                }
+
+                if (value === 'Full gym access') {
+                    return { ...prev, equipment: current.includes(value) ? [] : [value] };
+                }
+
+                const homeEquipment = current.filter(item => item !== 'Full gym access' && item !== 'No equipment');
+                return {
+                    ...prev,
+                    equipment: homeEquipment.includes(value)
+                        ? homeEquipment.filter(item => item !== value)
+                        : [...homeEquipment, value],
+                };
+            }
 
             // Handle "None" exclusivity
             if (value === 'None') {
@@ -253,10 +168,6 @@ export function OnboardingPage() {
         });
     };
 
-    const handleAbilitySelect = (abilityId: string, value: string) => {
-        setFormData(prev => ({ ...prev, [abilityId]: value }));
-    };
-
     const canProceed = () => {
         const q = currentQuestion;
         if (q.type === 'single') {
@@ -264,9 +175,6 @@ export function OnboardingPage() {
         }
         if (q.type === 'multi') {
             return (formData[q.id as keyof FormData] as string[]).length > 0;
-        }
-        if (q.type === 'ability') {
-            return true; // Optional
         }
         return true;
     };
@@ -296,15 +204,15 @@ export function OnboardingPage() {
                 experienceLevel: formData.experienceLevel,
                 recentConsistency: formData.recentConsistency,
                 painAreas: JSON.stringify(formData.painAreas.length > 0 ? formData.painAreas : ['None']),
-                movementRestrictions: JSON.stringify(formData.movementRestrictions.length > 0 ? formData.movementRestrictions : ['None']),
-                workoutStylePreference: formData.workoutStylePreference,
-                focusAreas: JSON.stringify(formData.focusAreas.length > 0 ? formData.focusAreas : ['Full body balance']),
+                movementRestrictions: JSON.stringify(['None']),
+                workoutStylePreference: 'Decide for me',
+                focusAreas: JSON.stringify(['Full body balance']),
                 intensityPreference: formData.intensityPreference,
-                startingAbilityPushups: formData.startingAbilityPushups || null,
-                startingAbilitySquats: formData.startingAbilitySquats || null,
-                startingAbilityPlank: formData.startingAbilityPlank || null,
-                sleepBucket: formData.sleepBucket,
-                preferenceExclusions: JSON.stringify(formData.preferenceExclusions.length > 0 ? formData.preferenceExclusions : ['None'])
+                startingAbilityPushups: null,
+                startingAbilitySquats: null,
+                startingAbilityPlank: null,
+                sleepBucket: '7-8 hours',
+                preferenceExclusions: JSON.stringify(['None'])
             };
 
             await api.post('/profile', profileData);
@@ -357,12 +265,13 @@ export function OnboardingPage() {
                     {q.options.map((option, idx) => {
                         const optionStr = String(option);
                         const isSelected = selected.includes(optionStr);
+                        const maxSelect = 'maxSelect' in q && typeof q.maxSelect === 'number' ? q.maxSelect : undefined;
 
                         return (
                             <button
                                 key={idx}
                                 type="button"
-                                onClick={() => handleMultiSelect(q.id, optionStr, q.maxSelect)}
+                                onClick={() => handleMultiSelect(q.id, optionStr, maxSelect)}
                                 className={`w-full rounded-lg border-2 p-4 text-left transition-all ${isSelected
                                     ? 'border-[#22C7B8] bg-[#F3FFFC] text-[#0B1220]'
                                     : 'border-[#DDE7EA] text-[#66758A] hover:border-[#C9D8DD]'
@@ -375,41 +284,6 @@ export function OnboardingPage() {
                             </button>
                         );
                     })}
-                </div>
-            );
-        }
-
-        if (q.type === 'ability') {
-            return (
-                <div className="space-y-6">
-                    {q.abilities?.map((ability) => (
-                        <div key={ability.id} className="space-y-2">
-                            <label className="block text-sm font-medium text-[#66758A]">
-                                {ability.label}
-                            </label>
-                            <div className="grid grid-cols-2 gap-2">
-                                {ability.options.map((option, idx) => {
-                                    const isSelected = formData[ability.id as keyof FormData] === option;
-                                    return (
-                                        <button
-                                            key={idx}
-                                            type="button"
-                                            onClick={() => handleAbilitySelect(ability.id, option)}
-                                            className={`rounded-lg border-2 p-3 text-sm transition-all ${isSelected
-                                                ? 'border-[#22C7B8] bg-[#F3FFFC] text-[#0B1220]'
-                                                : 'border-[#DDE7EA] text-[#66758A] hover:border-[#C9D8DD]'
-                                                }`}
-                                        >
-                                            {option}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    ))}
-                    <p className="text-sm italic text-[#66758A]">
-                        You can skip this if you're not sure.
-                    </p>
                 </div>
             );
         }

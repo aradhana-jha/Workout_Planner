@@ -18,14 +18,12 @@ const prisma = globalThis.prismaPlanGeneratorSingleton ?? new PrismaClient();
 globalThis.prismaPlanGeneratorSingleton = prisma;
 
 type DayType =
-    | 'Lower Body Strength'
-    | 'Upper Body Strength'
-    | 'Full Body Strength'
-    | 'Conditioning Core Mobility'
-    | 'Full Body Conditioning'
-    | 'Posterior Chain Core'
-    | 'Upper Body Posture'
-    | 'Mobility Strength Recovery'
+    | 'Glutes + Thighs'
+    | 'Arms + Chest'
+    | 'Waist + Core'
+    | 'Glutes + Hamstrings'
+    | 'Full Body + Cardio'
+    | 'Mobility + Recovery'
     | 'Rest';
 
 type ExerciseRole = 'warm-up' | 'main' | 'accessory' | 'conditioning' | 'mobility' | 'cool-off';
@@ -91,6 +89,20 @@ interface BuildContext {
 
 const DIFFICULTY_ORDER = ['beginner', 'some experience', 'intermediate', 'advanced'];
 
+const FULL_GYM_EQUIPMENT = [
+    'Dumbbells', 'Kettlebell', 'Resistance bands', 'Bench', 'Pull-up bar',
+    'Barbell and weight plates', 'Squat rack', 'Treadmill',
+];
+
+const UNSUPPORTED_MACHINE_EQUIPMENT = new Set([
+    'Smith machine', 'Cable machine',
+    'Leg press machine', 'Hack squat machine', 'Leg extension machine',
+    'Leg curl machine', 'Hip abduction machine', 'Back extension bench',
+    'Calf raise machine', 'Chest press machine', 'Shoulder press machine',
+    'Lat pulldown machine', 'Assisted pull-up machine', 'Row machine',
+    'Pec deck machine', 'Captain chair', 'Cardio machine',
+]);
+
 export class PlanGenerationCoverageError extends Error {
     code = 'PLAN_COVERAGE';
 
@@ -104,7 +116,7 @@ export class PlanGenerator {
     async generate(userId: string, profile: Profile) {
         console.log(`[PlanGenerator] Starting plan generation for user ${userId}`);
 
-        const allExercises = await prisma.exercise.findMany();
+        const allExercises = await prisma.exercise.findMany({ where: { isActive: true } });
         console.log(`[PlanGenerator] Loaded ${allExercises.length} exercises from database`);
 
         const design = this.designProgram(profile);
@@ -183,36 +195,26 @@ export class PlanGenerator {
     }
 
     private designProgram(profile: Profile): ProgramDesign {
-        const goal = profile.goal;
-        const style = profile.workoutStylePreference;
         const daysPerWeek = this.getTrainingDaysPerWeek(profile);
         const recoveryLevel = this.getRecoveryLevel(profile);
 
-        let strengthBias = 0.5;
-        let conditioningBias = 0.3;
+        let strengthBias = 0.55;
+        let conditioningBias = 0.25;
         let mobilityBias = 0.2;
 
-        if (goal === 'Build muscle' || goal === 'Get stronger') {
+        if (this.isGoal(profile, 'weight-loss')) {
+            conditioningBias += 0.2;
+            strengthBias -= 0.05;
+        }
+
+        if (this.isGoal(profile, 'muscle')) {
+            strengthBias += 0.2;
+            conditioningBias -= 0.05;
+        }
+
+        if (this.isGoal(profile, 'strength')) {
             strengthBias += 0.25;
-            conditioningBias -= 0.05;
-        }
-
-        if (goal === 'Lose body fat' || goal === 'Improve stamina') {
-            conditioningBias += 0.25;
-            strengthBias -= 0.05;
-        }
-
-        if (goal === 'Improve mobility') {
-            mobilityBias += 0.3;
-            strengthBias -= 0.1;
-        }
-
-        if (style === 'Mostly strength training') {
-            strengthBias += 0.15;
-            conditioningBias -= 0.05;
-        } else if (style === 'Mostly cardio') {
-            conditioningBias += 0.15;
-            strengthBias -= 0.05;
+            conditioningBias -= 0.08;
         }
 
         return {
@@ -226,51 +228,28 @@ export class PlanGenerator {
     }
 
     private buildWeeklySchedule(daysPerWeek: number, profile: Profile): DayType[] {
-        const goal = profile.goal;
-        const style = profile.workoutStylePreference;
-        const conditioningForward =
-            goal === 'Lose body fat' ||
-            goal === 'Improve stamina' ||
-            style === 'Mostly cardio';
-        const mobilityForward = goal === 'Improve mobility';
-
-        if (daysPerWeek <= 2) {
-            return mobilityForward
-                ? ['Full Body Strength', 'Rest', 'Rest', 'Mobility Strength Recovery', 'Rest', 'Rest', 'Rest']
-                : ['Full Body Strength', 'Rest', 'Rest', 'Conditioning Core Mobility', 'Rest', 'Rest', 'Rest'];
-        }
-
+        const conditioningForward = this.isGoal(profile, 'weight-loss');
         if (daysPerWeek === 3) {
-            if (conditioningForward) {
-                return ['Full Body Strength', 'Rest', 'Conditioning Core Mobility', 'Rest', 'Full Body Conditioning', 'Rest', 'Rest'];
-            }
-
-            if (mobilityForward) {
-                return ['Full Body Strength', 'Rest', 'Mobility Strength Recovery', 'Rest', 'Conditioning Core Mobility', 'Rest', 'Rest'];
-            }
-
-            return ['Lower Body Strength', 'Rest', 'Upper Body Strength', 'Rest', 'Full Body Strength', 'Rest', 'Rest'];
+            return ['Glutes + Thighs', 'Rest', 'Arms + Chest', 'Rest', 'Full Body + Cardio', 'Rest', 'Rest'];
         }
 
         if (daysPerWeek === 4) {
             return conditioningForward
-                ? ['Lower Body Strength', 'Conditioning Core Mobility', 'Rest', 'Upper Body Strength', 'Full Body Conditioning', 'Rest', 'Rest']
-                : ['Lower Body Strength', 'Upper Body Strength', 'Rest', 'Conditioning Core Mobility', 'Full Body Strength', 'Rest', 'Rest'];
+                ? ['Glutes + Thighs', 'Arms + Chest', 'Rest', 'Waist + Core', 'Full Body + Cardio', 'Rest', 'Rest']
+                : ['Glutes + Thighs', 'Arms + Chest', 'Rest', 'Waist + Core', 'Glutes + Hamstrings', 'Rest', 'Rest'];
         }
 
-        return ['Lower Body Strength', 'Upper Body Strength', 'Conditioning Core Mobility', 'Posterior Chain Core', 'Upper Body Posture', 'Rest', 'Rest'];
+        return ['Glutes + Thighs', 'Arms + Chest', 'Waist + Core', 'Glutes + Hamstrings', 'Full Body + Cardio', 'Rest', 'Rest'];
     }
 
     private getTrainingDaysPerWeek(profile: Profile): number {
         const raw = (profile.recentConsistency || '').toLowerCase();
-        const explicit = raw.match(/\b([2-5])\s*\+?\s*days?/);
+        const explicit = raw.match(/\b([3-5])\s*\+?\s*days?/);
 
-        let days = 3;
+        let days = 5;
 
         if (explicit) {
             days = Number(explicit[1]);
-        } else if (raw.includes('0 days')) {
-            days = 3;
         } else if (raw.includes('1-2') || raw.includes('1 to 2')) {
             days = 3;
         } else if (raw.includes('3-4') || raw.includes('3 to 4')) {
@@ -279,10 +258,7 @@ export class PlanGenerator {
             days = 5;
         }
 
-        if (profile.experienceLevel === 'beginner' && days > 4) days = 4;
-        if (profile.sleepBucket === 'Under 6 hours' && profile.intensityPreference === 'Easy') days = Math.min(days, 3);
-
-        return this.clamp(Math.round(days), 2, 5);
+        return this.clamp(Math.round(days), 3, 5);
     }
 
     private filterExercises(
@@ -290,7 +266,7 @@ export class PlanGenerator {
         profile: Profile,
         options: { respectPreferenceExclusions: boolean },
     ): Exercise[] {
-        const userEquipment = this.parseTags(profile.equipment);
+        const userEquipment = this.getAvailableEquipment(profile);
         const painAreas = this.parseTags(profile.painAreas);
         const movementRestrictions = this.parseTags(profile.movementRestrictions);
         const preferenceExclusions = this.parseTags(profile.preferenceExclusions);
@@ -302,11 +278,20 @@ export class PlanGenerator {
             const name = exercise.name.toLowerCase();
             const movement = exercise.movementPattern.toLowerCase();
 
+            if (equipment.some((tag) => UNSUPPORTED_MACHINE_EQUIPMENT.has(tag))) return false;
+
             if (equipment.length > 0) {
                 const needsOnlyBodyweight = equipment.includes('No equipment');
-                const hasMatchingEquipment = equipment.some((tag) => userEquipment.includes(tag));
+                const requiresGymSetup = (exercise.notes || '').includes('location:gym');
+                const hasMatchingEquipment = requiresGymSetup
+                    ? equipment.every((tag) => userEquipment.includes(tag))
+                    : equipment.some((tag) => userEquipment.includes(tag));
                 if (!needsOnlyBodyweight && !hasMatchingEquipment) return false;
             }
+
+            const userRank = this.getUserExperienceRank(profile);
+            const minimumRank = this.getDifficultyRank(exercise.difficultyMin);
+            if (minimumRank > userRank + 1) return false;
 
             if (!painAreas.includes('None')) {
                 for (const pain of painAreas) {
@@ -361,9 +346,6 @@ export class PlanGenerator {
     }
 
     private scoreExercises(exercises: Exercise[], profile: Profile, dayType: DayType, design: ProgramDesign): RankedExercise[] {
-        const goal = profile.goal;
-        const style = profile.workoutStylePreference;
-        const focusAreas = this.parseTags(profile.focusAreas);
         const userRank = this.getUserExperienceRank(profile);
         const recoveryLevel = design.recoveryLevel;
 
@@ -378,19 +360,12 @@ export class PlanGenerator {
                 if (this.isPremiumExercise(exercise)) score += 24;
                 if (this.isLegacyFallbackExercise(exercise)) score -= 120;
 
-                if ((goal === 'Build muscle' || goal === 'Get stronger') && this.isStrengthType(exercise)) score += 18;
-                if ((goal === 'Lose body fat' || goal === 'Improve stamina') && this.isConditioningType(exercise)) score += 18;
-                if (goal === 'Improve mobility' && this.isMobilityType(exercise)) score += 20;
-                if (goal === 'General fitness' && this.parseTags(exercise.phaseTags).includes('Main exercise')) score += 6;
-
-                if (style === 'Mostly strength training' && this.isStrengthType(exercise)) score += 12;
-                if (style === 'Mostly strength training' && this.isConditioningType(exercise)) score -= 10;
-                if (style === 'Mostly cardio' && this.isConditioningType(exercise)) score += this.isBasicCardioFiller(exercise) ? -18 : 12;
-                if (style === 'Mix of both' && (this.isStrengthType(exercise) || this.isConditioningType(exercise))) score += 6;
-
-                for (const focus of focusAreas) {
-                    if (focus !== 'Full body balance' && focusTags.includes(focus)) score += 14;
-                }
+                if (this.isGoal(profile, 'weight-loss') && this.isAthleticConditioningExercise(exercise)) score += 16;
+                if (this.isGoal(profile, 'weight-loss') && this.isStrengthType(exercise)) score += 6;
+                if (this.isGoal(profile, 'muscle') && this.isStrengthType(exercise)) score += 18;
+                if (this.isGoal(profile, 'strength') && this.isLoadedStrengthExercise(exercise)) score += 20;
+                if (this.isGoal(profile, 'general') && this.parseTags(exercise.phaseTags).includes('Main exercise')) score += 8;
+                if (this.isPilatesType(exercise) && (focusTags.includes('Waist') || focusTags.includes('Core'))) score += 8;
 
                 if (userRank >= minRank && userRank <= maxRank) {
                     score += 12;
@@ -424,14 +399,34 @@ export class PlanGenerator {
     }
 
     private getDayTypeBonus(exercise: Exercise, dayType: DayType): number {
-        if (dayType === 'Lower Body Strength' && this.matchesMovement(exercise, ['squat', 'hinge', 'lunge'])) return 16;
-        if (dayType === 'Upper Body Strength' && this.matchesMovement(exercise, ['push', 'pull', 'posture'])) return 16;
-        if (dayType === 'Full Body Strength' && this.matchesMovement(exercise, ['squat', 'hinge', 'push', 'pull', 'core'])) return 10;
-        if (dayType === 'Conditioning Core Mobility' && (this.isConditioningType(exercise) || this.matchesMovement(exercise, ['core', 'mobility']))) return 16;
-        if (dayType === 'Full Body Conditioning' && (this.isConditioningType(exercise) || this.matchesMovement(exercise, ['squat', 'push', 'core']))) return 14;
-        if (dayType === 'Posterior Chain Core' && this.matchesMovement(exercise, ['hinge', 'pull', 'core', 'posture'])) return 16;
-        if (dayType === 'Upper Body Posture' && this.matchesMovement(exercise, ['pull', 'posture', 'push', 'core'])) return 16;
-        if (dayType === 'Mobility Strength Recovery' && (this.isMobilityType(exercise) || this.matchesMovement(exercise, ['core', 'posture']))) return 18;
+        const tags = this.parseTags(exercise.focusAreaTags);
+
+        if (dayType === 'Glutes + Thighs') {
+            if (tags.some((tag) => ['Glutes', 'Thighs', 'Legs', 'Glutes and legs'].includes(tag))) return 18;
+            if (this.matchesMovement(exercise, ['squat', 'lunge'])) return 14;
+        }
+
+        if (dayType === 'Arms + Chest') {
+            if (tags.some((tag) => ['Arms', 'Chest', 'Upper Body', 'Chest and arms'].includes(tag))) return 18;
+            if (this.matchesMovement(exercise, ['push', 'pull', 'posture'])) return 12;
+        }
+
+        if (dayType === 'Waist + Core') {
+            if (tags.some((tag) => ['Waist', 'Core', 'Pilates'].includes(tag))) return 20;
+            if (this.matchesMovement(exercise, ['core'])) return 16;
+        }
+
+        if (dayType === 'Glutes + Hamstrings') {
+            if (tags.some((tag) => ['Glutes', 'Hamstrings', 'Glutes and legs'].includes(tag))) return 20;
+            if (this.matchesMovement(exercise, ['hinge', 'lunge'])) return 16;
+        }
+
+        if (dayType === 'Full Body + Cardio') {
+            if (tags.some((tag) => ['Full Body', 'Cardio', 'Full body balance'].includes(tag))) return 18;
+            if (this.isConditioningType(exercise) || this.matchesMovement(exercise, ['squat', 'push', 'core'])) return 12;
+        }
+
+        if (dayType === 'Mobility + Recovery' && (this.isMobilityType(exercise) || this.matchesMovement(exercise, ['core', 'posture']))) return 18;
         return 0;
     }
 
@@ -493,8 +488,8 @@ export class PlanGenerator {
     }
 
     private getDayExerciseCounts(time: number, dayType: DayType): DayExerciseCounts {
-        if (time >= 60) return { warmUp: 5, main: dayType.includes('Conditioning') ? 6 : 6, stretch: 3 };
-        if (time >= 40) return { warmUp: 5, main: dayType.includes('Conditioning') ? 6 : 6, stretch: 3 };
+        if (time >= 60) return { warmUp: 5, main: 6, stretch: 3 };
+        if (time >= 40) return { warmUp: 5, main: 6, stretch: 3 };
         if (time >= 25) return { warmUp: 4, main: 5, stretch: 3 };
         return { warmUp: 3, main: 4, stretch: 2 };
     }
@@ -622,81 +617,62 @@ export class PlanGenerator {
         }));
     }
 
-    private getMainSlots(dayType: DayType, count: number, profile: Profile): WorkoutSlot[] {
-        const focusAreas = this.parseTags(profile.focusAreas).filter((focus) => focus !== 'Full body balance');
-        const focusBoosts = focusAreas.length > 0 ? focusAreas : ['Full body balance'];
-
+    private getMainSlots(dayType: DayType, count: number, _profile: Profile): WorkoutSlot[] {
         const templates: Record<Exclude<DayType, 'Rest'>, WorkoutSlot[]> = {
-            'Lower Body Strength': [
-                this.mainSlot('squat-prime', ['squat'], focusBoosts),
-                this.mainSlot('hinge-prime', ['hinge'], focusBoosts),
-                this.mainSlot('single-leg', ['lunge'], focusBoosts),
-                this.mainSlot('core-bracing', ['core'], ['Core']),
-                this.mainSlot('posterior-accessory', ['hinge', 'posture'], ['Glutes and legs', 'Back and posture'], 'accessory'),
-                this.mainSlot('low-impact-finish', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+            'Glutes + Thighs': [
+                this.mainSlot('squat-prime', ['squat'], ['Thighs', 'Glutes', 'Legs', 'Glutes and legs']),
+                this.mainSlot('single-leg-thighs', ['lunge'], ['Thighs', 'Glutes', 'Legs', 'Glutes and legs']),
+                this.mainSlot('glute-accessory', ['hinge'], ['Glutes'], 'accessory'),
+                this.mainSlot('thigh-accessory', ['squat', 'lunge'], ['Thighs', 'Legs'], 'accessory'),
+                this.mainSlot('waist-support', ['core'], ['Waist', 'Core'], 'accessory'),
+                this.mainSlot('low-impact-finish', ['conditioning'], ['Full Body', 'Cardio'], 'conditioning', ['conditioning']),
             ],
-            'Upper Body Strength': [
-                this.mainSlot('push-prime', ['push'], ['Chest and arms']),
-                this.mainSlot('pull-prime', ['pull'], ['Back and posture']),
-                this.mainSlot('posture-pull', ['posture', 'pull'], ['Back and posture'], 'accessory'),
-                this.mainSlot('core-stability', ['core'], ['Core']),
-                this.mainSlot('secondary-push', ['push'], ['Chest and arms'], 'accessory'),
-                this.mainSlot('low-impact-finish', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+            'Arms + Chest': [
+                this.mainSlot('chest-push', ['push'], ['Chest', 'Upper Body', 'Chest and arms']),
+                this.mainSlot('posture-pull', ['pull', 'posture'], ['Back', 'Posture', 'Upper Body'], 'accessory'),
+                this.mainSlot('shoulders-arms', ['push'], ['Arms', 'Upper Body'], 'accessory'),
+                this.mainSlot('arms-accessory', ['push', 'pull'], ['Arms'], 'accessory'),
+                this.mainSlot('core-support', ['core'], ['Waist', 'Core'], 'accessory'),
+                this.mainSlot('upper-finisher', ['conditioning'], ['Full Body', 'Cardio'], 'conditioning', ['conditioning']),
             ],
-            'Full Body Strength': [
-                this.mainSlot('squat-or-lunge', ['squat', 'lunge'], ['Glutes and legs']),
-                this.mainSlot('hinge', ['hinge'], ['Glutes and legs', 'Back and posture']),
-                this.mainSlot('push', ['push'], ['Chest and arms']),
-                this.mainSlot('pull', ['pull', 'posture'], ['Back and posture']),
-                this.mainSlot('core', ['core'], ['Core']),
-                this.mainSlot('conditioning-finish', ['conditioning', 'carry'], ['Full body balance'], 'conditioning', ['conditioning']),
+            'Waist + Core': [
+                this.mainSlot('pilates-core', ['core'], ['Waist', 'Core', 'Pilates']),
+                this.mainSlot('anti-extension', ['core'], ['Waist', 'Core']),
+                this.mainSlot('lateral-core', ['core'], ['Waist', 'Core']),
+                this.mainSlot('posture-core', ['posture', 'core'], ['Posture', 'Core'], 'accessory'),
+                this.mainSlot('mobility-control', ['mobility'], ['Mobility', 'Pilates'], 'mobility', ['mobility']),
+                this.mainSlot('core-finisher', ['conditioning'], ['Full Body', 'Cardio'], 'conditioning', ['conditioning']),
             ],
-            'Conditioning Core Mobility': [
-                this.mainSlot('conditioning-1', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
-                this.mainSlot('conditioning-2', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
-                this.mainSlot('core-1', ['core'], ['Core']),
-                this.mainSlot('conditioning-3', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
-                this.mainSlot('core-2', ['core'], ['Core'], 'accessory'),
-                this.mainSlot('mobility-control', ['mobility', 'posture'], ['Back and posture'], 'mobility', ['mobility']),
+            'Glutes + Hamstrings': [
+                this.mainSlot('glute-prime', ['hinge'], ['Glutes']),
+                this.mainSlot('hamstring-hinge', ['hinge'], ['Hamstrings']),
+                this.mainSlot('single-leg-posterior', ['hinge', 'lunge'], ['Glutes', 'Hamstrings'], 'accessory'),
+                this.mainSlot('glute-accessory', ['hinge'], ['Glutes'], 'accessory'),
+                this.mainSlot('core-bracing', ['core'], ['Waist', 'Core'], 'accessory'),
+                this.mainSlot('posterior-finish', ['conditioning'], ['Full Body', 'Cardio'], 'conditioning', ['conditioning']),
             ],
-            'Full Body Conditioning': [
-                this.mainSlot('conditioning-1', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
-                this.mainSlot('conditioning-2', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
-                this.mainSlot('legs', ['squat', 'lunge'], ['Glutes and legs']),
-                this.mainSlot('upper', ['push', 'pull'], ['Chest and arms', 'Back and posture']),
-                this.mainSlot('core', ['core'], ['Core']),
-                this.mainSlot('conditioning-3', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
+            'Full Body + Cardio': [
+                this.mainSlot('conditioning-1', ['conditioning'], ['Cardio', 'Full Body'], 'conditioning', ['conditioning']),
+                this.mainSlot('legs', ['squat', 'lunge'], ['Thighs', 'Glutes', 'Legs']),
+                this.mainSlot('upper', ['push', 'pull'], ['Upper Body', 'Chest', 'Arms', 'Back']),
+                this.mainSlot('waist-core', ['core'], ['Waist', 'Core']),
+                this.mainSlot('conditioning-2', ['conditioning'], ['Cardio', 'Full Body'], 'conditioning', ['conditioning']),
+                this.mainSlot('mobility-control', ['mobility', 'posture'], ['Mobility', 'Posture'], 'mobility', ['mobility']),
             ],
-            'Posterior Chain Core': [
-                this.mainSlot('hinge-prime', ['hinge'], ['Glutes and legs', 'Back and posture']),
-                this.mainSlot('lunge-or-squat', ['lunge', 'squat'], ['Glutes and legs']),
-                this.mainSlot('posture-pull', ['pull', 'posture'], ['Back and posture']),
-                this.mainSlot('core-1', ['core'], ['Core']),
-                this.mainSlot('core-2', ['core'], ['Core'], 'accessory'),
-                this.mainSlot('conditioning-finish', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
-            ],
-            'Upper Body Posture': [
-                this.mainSlot('pull-prime', ['pull'], ['Back and posture']),
-                this.mainSlot('posture-prime', ['posture', 'pull'], ['Back and posture']),
-                this.mainSlot('push', ['push'], ['Chest and arms']),
-                this.mainSlot('core', ['core'], ['Core']),
-                this.mainSlot('shoulder-control', ['mobility', 'posture'], ['Back and posture'], 'mobility', ['mobility']),
-                this.mainSlot('conditioning-finish', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
-            ],
-            'Mobility Strength Recovery': [
-                this.mainSlot('mobility-1', ['mobility'], ['Back and posture'], 'mobility', ['mobility']),
-                this.mainSlot('core-control', ['core'], ['Core'], 'accessory'),
-                this.mainSlot('hinge-pattern', ['hinge'], ['Glutes and legs', 'Back and posture'], 'accessory'),
-                this.mainSlot('posture', ['posture', 'pull'], ['Back and posture'], 'accessory'),
-                this.mainSlot('easy-conditioning', ['conditioning'], ['Full body balance'], 'conditioning', ['conditioning']),
-                this.mainSlot('mobility-2', ['stretch', 'mobility'], focusBoosts, 'mobility', ['mobility']),
+            'Mobility + Recovery': [
+                this.mainSlot('mobility-1', ['mobility'], ['Mobility'], 'mobility', ['mobility']),
+                this.mainSlot('waist-core', ['core'], ['Waist', 'Core'], 'accessory'),
+                this.mainSlot('posture', ['posture', 'pull'], ['Posture', 'Back'], 'accessory'),
+                this.mainSlot('hip-mobility', ['mobility', 'hinge'], ['Glutes', 'Hamstrings', 'Mobility'], 'mobility', ['mobility']),
+                this.mainSlot('easy-conditioning', ['conditioning'], ['Full Body', 'Cardio'], 'conditioning', ['conditioning']),
+                this.mainSlot('mobility-2', ['stretch', 'mobility'], ['Mobility'], 'mobility', ['mobility']),
             ],
         };
 
         const slots = [...templates[dayType as Exclude<DayType, 'Rest'>]];
 
         while (slots.length < count) {
-            slots.push(this.mainSlot(`focus-${slots.length + 1}`, ['squat', 'hinge', 'push', 'pull', 'core'], focusBoosts, 'accessory'));
+            slots.push(this.mainSlot(`balanced-${slots.length + 1}`, ['squat', 'hinge', 'push', 'pull', 'core'], ['Full body balance'], 'accessory'));
         }
 
         return slots.slice(0, count);
@@ -762,7 +738,6 @@ export class PlanGenerator {
     private scoreForSlot(exercise: RankedExercise, slot: WorkoutSlot, profile: Profile, context: BuildContext): number {
         let score = exercise.score;
         const focusTags = this.parseTags(exercise.focusAreaTags);
-        const userFocus = this.parseTags(profile.focusAreas);
         const usage = context.history.get(exercise.id);
         const family = this.getExerciseFamily(exercise);
         const familyUsage = context.familyHistory.get(family);
@@ -773,10 +748,6 @@ export class PlanGenerator {
 
         for (const focus of slot.focusBoosts ?? []) {
             if (focusTags.includes(focus)) score += 12;
-        }
-
-        for (const focus of userFocus) {
-            if (focusTags.includes(focus) && focus !== 'Full body balance') score += 8;
         }
 
         score += this.getAbilityFitBonus(exercise, slot, profile);
@@ -901,7 +872,7 @@ export class PlanGenerator {
             if (week === 3 && !lowRecovery) seconds += 5;
             if (week === 4 && lowRecovery) sets = Math.max(3, sets - 1);
 
-            return { sets, reps: null, seconds, rest, note: 'Intervals: work for target seconds, then rest.' };
+            return { sets: Math.min(3, sets), reps: null, seconds, rest, note: 'Intervals: work for target seconds, then rest.' };
         }
 
         if (isCoreHold) {
@@ -918,20 +889,20 @@ export class PlanGenerator {
             if (week === 3 && !lowRecovery) seconds += 10;
             if (week === 4 && lowRecovery) sets = Math.max(2, sets - 1);
 
-            return { sets, reps: null, seconds, rest, note: null };
+            return { sets: Math.min(3, sets), reps: null, seconds, rest, note: null };
         }
 
         let sets = expRank <= 0 ? 2 : expRank === 1 ? 3 : expRank === 2 ? 3 : 4;
         let reps = expRank <= 0 ? 8 : expRank === 1 ? 10 : 8;
         let rest = expRank <= 1 ? 60 : expRank === 2 ? 75 : 90;
 
-        if (profile.goal === 'Build muscle') {
+        if (this.isGoal(profile, 'muscle')) {
             reps += expRank >= 2 ? 2 : 1;
             rest += 15;
-        } else if (profile.goal === 'Get stronger') {
+        } else if (this.isGoal(profile, 'strength')) {
             reps = Math.max(6, reps - 2);
             rest += 30;
-        } else if (profile.goal === 'Lose body fat' || profile.goal === 'Improve stamina') {
+        } else if (this.isGoal(profile, 'weight-loss')) {
             reps += 2;
             rest = Math.max(45, rest - 15);
         }
@@ -948,7 +919,7 @@ export class PlanGenerator {
         if (week === 3 && !lowRecovery) reps += 2;
         if (week === 4 && (lowRecovery || profile.intensityPreference === 'Easy')) sets = Math.max(2, sets - 1);
 
-        return { sets, reps, seconds: null, rest, note: null };
+        return { sets: Math.min(3, sets), reps, seconds: null, rest, note: null };
     }
 
     private async buildOptionalRecoveryDays(
@@ -959,7 +930,7 @@ export class PlanGenerator {
         history: Map<string, ExerciseUsage>,
         familyHistory: Map<string, ExerciseUsage>,
     ) {
-        const rankedPool = this.scoreExercises(pool, profile, 'Mobility Strength Recovery', this.designProgram(profile));
+        const rankedPool = this.scoreExercises(pool, profile, 'Mobility + Recovery', this.designProgram(profile));
         const recoveryPool = rankedPool.filter((exercise) => this.isMobilityType(exercise) || this.isCoolOffCandidate(exercise));
 
         for (let i = 0; i < 2; i++) {
@@ -969,7 +940,7 @@ export class PlanGenerator {
                     planId,
                     dayNumber,
                     weekNumber: 5,
-                    dayType: 'Mobility Strength Recovery',
+                    dayType: 'Mobility + Recovery',
                     isOptional: true,
                     estimatedMinutes: 15,
                 },
@@ -1117,61 +1088,59 @@ export class PlanGenerator {
             if (group === 'lunge') return movement.includes('lunge') || movement.includes('step') || movement.includes('split squat');
             if (group === 'push') return movement.includes('push') || movement.includes('press') || name.includes('press') || name.includes('dip') || name.includes('push-up');
             if (group === 'pull') return movement.includes('pull') || movement.includes('row') || movement.includes('posterior shoulder') || name.includes('row') || name.includes('pull-up') || name.includes('chin-up');
-            if (group === 'core') return movement.includes('core') || movement.includes('pilates') || movement.includes('anti-') || focus.includes('Core');
+            if (group === 'core') return movement.includes('core') || movement.includes('pilates') || movement.includes('anti-') || focus.includes('Core') || focus.includes('Waist');
             if (group === 'conditioning') return this.isConditioningType(exercise);
             if (group === 'mobility') return movement.includes('mobility') || this.isMobilityType(exercise);
             if (group === 'stretch') return movement.includes('stretch') || phases.includes('Stretching');
             if (group === 'carry') return movement.includes('carry');
-            if (group === 'posture') return movement.includes('posture') || movement.includes('thoracic') || movement.includes('posterior shoulder') || focus.includes('Back and posture');
+            if (group === 'posture') return movement.includes('posture') || movement.includes('thoracic') || movement.includes('posterior shoulder') || focus.includes('Back and posture') || focus.includes('Posture');
             return false;
         });
     }
 
     private getProfileSpecificBonus(exercise: Exercise, profile: Profile, dayType: DayType): number {
-        const focusAreas = this.parseTags(profile.focusAreas);
-        const userEquipment = this.parseTags(profile.equipment);
+        const userEquipment = this.getAvailableEquipment(profile);
         const movementRestrictions = this.parseTags(profile.movementRestrictions);
         const name = exercise.name.toLowerCase();
         const movement = exercise.movementPattern.toLowerCase();
+        const focusTags = this.parseTags(exercise.focusAreaTags);
         const equipment = this.parseTags(exercise.equipmentTags);
         const expRank = this.getUserExperienceRank(profile);
         let bonus = 0;
 
         if (userEquipment.includes('No equipment') && equipment.includes('No equipment')) bonus += 6;
+        if (userEquipment.includes('Full gym access') && (exercise.notes || '').includes('location:gym')) bonus += 34;
         if (profile.timePerWorkout <= 25 && equipment.every((tag) => tag === 'No equipment')) bonus += 4;
 
-        if (focusAreas.includes('Core') && this.matchesMovement(exercise, ['core'])) bonus += this.isPilatesType(exercise) ? 22 : 14;
-        if (focusAreas.includes('Glutes and legs') && this.matchesMovement(exercise, ['squat', 'hinge', 'lunge'])) bonus += 16;
-        if (focusAreas.includes('Glutes and legs') && movement.includes('glute')) bonus += 18;
-        if (focusAreas.includes('Back and posture') && this.matchesMovement(exercise, ['pull', 'posture'])) bonus += 18;
-        if (focusAreas.includes('Chest and arms') && this.matchesMovement(exercise, ['push'])) bonus += 18;
+        if (dayType === 'Waist + Core' && this.isPilatesType(exercise)) bonus += 18;
+        if (dayType === 'Glutes + Thighs' && focusTags.some((tag) => ['Glutes', 'Thighs', 'Legs'].includes(tag))) bonus += 12;
+        if (dayType === 'Glutes + Hamstrings' && focusTags.some((tag) => ['Glutes', 'Hamstrings'].includes(tag))) bonus += 14;
+        if (dayType === 'Arms + Chest' && focusTags.some((tag) => ['Arms', 'Chest', 'Upper Body'].includes(tag))) bonus += 12;
+        if (dayType === 'Full Body + Cardio' && focusTags.some((tag) => ['Full Body', 'Cardio'].includes(tag))) bonus += 12;
 
-        if (profile.goal === 'Improve mobility') {
-            if (this.isMobilityType(exercise)) bonus += 18;
-            if (this.isPilatesType(exercise)) bonus += 12;
-            if (this.isConditioningType(exercise)) bonus -= 10;
-        }
-
-        if (profile.goal === 'Build muscle' || profile.goal === 'Get stronger') {
+        if (this.isGoal(profile, 'muscle')) {
             if (this.isLoadedStrengthExercise(exercise)) bonus += 16;
             if (this.isPilatesType(exercise) && this.matchesMovement(exercise, ['core', 'hinge'])) bonus += 8;
+            if (this.isConditioningType(exercise) && dayType !== 'Full Body + Cardio') bonus -= 10;
             if (this.isBasicCardioFiller(exercise)) bonus -= 35;
         }
 
-        if (profile.goal === 'Lose body fat' || profile.goal === 'Improve stamina') {
-            if (this.isAthleticConditioningExercise(exercise)) bonus += 18;
-            if (this.isStrengthType(exercise) && dayType.includes('Strength')) bonus += 8;
-            if (this.isBasicCardioFiller(exercise)) bonus -= 28;
-        }
-
-        if (profile.workoutStylePreference === 'Mostly strength training') {
-            if (this.isLoadedStrengthExercise(exercise) || this.isPilatesType(exercise)) bonus += 10;
+        if (this.isGoal(profile, 'strength')) {
+            if (this.isLoadedStrengthExercise(exercise)) bonus += 20;
+            if (this.isCompoundStrengthExercise(exercise)) bonus += 18;
+            if (this.isStrengthType(exercise) && !this.isConditioningType(exercise)) bonus += 8;
             if (this.isBasicCardioFiller(exercise)) bonus -= 40;
         }
 
-        if (profile.workoutStylePreference === 'Mostly cardio') {
-            if (this.isAthleticConditioningExercise(exercise)) bonus += 20;
-            if (this.isBasicCardioFiller(exercise)) bonus -= 30;
+        if (this.isGoal(profile, 'weight-loss')) {
+            if (this.isAthleticConditioningExercise(exercise)) bonus += 18;
+            if (this.isStrengthType(exercise) && dayType !== 'Full Body + Cardio') bonus += 8;
+            if (this.isBasicCardioFiller(exercise)) bonus -= 28;
+        }
+
+        if (this.isGoal(profile, 'general')) {
+            if (this.isPilatesType(exercise) || this.isMobilityType(exercise) || this.isLoadedStrengthExercise(exercise)) bonus += 8;
+            if (this.isAthleticConditioningExercise(exercise)) bonus += 10;
         }
 
         if (profile.intensityPreference === 'Easy') {
@@ -1215,7 +1184,7 @@ export class PlanGenerator {
         if (name.includes('walk') && name.includes('stair')) penalty += 80;
         if (name.includes('jog in place') || name.includes('march in place')) penalty += 90;
         if (name.includes('step jack')) penalty += 65;
-        if (profile.workoutStylePreference !== 'Mostly cardio' && this.isConditioningType(exercise) && this.isBasicCardioFiller(exercise)) penalty += 35;
+        if (this.isConditioningType(exercise) && this.isBasicCardioFiller(exercise)) penalty += 35;
 
         return penalty;
     }
@@ -1295,10 +1264,19 @@ export class PlanGenerator {
         const equipment = this.parseTags(exercise.equipmentTags);
         const movement = exercise.movementPattern.toLowerCase();
         return this.isStrengthType(exercise) &&
-            (equipment.includes('Dumbbells') ||
-                equipment.includes('Kettlebell') ||
-                equipment.includes('Resistance bands') ||
+            (equipment.some((tag) => tag !== 'No equipment') ||
                 movement.includes('loaded'));
+    }
+
+    private isCompoundStrengthExercise(exercise: Exercise): boolean {
+        const movement = exercise.movementPattern.toLowerCase();
+        const name = exercise.name.toLowerCase();
+        return this.isLoadedStrengthExercise(exercise) && (
+            movement.includes('squat') || movement.includes('hinge') ||
+            movement.includes('horizontal push') || movement.includes('vertical push') ||
+            movement.includes('horizontal pull') || movement.includes('vertical pull') ||
+            name.includes('deadlift') || name.includes('bench press') || name.includes('row')
+        );
     }
 
     private isAthleticConditioningExercise(exercise: Exercise): boolean {
@@ -1357,10 +1335,25 @@ export class PlanGenerator {
         return fallback;
     }
 
+    private isGoal(profile: Profile, kind: 'weight-loss' | 'weight-gain' | 'muscle' | 'strength' | 'general'): boolean {
+        const goal = (profile.goal || '').toLowerCase();
+
+        if (kind === 'weight-loss') return goal.includes('weight loss') || goal.includes('lose body fat') || goal.includes('fat loss');
+        if (kind === 'weight-gain') return goal.includes('weight gain');
+        if (kind === 'muscle') return goal.includes('build muscle') || goal.includes('muscle') || goal.includes('shape') || goal.includes('weight gain');
+        if (kind === 'strength') return goal.includes('build strength') || goal.includes('get stronger') || goal.includes('strength');
+        return goal.includes('general') || goal.includes('fitness') || goal.includes('energy');
+    }
+
+    private getAvailableEquipment(profile: Profile): string[] {
+        const selected = this.parseTags(profile.equipment);
+        if (!selected.includes('Full gym access')) return selected;
+        return [...new Set([...selected, ...FULL_GYM_EQUIPMENT])];
+    }
+
     private getRecoveryLevel(profile: Profile): ProgramDesign['recoveryLevel'] {
-        if (profile.sleepBucket === 'Under 6 hours') return 'low';
         if (profile.intensityPreference === 'Easy') return 'low';
-        if (profile.sleepBucket === '8+ hours' && profile.intensityPreference === 'Hard') return 'high';
+        if (profile.intensityPreference === 'Hard') return 'high';
         return 'normal';
     }
 

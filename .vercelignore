@@ -1,0 +1,10 @@
+.git/
+.tmp/
+.vercel/
+node_modules/
+workout-planner/client/node_modules/
+docs/
+scripts/blender/
+scripts/video/
+workout-planner/client/public/*review.html
+workout-planner/client/public/exercise-video-sources/

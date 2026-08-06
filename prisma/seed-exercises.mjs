@@ -3,6 +3,7 @@ import XLSX from 'xlsx';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { COMMON_GYM_EXERCISES } from './gym-exercise-library.mjs';
 
 const prisma = new PrismaClient();
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
@@ -35,6 +36,7 @@ function normalizeExercise(exercise) {
         name: exercise.name ? String(exercise.name) : 'Unknown Exercise',
         description: exercise.description ? String(exercise.description) : null,
         videoUrl: exercise.videoUrl ? String(exercise.videoUrl) : null,
+        isActive: exercise.isActive !== false,
         difficultyMin: String(exercise.difficultyMin || 'beginner').toLowerCase(),
         difficultyMax: String(exercise.difficultyMax || 'advanced').toLowerCase(),
         equipmentTags: toJsonArray(normalizeArray(exercise.equipmentTags, ['No equipment'])),
@@ -94,6 +96,7 @@ function buildExercise(row) {
         name: row['Exercise name'] ? String(row['Exercise name']) : 'Unknown Exercise',
         description: row['Coaching notes'] ? String(row['Coaching notes']) : null,
         videoUrl: null,
+        isActive: true,
         difficultyMin: String(row['Minimum experience level'] || 'beginner').toLowerCase(),
         difficultyMax: String(row['Maximum experience level'] || 'advanced').toLowerCase(),
         equipmentTags: toJsonArray(equipmentTags),
@@ -134,7 +137,10 @@ async function main() {
     let sourceName;
 
     if (fs.existsSync(libraryPath)) {
-        rows = JSON.parse(fs.readFileSync(libraryPath, 'utf8')).map(normalizeExercise);
+        rows = [
+            ...JSON.parse(fs.readFileSync(libraryPath, 'utf8')),
+            ...COMMON_GYM_EXERCISES,
+        ].map(normalizeExercise);
         sourceName = path.basename(libraryPath);
     } else {
         const workbook = XLSX.readFile(workbookPath);
@@ -148,12 +154,25 @@ async function main() {
     }
 
     let count = 0;
+    const activeExternalIds = [];
     for (const row of rows) {
         const exercise = row.externalId || row.equipmentTags ? row : buildExercise(row);
+        if (exercise.externalId) activeExternalIds.push(exercise.externalId);
         if (!dryRun) {
             await upsertExercise(exercise);
         }
         count += 1;
+    }
+
+    // Preserve exercises referenced by historical plans, but remove obsolete GYM
+    // entries from the active catalogue used to build every new plan.
+    if (!dryRun) {
+        await prisma.exercise.updateMany({
+            where: {
+                externalId: { startsWith: 'GYM', notIn: activeExternalIds },
+            },
+            data: { isActive: false },
+        });
     }
 
     console.log(`${dryRun ? 'Validated' : 'Seeded'} ${count} exercises from ${sourceName}`);
