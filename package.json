@@ -11,6 +11,8 @@
         "media:audit": "node scripts/video/audit_exercise_media.mjs",
         "media:audit:strict": "node scripts/video/audit_exercise_media.mjs --strict",
         "recommendation:audit": "node scripts/recommendation/audit_library.mjs",
+        "recommendation:audit-plans": "node -r ts-node/register scripts/recommendation/repair_duplicate_plans.ts",
+        "recommendation:repair-plans": "node -r ts-node/register scripts/recommendation/repair_duplicate_plans.ts --apply",
         "postinstall": "npx prisma generate --schema=./prisma/schema.prisma"
     },
     "dependencies": {

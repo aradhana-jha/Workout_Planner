@@ -172,6 +172,7 @@ export class PlanGenerator {
             }
 
             await this.buildOptionalRecoveryDays(plan.id, 29, allowedPool, profile, history, familyHistory);
+            await this.assertPlanVariation(plan.id);
 
             await prisma.$transaction([
                 prisma.plan.updateMany({
@@ -192,6 +193,33 @@ export class PlanGenerator {
             where: { id: plan.id },
             include: { days: true },
         });
+    }
+
+    private async assertPlanVariation(planId: string) {
+        const days = await prisma.workoutDay.findMany({
+            where: { planId },
+            orderBy: { dayNumber: 'asc' },
+            select: {
+                dayNumber: true,
+                exercises: { select: { exerciseId: true } },
+            },
+        });
+        const exerciseSets = new Map<string, number>();
+
+        for (const day of days) {
+            if (day.exercises.length === 0) continue;
+
+            const key = day.exercises.map((item) => item.exerciseId).sort().join('|');
+            const duplicateOf = exerciseSets.get(key);
+
+            if (duplicateOf !== undefined) {
+                throw new PlanGenerationCoverageError(
+                    `Workout variation check failed: days ${duplicateOf} and ${day.dayNumber} contain the same exercises`,
+                );
+            }
+
+            exerciseSets.set(key, day.dayNumber);
+        }
     }
 
     private designProgram(profile: Profile): ProgramDesign {
