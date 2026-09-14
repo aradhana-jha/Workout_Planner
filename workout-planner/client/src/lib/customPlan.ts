@@ -225,7 +225,26 @@ export const getBodyPartPlanForDay = (
         };
     }
 
-    const splitKey = WEEKLY_SPLITS[trainingDays][splitIndex];
+    const goal = (preferences.goal || '').toLowerCase();
+    const splits = [...WEEKLY_SPLITS[trainingDays]];
+    if (trainingDays === 4 && /fat|weight loss|stamina|endurance|balanced|fitness|energy/.test(goal)) splits[3] = 'full-body-cardio';
+    if (trainingDays === 5 && /stamina|endurance/.test(goal)) {
+        splits.splice(0, 5, 'glutes-thighs', 'full-body-cardio', 'arms-chest', 'waist-core', 'full-body-cardio');
+    }
+    const mobilityDay = /flexibility|mobility/.test(goal) && (splitIndex === 2 || (trainingDays === 5 && splitIndex === 4));
+    if (/flexibility|mobility/.test(goal) && trainingDays >= 4) splits[3] = 'full-body-cardio';
+    if (mobilityDay) {
+        const mobilityExercises = Object.values(BODY_PART_WORKOUTS)
+            .flatMap((workout) => workout.exercises)
+            .filter((exercise) => exercise.type === 'stretching');
+        const unique = mobilityExercises.filter((exercise, index) => mobilityExercises.findIndex((other) => other.name === exercise.name) === index);
+        return {
+            day: dayNumber,
+            title: 'Mobility + Recovery',
+            exercises: unique.slice(0, 8).map((exercise) => personalizeExercise({ ...exercise, id: `d${dayNumber}-${exercise.id}` }, preferences)),
+        };
+    }
+    const splitKey = splits[splitIndex];
     const workout = BODY_PART_WORKOUTS[splitKey];
 
     return {

@@ -256,7 +256,15 @@ export class PlanGenerator {
     }
 
     private buildWeeklySchedule(daysPerWeek: number, profile: Profile): DayType[] {
-        const conditioningForward = this.isGoal(profile, 'weight-loss');
+        const conditioningForward = this.isGoal(profile, 'weight-loss') || this.isGoal(profile, 'stamina') || this.isGoal(profile, 'general');
+        if (this.isGoal(profile, 'flexibility')) {
+            if (daysPerWeek === 3) return ['Glutes + Thighs', 'Rest', 'Arms + Chest', 'Rest', 'Mobility + Recovery', 'Rest', 'Rest'];
+            if (daysPerWeek === 4) return ['Glutes + Thighs', 'Arms + Chest', 'Rest', 'Mobility + Recovery', 'Full Body + Cardio', 'Rest', 'Rest'];
+            return ['Glutes + Thighs', 'Arms + Chest', 'Mobility + Recovery', 'Full Body + Cardio', 'Mobility + Recovery', 'Rest', 'Rest'];
+        }
+        if (this.isGoal(profile, 'stamina') && daysPerWeek === 5) {
+            return ['Glutes + Thighs', 'Full Body + Cardio', 'Arms + Chest', 'Waist + Core', 'Full Body + Cardio', 'Rest', 'Rest'];
+        }
         if (daysPerWeek === 3) {
             return ['Glutes + Thighs', 'Rest', 'Arms + Chest', 'Rest', 'Full Body + Cardio', 'Rest', 'Rest'];
         }
@@ -391,6 +399,8 @@ export class PlanGenerator {
                 if (this.isGoal(profile, 'weight-loss') && this.isAthleticConditioningExercise(exercise)) score += 16;
                 if (this.isGoal(profile, 'weight-loss') && this.isStrengthType(exercise)) score += 6;
                 if (this.isGoal(profile, 'muscle') && this.isStrengthType(exercise)) score += 18;
+                if (this.isGoal(profile, 'stamina') && this.isAthleticConditioningExercise(exercise)) score += 24;
+                if (this.isGoal(profile, 'flexibility') && this.isMobilityType(exercise)) score += 24;
                 if (this.isGoal(profile, 'strength') && this.isLoadedStrengthExercise(exercise)) score += 20;
                 if (this.isGoal(profile, 'general') && this.parseTags(exercise.phaseTags).includes('Main exercise')) score += 8;
                 if (this.isPilatesType(exercise) && (focusTags.includes('Waist') || focusTags.includes('Core'))) score += 8;
@@ -1363,14 +1373,16 @@ export class PlanGenerator {
         return fallback;
     }
 
-    private isGoal(profile: Profile, kind: 'weight-loss' | 'weight-gain' | 'muscle' | 'strength' | 'general'): boolean {
+    private isGoal(profile: Profile, kind: 'weight-loss' | 'weight-gain' | 'muscle' | 'strength' | 'stamina' | 'flexibility' | 'general'): boolean {
         const goal = (profile.goal || '').toLowerCase();
 
         if (kind === 'weight-loss') return goal.includes('weight loss') || goal.includes('lose body fat') || goal.includes('fat loss');
         if (kind === 'weight-gain') return goal.includes('weight gain');
         if (kind === 'muscle') return goal.includes('build muscle') || goal.includes('muscle') || goal.includes('shape') || goal.includes('weight gain');
         if (kind === 'strength') return goal.includes('build strength') || goal.includes('get stronger') || goal.includes('strength');
-        return goal.includes('general') || goal.includes('fitness') || goal.includes('energy');
+        if (kind === 'stamina') return goal.includes('stamina') || goal.includes('endurance');
+        if (kind === 'flexibility') return goal.includes('flexibility') || goal.includes('mobility');
+        return goal.includes('general') || goal.includes('fitness') || goal.includes('energy') || goal.includes('balanced');
     }
 
     private getAvailableEquipment(profile: Profile): string[] {

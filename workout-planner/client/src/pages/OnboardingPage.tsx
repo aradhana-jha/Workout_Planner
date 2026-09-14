@@ -7,30 +7,15 @@ import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 const QUESTIONS = [
     {
         id: 'goal',
-        title: 'What is your main goal for the next 30 days?',
+        title: 'What would you most like to improve?',
+        subtitle: 'Choose your main priority. Your plan will still include a balanced mix of exercise.',
         type: 'single',
         options: [
-            'Build muscle and shape',
-            'Get stronger',
-            'Lose body fat and improve conditioning',
-            'Improve fitness and energy'
-        ]
-    },
-    {
-        id: 'equipment',
-        title: 'What equipment do you have access to?',
-        subtitle: 'Choose all that apply',
-        type: 'multi',
-        options: [
-            'No equipment',
-            'Resistance bands',
-            'Dumbbells',
-            'Kettlebell',
-            'Barbell and weight plates',
-            'Bench',
-            'Pull-up bar',
-            'Treadmill',
-            'Full gym access'
+            'Lose body fat',
+            'Build muscle',
+            'Improve stamina',
+            'Improve flexibility',
+            'Give me a balanced plan'
         ]
     },
     {
@@ -95,7 +80,6 @@ const QUESTIONS = [
 
 interface FormData {
     goal: string;
-    equipment: string[];
     timePerWorkout: number;
     experienceLevel: string;
     recentConsistency: string;
@@ -110,7 +94,6 @@ export function OnboardingPage() {
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<FormData>({
         goal: '',
-        equipment: [],
         timePerWorkout: 25,
         experienceLevel: '',
         recentConsistency: '',
@@ -130,24 +113,6 @@ export function OnboardingPage() {
     const handleMultiSelect = (questionId: string, value: string, maxSelect?: number) => {
         setFormData(prev => {
             const current = prev[questionId as keyof FormData] as string[];
-
-            if (questionId === 'equipment') {
-                if (value === 'No equipment') {
-                    return { ...prev, equipment: current.includes(value) ? [] : [value] };
-                }
-
-                if (value === 'Full gym access') {
-                    return { ...prev, equipment: current.includes(value) ? [] : [value] };
-                }
-
-                const homeEquipment = current.filter(item => item !== 'Full gym access' && item !== 'No equipment');
-                return {
-                    ...prev,
-                    equipment: homeEquipment.includes(value)
-                        ? homeEquipment.filter(item => item !== value)
-                        : [...homeEquipment, value],
-                };
-            }
 
             // Handle "None" exclusivity
             if (value === 'None') {
@@ -199,7 +164,7 @@ export function OnboardingPage() {
             // Prepare data for API
             const profileData = {
                 goal: formData.goal,
-                equipment: JSON.stringify(formData.equipment.length > 0 ? formData.equipment : ['No equipment']),
+                equipment: JSON.stringify(['No equipment']),
                 timePerWorkout: formData.timePerWorkout,
                 experienceLevel: formData.experienceLevel,
                 recentConsistency: formData.recentConsistency,

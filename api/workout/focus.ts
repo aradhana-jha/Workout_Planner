@@ -164,7 +164,10 @@ function getProfileSummary(profile: Profile) {
 }
 
 function filterExercisesForProfile(exercises: Exercise[], profile: Profile) {
-    const userEquipment = parseStringArray(profile.equipment);
+    const selectedEquipment = parseStringArray(profile.equipment);
+    const userEquipment = selectedEquipment.includes('Full gym access')
+        ? [...selectedEquipment, 'Dumbbells', 'Kettlebell', 'Resistance bands', 'Bench', 'Pull-up bar', 'Barbell and weight plates', 'Squat rack', 'Treadmill']
+        : selectedEquipment;
     const painAreas = parseStringArray(profile.painAreas);
     const movementRestrictions = parseStringArray(profile.movementRestrictions);
     const preferenceExclusions = parseStringArray(profile.preferenceExclusions);
@@ -178,7 +181,10 @@ function filterExercisesForProfile(exercises: Exercise[], profile: Profile) {
 
         if (equipmentTags.length > 0) {
             const hasNoEquipment = equipmentTags.includes('No equipment');
-            const hasMatchingEquipment = equipmentTags.some((tag) => userEquipment.includes(tag));
+            // Gym entries list required equipment; legacy home entries list alternatives.
+            const hasMatchingEquipment = (exercise.notes || '').includes('location:gym')
+                ? equipmentTags.every((tag) => userEquipment.includes(tag))
+                : equipmentTags.some((tag) => userEquipment.includes(tag));
             if (!hasNoEquipment && !hasMatchingEquipment) return false;
         }
 
@@ -343,8 +349,10 @@ function scoreFocusExercise(exercise: Exercise, profile: Profile, focusKey: Focu
         if (lowerPattern.includes('hinge')) score += 12;
     }
     if (focusKey === 'arms' && focusAreas.some((tag) => ['Chest', 'Arms', 'Upper Body', 'Chest and arms'].includes(tag))) score += 22;
-    if ((profile.goal === 'Build muscle' || profile.goal === 'Weight gain' || profile.goal === 'Build strength') && isStrengthExercise(exercise)) score += 10;
-    if (profile.goal === 'Weight loss' && isConditioningExercise(exercise)) score += 6;
+    const goal = (profile.goal || '').toLowerCase();
+    if (/muscle|shape|weight gain|strength|stronger/.test(goal) && isStrengthExercise(exercise)) score += 10;
+    if (/weight loss|body fat|fat loss|stamina|endurance/.test(goal) && isConditioningExercise(exercise)) score += 6;
+    if (/flexibility|mobility/.test(goal) && isMobilityExercise(exercise)) score += 10;
 
     const difficultyGap = getDifficultyRank(exercise.difficultyMax) - Math.min(getUserExperienceRank(profile.experienceLevel), 2);
     if (difficultyGap > 0) score -= difficultyGap * 8;
